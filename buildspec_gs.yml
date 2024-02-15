@@ -1,0 +1,26 @@
+version: 0.2  
+    
+phases:
+  install:  
+    commands:
+      - git init
+      - ls -a
+      - pwd
+      - echo "downloading git-secrets"
+      - git clone https://github.com/awslabs/git-secrets.git
+      - echo "git secrets downloaded"
+      - cd git-secrets/
+      - make install
+      - git secrets --register-aws --global
+      
+  
+  build: 
+    commands:
+      - cd ..
+      - pwd
+      - ls -a
+      - git secrets --scan
+  
+  post_build:  
+    commands:  
+      - echo "git-secrets actions completed"

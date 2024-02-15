@@ -1,0 +1,17 @@
+version: 0.2 
+ 
+phases:
+  install:
+    runtime-versions:
+      nodejs: 16
+    commands:
+      - n 18
+      
+  build:
+    commands:
+      - chmod +x deploy.sh
+      - bash ./deploy.sh $DEPLOY_ROLE $BUCKET_NAME
+ 
+  post_build: 
+    commands: 
+      - echo "S3 Website deploy to $TF_VAR_BUCKET_NAME for $TF_VAR_ENV completed on `date`"
