@@ -5,7 +5,7 @@ phases:
     commands:
       - apt-get update
       - apt-get install jq
-      - export SONAR_TOKEN=35e2c7e8b7f56beeaed4a5d1175291f9a9a635d4
+      - export SONAR_TOKEN=01e95cb5f7de0db8851fa48f5ac10d30e45bd361
       - export PROJECTKEY=cecure-stream-webapp
       - export SONAR_SCANNER_VERSION=5.0.1.3006
       - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-$SONAR_SCANNER_VERSION-linux.zip
