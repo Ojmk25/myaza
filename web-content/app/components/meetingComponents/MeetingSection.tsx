@@ -1,0 +1,189 @@
+"use client"
+import Image from "next/image";
+import { Add, Copy, EmojiNormal, MicrophoneSlash1, RecordCircle, SearchNormal1, Send } from "iconsax-react";
+
+import avatar from "@/public/assets/images/avatar.png"
+import videoImg from "@/public/assets/images/video.png"
+import activeVoice from '@/public/assets/images/activeVoice.svg'
+import closeIconPurple from "@/public/assets/images/closeIconPurple.svg"
+import raisedHand from '@/public/assets/images/raisedHand.svg'
+import { RefObject, createRef, useEffect, useRef } from "react";
+import dottedLine from "@/public/assets/images/dottedLine.svg"
+import { LocalVideo, VideoTileGrid, useLocalVideo, useToggleLocalMute, PreviewVideo, FeaturedRemoteVideos, VideoTile, RemoteVideo, useRemoteVideoTileState, useRosterState, useAttendeeStatus } from 'amazon-chime-sdk-component-library-react';
+import { RemoteAttendeeCard } from "./RemoteAttendeeCard";
+import { LocalAttendeeCard } from "./LocalAttendeeCard";
+
+export default function MeetingSection() {
+  const { roster } = useRosterState();
+  const attendees = Object.values(roster);
+  const { muted, toggleMute } = useToggleLocalMute();
+  const { tiles, tileIdToAttendeeId, attendeeIdToTileId, size } = useRemoteVideoTileState();
+  console.log(attendees);
+
+
+
+
+  const attendeeItems = attendees.map((attendee, i) => {
+    const tilerId = attendeeIdToTileId[attendee.chimeAttendeeId]
+    console.log(attendee.chimeAttendeeId);
+
+    const { id, name } = attendee;
+    // return <AttendeeCard key={id} attendeeId={id} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} />;
+    if (i === 0) {
+      return <LocalAttendeeCard key={id} attendeeId={id} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} />
+    } else {
+      return <RemoteAttendeeCard key={id} attendeeId={id} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} />
+    }
+  });
+
+
+  return (
+    <div className=" flex-4">
+      <div className=" flex gap-8 h-full">
+        {attendeeItems}
+      </div>
+
+      <div className=" flex flex-4">
+
+
+        {/* participants
+        <div className=" flex-6 ml-6 bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-4 pt-5">
+          <div className=" flex justify-between items-center">
+            <h3 className=" text-cs-grey-dark font-medium text-2xl">Participants <span className=" text-cs-grey-100 font-medium text-base">(12)</span></h3>
+            <Image src={closeIconPurple} alt="profile" />
+          </div>
+          <div className=" relative mt-7 mb-5">
+            <input type="text" name="" id="" className=" w-full border border-cs-grey-300 h-12 rounded-[10px] outline-none pl-12 placeholder:text-sm placeholder:font-normal" placeholder="Search for participants" />
+            <SearchNormal1 size="20" color="#898989" className=" absolute top-[14px] left-[14px]" />
+          </div>
+          <div>
+            <div className=" flex justify-between items-center py-3 border-b border-solid border-b-[#EFEDED]">
+              <div className=" flex items-center gap-x-2">
+                <Image src={avatar} alt="profile" className=" rounded-full w-6 h-6 object-cover" />
+                <h4 className=" text-cs-grey-dark font-medium text-sm">Olami Anula</h4>
+              </div>
+              <div>
+                <Image src={activeVoice} alt="profile" />
+              </div>
+            </div>
+
+            <div className=" flex justify-between items-center py-3 border-b border-solid border-b-[#EFEDED]">
+              <div className=" flex items-center gap-x-2">
+                <Image src={avatar} alt="profile" className=" rounded-full w-6 h-6 object-cover" />
+                <h4 className=" text-cs-grey-dark font-medium text-sm">Olami Anula</h4>
+              </div>
+              <div>
+                <MicrophoneSlash1 size="24" color="#5E29B7" />
+              </div>
+            </div>
+
+            <div className=" flex justify-between items-center py-3 border-b border-solid border-b-[#EFEDED]">
+              <div className=" flex items-center gap-x-2">
+                <Image src={avatar} alt="profile" className=" rounded-full w-6 h-6 object-cover" />
+                <h4 className=" text-cs-grey-dark font-medium text-sm">Olami Anula</h4>
+              </div>
+              <div className=" flex gap-x-2">
+                <Image src={raisedHand} alt="raisedHand" />
+                <MicrophoneSlash1 size="24" color="#5E29B7" />
+              </div>
+            </div>
+          </div>
+        </div> */}
+
+
+        {/* chats
+        <div className=" flex-6 ml-6 bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-4 pt-5">
+
+
+          <div className=" flex flex-col justify-between h-full">
+
+            <div>
+              <div className=" flex justify-between items-center">
+                <h3 className=" text-cs-grey-dark font-medium text-2xl">Chat</h3>
+                <Image src={closeIconPurple} alt="profile" />
+              </div>
+
+              <div className=" flex py-3 gap-x-1">
+                <Image src={avatar} alt="profile" className=" rounded-full w-6 h-6 object-cover" />
+                <div>
+                  <div className=" flex items-center gap-x-2 mt-[3px]">
+                    <h4 className=" text-cs-grey-dark font-medium text-sm">Olami Anula</h4>
+                    <div className=" w-[4px] h-[5px] bg-[#333333] rounded-full"></div>
+                    <h6 className=" text-cs-grey-500 text-[9px] font-normal">57min ago</h6>
+                  </div>
+                  <h5 className=" text-xs font-normal text-cs-grey-800">Can I get a certification?</h5>
+                </div>
+              </div>
+
+              <div className=" flex py-3 gap-x-1">
+                <Image src={avatar} alt="profile" className=" rounded-full w-6 h-6 object-cover" />
+                <div>
+                  <div className=" flex items-center gap-x-2 mt-[3px]">
+                    <h4 className=" text-cs-grey-dark font-medium text-sm">Olami Anula</h4>
+                    <div className=" w-[4px] h-[5px] bg-[#333333] rounded-full"></div>
+                    <h6 className=" text-cs-grey-500 text-[9px] font-normal">57min ago</h6>
+                  </div>
+                  <h5 className=" text-xs font-normal text-cs-grey-800">Can I get a certification?</h5>
+                </div>
+              </div>
+
+              <div className=" flex py-3 gap-x-1">
+                <Image src={avatar} alt="profile" className=" rounded-full w-6 h-6 object-cover" />
+                <div>
+                  <div className=" flex items-center gap-x-2 mt-[3px]">
+                    <h4 className=" text-cs-grey-dark font-medium text-sm">Olami Anula</h4>
+                    <div className=" w-[4px] h-[5px] bg-[#333333] rounded-full"></div>
+                    <h6 className=" text-cs-grey-500 text-[9px] font-normal">57min ago</h6>
+                  </div>
+                  <h5 className=" text-xs font-normal text-cs-grey-800">Can I get a certification?</h5>
+                </div>
+              </div>
+
+              <div className=" py-3">
+                <div className=" flex justify-end gap-x-1 items-center">
+                  <h4 className=" text-cs-grey-dark font-medium text-sm">Olami Anula</h4>
+                  <Image src={avatar} alt="profile" className=" rounded-full w-6 h-6 object-cover" />
+                </div>
+                <h5 className=" text-xs font-normal text-cs-grey-800 text-right">Can I get a certification?</h5>
+              </div>
+            </div>
+
+            <div className=" flex gap-x-2 border-solid border-t-[1px] border-cs-grey-55 py-4">
+              <input type="text" name="" id="" className=" w-full border border-cs-grey-55 h-12 rounded-[10px] outline-none px-4 placeholder:text-sm placeholder:font-normal placeholder:text-cs-grey-dark" placeholder="Hello Everyone 👋" />
+              <div className="text-center cursor-pointer">
+                <div className="p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto">
+                  <EmojiNormal size="24" color="#5E29B7" className="mx-auto" />
+                </div>
+              </div>
+              <div className="text-center cursor-pointer">
+                <div className="p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto">
+                  <Send size="24" color="#5E29B7" className="mx-auto" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div> */}
+
+        {/* <div className=" flex-6 ml-6 bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-4 pt-5">
+          <div className=" flex justify-between items-center">
+            <h3 className=" text-cs-grey-dark font-medium text-2xl">Conference Info</h3>
+            <Image src={closeIconPurple} alt="profile" />
+          </div>
+          <div className=" relative mt-7 mb-5">
+            <h3 className=" text-cs-grey-dark font-medium text-xl">[Meeting Name]</h3>
+            <p className=" text-sm text-cs-black-200 font-normal mb-4 mt-6">Invite others to join by copying the meting link and sharing it: </p>
+          </div>
+          <div className=" relative mt-7 mb-5">
+            <input type="text" name="" id="" className=" w-full border border-[#F1F1F1] h-12 rounded-[10px] outline-none px-4 placeholder:text-sm placeholder:font-normal placeholder:text-cs-black-200" placeholder="xap-ert-olik" />
+            <Copy size="20" color="#5E29B7" className=" absolute top-[14px] right-[14px]" />
+          </div>
+          <button className="flex items-center text-cs-purple-650 font-bold py-5 px-4 border border-cs-purple-650 rounded-lg max-h-[52px]"><Add size="22" color="#5E29B7" /> Add participants</button>
+
+        </div> */}
+
+      </div>
+    </div>
+  )
+}
+
+
