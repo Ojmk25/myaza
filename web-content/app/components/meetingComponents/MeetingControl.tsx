@@ -2,13 +2,15 @@
 import { Coffee, EmojiHappy, InfoCircle, Messages1, Microphone, MicrophoneSlash1, Monitor, MoreCircle, ProfileAdd, RecordCircle, Setting2, Video, VideoSlash } from "iconsax-react";
 import { useEffect, useRef, useState } from "react";
 import DateTimeDisplay from "../../utils/getDate";
-import { useLocalVideo, useToggleLocalMute } from "amazon-chime-sdk-component-library-react";
+import { useContentShareControls, useContentShareState, useLocalVideo, useToggleLocalMute } from "amazon-chime-sdk-component-library-react";
 
 export default function MeetingControl({ bgColor, onOpen }: { bgColor: boolean, onOpen: () => void }) {
   const currentTimeRef = useRef<HTMLDivElement>(null);
   const [changeBg, setChangeBg] = useState(true)
   const { muted, toggleMute } = useToggleLocalMute();
   const { isVideoEnabled, toggleVideo } = useLocalVideo();
+  const { toggleContentShare } = useContentShareControls();
+  const { isLocalUserSharing } = useContentShareState();
 
   useEffect(() => {
     const updateCurrentTime = () => {
@@ -31,7 +33,7 @@ export default function MeetingControl({ bgColor, onOpen }: { bgColor: boolean, 
     };
   }, []);
 
-  console.log(muted);
+  console.log(isLocalUserSharing);
 
   return (
     <div className="flex justify-between items-center py-4">
@@ -67,9 +69,9 @@ export default function MeetingControl({ bgColor, onOpen }: { bgColor: boolean, 
             <h6 className=" text-cs-grey-100 font-medium text-xs">Video</h6>
           </div>
 
-          <div className="text-center cursor-pointer" onClick={onOpen}>
-            <div className="p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto">
-              <Monitor size="24" color="#5E29B7" className="mx-auto" />
+          <div className="text-center cursor-pointer" onClick={() => toggleContentShare()}>
+            <div className={`p-3 ${isLocalUserSharing ? "bg-cs-purple-650" : "bg-[#E1C6FF4D]"} rounded-md max-w-12 mx-auto`}>
+              <Monitor size="24" color={isLocalUserSharing ? "#FAFAFA" : "#5E29B7"} className="mx-auto" />
             </div>
             <h6 className=" text-cs-grey-100 font-medium text-xs">Share</h6>
           </div>

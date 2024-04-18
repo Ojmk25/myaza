@@ -8,13 +8,11 @@ import { useEffect } from "react";
 
 
 
+
 export const RemoteAttendeeCard = ({ name, attendeeId, videoTildId, nameID }: { name: string | undefined, attendeeId: any, videoTildId: number, nameID: string }) => {
   const { isVideoEnabled } = useLocalVideo();
   const { tiles, tileIdToAttendeeId, attendeeIdToTileId, size } = useRemoteVideoTileState();
   const { videoEnabled, sharingContent, muted } = useAttendeeStatus(nameID);
-  // console.log(isVideoEnabled, videoEnabled, attendeeId);
-  // console.log(tiles, tileIdToAttendeeId, attendeeIdToTileId, size);
-  console.log(videoEnabled, sharingContent, muted);
 
 
   useEffect(() => {

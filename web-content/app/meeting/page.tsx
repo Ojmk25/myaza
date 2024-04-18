@@ -301,7 +301,7 @@
 // }
 
 'use client'
-import { LocalVideo, RemoteVideo, useAttendeeStatus, useLocalVideo, useMeetingManager, useRemoteVideoTileState, useRosterState, useToggleLocalMute, VideoTile, VideoTileGrid } from "amazon-chime-sdk-component-library-react";
+import { ContentShare, LocalVideo, RemoteVideo, useAttendeeStatus, useContentShareControls, useContentShareState, useLocalVideo, useMeetingManager, useRemoteVideoTileState, useRosterState, useToggleLocalMute, VideoTile, VideoTileGrid } from "amazon-chime-sdk-component-library-react";
 import { MeetingSessionConfiguration, VideoTileState } from "amazon-chime-sdk-js";
 import MeetingSection from "../components/meetingComponents/MeetingSection";
 import MeetingControl from "../components/meetingComponents/MeetingControl";
@@ -318,6 +318,8 @@ export default function Meeting() {
   const { tiles, tileIdToAttendeeId, attendeeIdToTileId, size } = useRemoteVideoTileState();
   const { muted, toggleMute } = useToggleLocalMute();
   const { isVideoEnabled, toggleVideo } = useLocalVideo();
+
+
 
 
   const joinMeeting = async () => {
@@ -355,7 +357,6 @@ export default function Meeting() {
 
     // Start the `MeetingSession` to join the meeting
     await meetingManager.start();
-
 
   };
   const handleShowModal = (type: string) => {
@@ -430,7 +431,7 @@ export default function Meeting() {
         <div className="flex justify-between items-center py-4">
           <div className="flex gap-x-1 items-center">
             <h1 className=" text-3xl text-cs-purple-650 font-bold">CecureStream</h1>
-            <div className=" text-xs text-cs-grey-700 font-medium border-[0.5px] border-cs-grey-700 py-[2px] px-2 rounded-lg">Beta</div>
+            <div className=" text-xs text-cs-grey-700 font-medium border-[0.5px] border-solid border-cs-grey-700 py-[2px] px-2 rounded-lg">Beta</div>
           </div>
           <div className="flex justify-between gap-x-4 items-center">
             <div className=" flex bg-[#E1C6FF4D] py-[10px] px-[10px] gap-x-[10px] rounded-lg items-center cursor-pointer">
@@ -451,9 +452,8 @@ export default function Meeting() {
         {/* <MyMeetingRoster /> */}
 
         <button onClick={joinMeeting}>Join</button>
+
         <MeetingSection />
-
-
         <MeetingControl bgColor onOpen={() => handleShowModal("shareScreen")} />
         {showModal === "shareScreen" && <ShareScreen onClose={handleCloseModal} />}
         {showModal === "settings" && <Settings onClose={handleCloseModal} />}

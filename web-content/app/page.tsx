@@ -332,7 +332,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row gap-y-6 justify-between mt-4 md:mt-8 relative">
             <div className={` ${loggedIn ? 'flex' : 'hidden'} relative group`}>
               <button className="w-full h-12 md:w-[200px] text-cs-grey-50 bg-cs-purple-650 rounded-md py-2 px-4 font-bold max-h-[52px]">Create New Session</button>
-              <div className="w-full absolute invisible group-hover:visible top-14 shadow-2xl rounded-lg z-10 bg-white">
+              <div className="w-full absolute hidden group-hover:block top-14 shadow-2xl rounded-lg z-10 bg-white">
                 <div className=" flex py-3 md:py-4 px-3 gap-x-2 hover:bg-cs-grey-55 rounded-t-lg">
                   <Add size={20} />
                   <button className=" text-cs-grey-dark" onClick={() => navigate.push("/preview")}>Instant meeting</button>
