@@ -89,17 +89,17 @@ export default function MeetingSection() {
   // }, [audioVideo]);
 
   // Event handler for sending messages
-  const handleSendMessage = (event: any) => {
+  // const handleSendMessage = (event: any) => {
 
-    if (event.key === 'Enter') {
-      const messageInput = event.target.value.trim();
-      if (messageInput !== '') {
-        sendMessage(messageInput);
-        event.target.value = ''; // Clear input field after sending
-      }
-    }
-  };
-  console.log(chatMessages, audioVideo);
+  //   if (event.key === 'Enter') {
+  //     const messageInput = event.target.value.trim();
+  //     if (messageInput !== '') {
+  //       sendMessage(messageInput);
+  //       event.target.value = ''; // Clear input field after sending
+  //     }
+  //   }
+  // };
+  // console.log(chatMessages, audioVideo);
 
 
   return (
