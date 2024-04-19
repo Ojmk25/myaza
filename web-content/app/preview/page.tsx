@@ -10,7 +10,7 @@ import Link from "next/link";
 import { SubmitButton } from "../components/auth/SubmitButton";
 import { ValidateEmail, ValidatePassword } from "../utils/Validators";
 import { DeviceLabels, useLocalVideo, useMeetingManager } from "amazon-chime-sdk-component-library-react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 // import { Meeting } from "amazon-chime-sdk-component-library-react";
 
 
@@ -20,7 +20,7 @@ export default function Preview() {
   const currentDateRef = useRef<HTMLDivElement>(null);
   const [errorColour, setErrorColour] = useState(false);
   const videRef = useRef<HTMLVideoElement>(null)
-  const navigate = useRouter()
+  // const navigate = useRouter()
 
 
   // States to track video and audio status
@@ -232,7 +232,7 @@ export default function Preview() {
                 <p className=" text-cs-grey-dark font-medium">Signed in as Henry Olakunle</p>
               </div>
               {/* <SubmitButton text="Join meeting" action={videoEnabled ? stopVideo : startVideo} activate={true} /> */}
-              <SubmitButton text="Join meeting" action={() => navigate.push("/meeting")} activate={true} />
+              {/* <SubmitButton text="Join meeting" action={() => navigate.push("/meeting")} activate={true} />*/}
               <p className={`${loggedIn ? 'hidden' : 'block'} text-center my-6 text-base font-semibold text-cs-grey-dark`}>Already have an account? <Link href={'/auth/login'} className=" text-cs-purple-650">Sign in</Link></p>
             </form>
 
