@@ -15,18 +15,18 @@ export const RemoteAttendeeCard = ({ name, attendeeId, videoTildId, nameID }: { 
   const { videoEnabled, sharingContent, muted } = useAttendeeStatus(nameID);
 
 
-  useEffect(() => {
-    console.log(attendeeIdToTileId.hasOwnProperty(nameID));
-    if (attendeeIdToTileId.hasOwnProperty(nameID)) {
-      console.log(nameID, 'is active the moment')
-    } else {
-      console.log('this remote is not active at the moment')
-    }
-    // console.log('tiles changed');
-    // console.log(tiles.length);
-    // console.log(nameID);
+  // useEffect(() => {
+  //   console.log(attendeeIdToTileId.hasOwnProperty(nameID));
+  //   if (attendeeIdToTileId.hasOwnProperty(nameID)) {
+  //     console.log(nameID, 'is active the moment')
+  //   } else {
+  //     console.log('this remote is not active at the moment')
+  //   }
+  //   // console.log('tiles changed');
+  //   // console.log(tiles.length);
+  //   // console.log(nameID);
 
-  }, [tileIdToAttendeeId, tiles.length, size])
+  // }, [tileIdToAttendeeId, tiles.length, size])
 
 
 

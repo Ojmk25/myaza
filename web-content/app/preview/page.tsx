@@ -63,7 +63,7 @@ export default function Preview() {
 
 
     init()
-  }, [])
+  }, [deviceController])
 
   useEffect(() => {
     const updateCurrentTime = () => {
