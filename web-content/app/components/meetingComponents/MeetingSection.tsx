@@ -59,27 +59,27 @@ export default function MeetingSection() {
 
   // new TextEncoder().encode(message)
   // Function to handle incoming messages
-  const handleIncomingMessage = (data: DataMessage) => {
-    const messagePayload = JSON.parse(data.text());
+  // const handleIncomingMessage = (data: DataMessage) => {
+  //   const messagePayload = JSON.parse(data.text());
 
-    setChatMessages((prevMessages: any[]) => [...prevMessages, messagePayload]);
+  //   setChatMessages((prevMessages: any[]) => [...prevMessages, messagePayload]);
 
-  };
+  // };
 
-  const dataMess: DataMessage = {
-    timestampMs: Number(new Date()), // Replace with sender's name or identifier
-    topic: 'chat',
-    data: new TextEncoder().encode("Text message"),
-    senderAttendeeId: 'hhdhd',
-    senderExternalUserId: 'bdbdbd',
-  }
-  const checkMessages = () => {
-    // console.log(JSON.parse(Buffer.from(dataMess.data).toString('utf8')));
+  // const dataMess: DataMessage = {
+  //   timestampMs: Number(new Date()), // Replace with sender's name or identifier
+  //   topic: 'chat',
+  //   data: new TextEncoder().encode("Text message"),
+  //   senderAttendeeId: 'hhdhd',
+  //   senderExternalUserId: 'bdbdbd',
+  // }
+  // const checkMessages = () => {
+  //   // console.log(JSON.parse(Buffer.from(dataMess.data).toString('utf8')));
 
-    audioVideo?.realtimeSubscribeToReceiveDataMessage('chat', () => handleIncomingMessage(dataMess))
-    console.log(dataMess);
+  //   audioVideo?.realtimeSubscribeToReceiveDataMessage('chat', () => handleIncomingMessage(dataMess))
+  //   console.log(dataMess);
 
-  }
+  // }
   // Set up WebSocket for real-time messaging
   // audioVideo?.realtimeSubscribeToReceiveDataMessage('chat', handleIncomingMessage);
 
@@ -132,12 +132,6 @@ export default function MeetingSection() {
           <div className=" flex justify-between items-center">
             <h3 className=" text-cs-grey-dark font-medium text-2xl">Participants <span className=" text-cs-grey-100 font-medium text-base">({attendees.length})</span></h3>
             <Image src={closeIconPurple} alt="close-icon" />
-            <input
-              type="text"
-              placeholder="Type your message here..."
-              onKeyDown={handleSendMessage}
-            />
-            <button onClick={checkMessages}>check message</button>
           </div>
           <div className=" relative mt-7 mb-5">
             <input type="text" name="" id="" className=" w-full border border-cs-grey-300 h-12 rounded-[10px] outline-none pl-12 placeholder:text-sm placeholder:font-normal" placeholder="Search for participants" />
