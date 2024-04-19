@@ -53,27 +53,8 @@ export default function MeetingSection() {
 
   };
 
-  const sendMessage = (message: any) => {
-
-    // const messagePayload = {
-    //   sender: 'You', // Replace with sender's name or identifier
-    //   content: message,
-    //   timestamp: new Date().toLocaleTimeString()
-    // };
-    const dataMess: DataMessage = {
-      timestampMs: Number(new Date().toLocaleTimeString()), // Replace with sender's name or identifier
-      topic: 'chat',
-      data: new TextEncoder().encode(message),
-      senderAttendeeId: 'hhdhd',
-      senderExternalUserId: 'bdbdbd',
-    }
-
-    audioVideo?.realtimeSendDataMessage('chat', JSON.stringify(dataMess));
-  };
-
   // useEffect(() => {
   //   if (!audioVideo) return;
-
   // Function to send a message
 
   // new TextEncoder().encode(message)
