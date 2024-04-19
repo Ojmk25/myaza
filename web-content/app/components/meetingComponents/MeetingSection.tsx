@@ -33,12 +33,12 @@ export default function MeetingSection() {
   const attendeeItems = attendees.map((attendee, i) => {
     const tilerId = attendeeIdToTileId[attendee.chimeAttendeeId]
 
-    const { id, name } = attendee;
+    const { name } = attendee;
     // return <AttendeeCard key={id} attendeeId={id} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} />;
     if (i === 0) {
-      return <LocalAttendeeCard key={id} attendeeId={id} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} />
+      return <LocalAttendeeCard key={attendee.chimeAttendeeId} attendeeId={attendee.chimeAttendeeId} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} />
     } else {
-      return <RemoteAttendeeCard key={id} attendeeId={id} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} />
+      return <RemoteAttendeeCard key={attendee.chimeAttendeeId} attendeeId={attendee.chimeAttendeeId} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} />
     }
   });
 
