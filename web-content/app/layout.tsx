@@ -42,7 +42,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${metropolis_Font.variable} font-sans`}>
+        <MeetingProviderComponent>
           {children}
+        </MeetingProviderComponent>
       </body>
     </html>
   );

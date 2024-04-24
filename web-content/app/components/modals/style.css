@@ -1,0 +1,24 @@
+#calendarStyle {
+  background-color: transparent;
+  width: 100%;
+}
+
+#calendarStyle .react-datetime-picker .react-datetime-picker__wrapper {
+  border-radius: 10px;
+  padding-left: 13px;
+  padding-right: 9px;
+  border-color: #9F9F9F;
+}
+
+#calendarStyle .react-datetime-picker .react-datetime-picker__wrapper .react-datetime-picker__inputGroup input {
+  outline: none;
+}
+
+#calendarStyle select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  text-indent: 1px;
+  text-overflow: '';
+  outline: none;
+}
