@@ -28,21 +28,21 @@ const Chat = ({ attendeeIDProp, sideViewFunc }: { attendeeIDProp: string | null 
       const sender = dataMessage.senderAttendeeId === attendeeIDProp ? 'Local User' : 'Remote Attendee';
       setMessages(prevMessages => [...prevMessages, { sender, attendeeId: dataMessage.senderAttendeeId, message, timeStamp: new Date }]);
 
-      setAppState(
-        prevState => ({
-          ...prevState,
-          sessionState: {
-            ...prevState.sessionState,
-            incallMessages: [...prevState.sessionState.incallMessages, { sender, attendeeId: dataMessage.senderAttendeeId, message }],
-          }
-        }));
+      // setAppState(
+      //   prevState => ({
+      //     ...prevState,
+      //     sessionState: {
+      //       ...prevState.sessionState,
+      //       incallMessages: [...prevState.sessionState.incallMessages, { sender, attendeeId: dataMessage.senderAttendeeId, message }],
+      //     }
+      //   }));
     });
 
 
     return () => {
       audioVideo.realtimeUnsubscribeFromReceiveDataMessage('chat');
     };
-  }, [audioVideo]);
+  }, [audioVideo, attendeeIDProp]);
 
 
   const sendMessage = () => {
@@ -53,14 +53,14 @@ const Chat = ({ attendeeIDProp, sideViewFunc }: { attendeeIDProp: string | null 
     setMessages(prevMessages => [...prevMessages, { sender: 'Local User', attendeeId: attendeeIDProp || '', message: inputMessage, timeStamp: new Date }]);
     setInputMessage('');
 
-    setAppState(
-      prevState => ({
-        ...prevState,
-        sessionState: {
-          ...prevState.sessionState,
-          incallMessages: [...prevState.sessionState.incallMessages, { sender: 'Local User', attendeeId: attendeeIDProp || '', message: inputMessage }],
-        }
-      }));
+    // setAppState(
+    //   prevState => ({
+    //     ...prevState,
+    //     sessionState: {
+    //       ...prevState.sessionState,
+    //       incallMessages: [...prevState.sessionState.incallMessages, { sender: 'Local User', attendeeId: attendeeIDProp || '', message: inputMessage }],
+    //     }
+    //   }));
 
   };
 
@@ -90,7 +90,7 @@ const Chat = ({ attendeeIDProp, sideViewFunc }: { attendeeIDProp: string | null 
 
           <div className='flex flex-col overflow-y-scroll h-full no-scrollbar' ref={chatScroll}>
             {messages.map((message, index) => (
-              <div className=' align-bottom'>{message.sender === 'Local User' ? (
+              <div className=' align-bottom' key={index}>{message.sender === 'Local User' ? (
                 <div className=" py-1">
                   <div className=" flex justify-end gap-x-1 items-center">
                     <h4 className=" text-cs-grey-dark font-medium text-xs">{message.sender}</h4>
@@ -99,7 +99,7 @@ const Chat = ({ attendeeIDProp, sideViewFunc }: { attendeeIDProp: string | null 
                   <h5 className=" text-xs font-normal text-cs-grey-800 text-right">{message.message}</h5>
                 </div>
               ) : (
-                <div className=" flex py-1 gap-x-1">
+                <div className=" flex py-1 gap-x-1" key={index}>
                   <Image src={avatar} alt="profile" className=" rounded-full w-5 h-5 object-cover" />
                   <div>
                     <div className=" flex items-center gap-x-2 mt-[3px]">
