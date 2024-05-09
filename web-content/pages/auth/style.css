@@ -1,0 +1,16 @@
+.pincode-input-container .pincode-input-text {
+  width: 40px !important;
+  height: 59px;
+}
+
+@media only screen and (min-width: 450px) {
+  .pincode-input-container .pincode-input-text {
+    width: 50px !important;
+  }
+}
+
+@media only screen and (min-width: 600px) {
+  .pincode-input-container .pincode-input-text {
+    width: 70px !important;
+  }
+}

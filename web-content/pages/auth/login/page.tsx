@@ -1,0 +1,278 @@
+"use client"
+import Link from "next/link";
+import Image from "next/image";
+
+import { AuthInput } from "@/app/components/auth/AuthInput";
+import { SubmitButton } from "@/app/components/auth/SubmitButton";
+
+import appleIcon from "@/public/assets/images/appleIcon.svg"
+import googleIcon from "@/public/assets/images/googleIcon.svg"
+import { useState } from "react";
+import { ValidateEmail, ValidatePassword } from "@/app/utils/Validators";
+
+export default function Login() {
+
+  const [authData, setAuthData] = useState({
+    email: '',
+    password: ''
+  });
+  const [errMessage, setErrMessage] = useState({
+    email: '',
+    password: '',
+  })
+  const [openModal, setOpenModal] = useState(false)
+  const [successRes, setSuccessRes] = useState("")
+  const [errorColour, setErrorColour] = useState(false)
+
+  const handleInput = (input: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = input.target;
+    const addColour = (elem: React.ChangeEvent<HTMLInputElement>) => {
+      elem.target.classList.add('border-cs-error-500');
+      elem.target.classList.add('placeholder:text-cs-error-500')
+      elem.target.classList.remove('bg-cs-grey-55')
+      setErrMessage(prevState => ({
+        ...prevState,
+        [name]: `Invalid ${name}`
+      }));
+    }
+    const removeColour = (elem: React.ChangeEvent<HTMLInputElement>) => {
+      elem.target.classList.remove('border-cs-error-500');
+      elem.target.classList.remove('placeholder:text-cs-error-500')
+      elem.target.classList.add('bg-cs-grey-55')
+      setErrMessage(prevState => ({
+        ...prevState,
+        [name]: ''
+      }));
+    }
+    if (name === "email") {
+      if ((!ValidateEmail(value))) {
+        addColour(input)
+      } else {
+        removeColour(input)
+      }
+    } else if (name === "password") {
+      if ((!ValidatePassword(value))) {
+        addColour(input)
+      } else {
+        removeColour(input)
+      }
+    }
+
+    if (input.target.value.length === 0) {
+      setErrMessage(prevState => ({
+        ...prevState,
+        [name]: `Enter your ${name}`
+      }));
+    } else {
+      setAuthData(prevState => ({
+        ...prevState,
+        [name]: value
+      }));
+    }
+  }
+  return (
+    <>
+      <h3 className=" text-2xl font-semibold text-cs-grey-dark mb-1">Sign in</h3>
+      <p className=" text-cs-grey-100 text-sm">Welcome back, sign in to your account</p>
+      <form>
+        <AuthInput label="Email" action={handleInput} errorMessage={errMessage.email} inputName="email" inputType="email" placeHolder="example@mail.com" />
+        <AuthInput label="Password" action={handleInput} errorMessage={errMessage.password} inputName="password" inputType="password" placeHolder="password" />
+        <div className="text-right">
+          <Link href={"/auth/forgot-password"} className=" text-cs-purple-650 text-sm">Forgot password</Link>
+        </div>
+        <SubmitButton text="Sign in" action={() => { }} activate={true} />
+      </form>
+      <div className="grid my-6 grid-cols-7 items-center">
+        <div className=" h-[1px] bg-cs-grey-55 col-start-1 col-end-4"></div>
+        <span className=" text-center text-cs-grey-400 text-sm">or</span>
+        <div className=" h-[1px] bg-cs-grey-55 col-start-5 col-end-8"></div>
+      </div>
+        <div className="border border-solid border-cs-grey-150 rounded-lg flex items-center justify-center w-full py-[10px] text-cs-grey-dark font-medium"><Image src={googleIcon} alt="google" className=" mr-2"/>  Sign in with Google</div>
+    </>
+  )
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// "use client"
+// import React from "react";
+// import { render } from "react-dom"; // <- This is the correct import // statement for React version 17
+// import {
+//   useMeetingManager,
+//   useLocalVideo,
+//   VideoTileGrid,
+//   DeviceLabels,
+//   ControlBar,
+//   AudioInputControl,
+//   VideoInputControl,
+//   AudioOutputControl,
+//   ControlBarButton,
+//   Phone,
+// } from "amazon-chime-sdk-component-library-react";
+// import { MeetingSessionConfiguration } from "amazon-chime-sdk-js";
+// // import "@cloudscape-design/global-styles/index.css";
+// // import Container from "@cloudscape-design/components/container";
+// // import Header from "@cloudscape-design/components/header";
+// // import SpaceBetween from "@cloudscape-design/components/space-between";
+// // import Button from "@cloudscape-design/components/button";
+
+// var url = window.location.href.split("apps")[0];
+// var apiUrl = url + "meetingInfo"; // assumes meetingInfo is using the same API GW
+
+// console.log(apiUrl);
+
+// const Login = () => {
+//   const meetingManager = useMeetingManager();
+//   const { setIsVideoEnabled, isVideoEnabled, toggleVideo } = useLocalVideo();
+
+//   // async function getMeetingInfo(meetingId) {
+//   //   const url = apiUrl + "?m=" + meetingId;
+//   //   console.log("Fetching", url);
+//   //   const response = await fetch(url);
+//   //   return await response.json();
+//   // }
+
+//   const joinMeeting = async () => {
+//     try {
+//       // Fetch the meeting and attendee data from your server application
+//       const response = await fetch('https://dibxzaa24vvschnzknjn7m65pe0dvnlh.lambda-url.us-east-1.on.aws/', {
+//         mode: 'no-cors',
+//       });
+
+//       const data = await response.json();
+
+//       // Fetch the meeting and attendee data
+//       // const data = await getMeetingInfo("testMeeting");
+//       const meetingId = data.MeetingId;
+//       const attendeeId = data.AttendeeId;
+//       const externalMeetingId = data.ExternalMeetingId;
+
+//       render(
+//         <p>Meeting ID: {meetingId}</p>,
+//         document.getElementById("meetingId")
+//       );
+//       render(
+//         <p>Attendee ID: {attendeeId}</p>,
+//         document.getElementById("attendeeId")
+//       );
+//       render(
+//         <p>External Meeting ID: {externalMeetingId}</p>,
+//         document.getElementById("externalMeetingId")
+//       );
+
+//       const meetingSessionConfiguration = new MeetingSessionConfiguration(data.Meeting, data.Attendee);
+//       const options = {
+//         deviceLabels: DeviceLabels.AudioAndVideo,
+//       };
+//       meetingManager.invokeDeviceProvider(DeviceLabels.AudioAndVideo);
+//       // Use the join API to create a meeting session
+//       await meetingManager.join(meetingSessionConfiguration);
+
+//       // At this point you can let users setup their devices, or start the session immediately
+//       await meetingManager.start();
+      
+//       console.log("Meeting started");
+//     } catch (error) {
+//       console.error("An exception occurred:", error);
+//     }
+//   };
+
+//   const leaveMeeting = async () => {
+//     await meetingManager.leave();
+//   };
+
+//   const MeetingView = () => (
+//     <div>
+//       {/* <Container
+//         fitHeight
+//         header={
+//           <Header
+//             variant="h2"
+//             description="This is the second workshop App.js build"
+//           >
+//           Amazon Chime SDK React app
+//           </Header>
+//         }
+//       > */}
+//       <div>
+//         <button id="join" onClick={joinMeeting}>
+//           Join Meeting
+//         </button>
+//         {/* <SpaceBetween size="s"> */}
+//         <div id="externalMeetingId"></div>
+//         <div id="attendeeId"></div>
+//         <div id="meetingId"></div>
+//         {/* </SpaceBetween> */}
+//       </div>
+
+//       {/* </Container> */}
+//       {/* <Container>
+//         <div
+//           id="videoWindow"
+//           style={{
+//             marginTop: "0rem",
+//             height: "45rem",
+//             width: "60rem",
+//             display: "flex",
+//             top: "50%",
+//             flexDirection: "row",
+//             alignItems: "center",
+//             justifyContent: "center",
+//           }}
+//         > */}
+//       <div>
+//         <ControlBar layout="undocked-vertical" showLabels>
+//           <AudioInputControl />
+//           <AudioOutputControl />
+//           <VideoInputControl />
+//           <ControlBarButton
+//             icon={<Phone />}
+//             onClick={leaveMeeting}
+//             label="End"
+//           />
+//         </ControlBar>
+//       </div>
+//       <div id="video">
+//         <div
+//           className="gridVideo"
+//           style={{
+//             marginTop: "0rem",
+//             height: "40rem",
+//             width: "53rem",
+//             display: "flex",
+//             top: "50%",
+//             flexDirection: "column",
+//             alignItems: "center",
+//             justifyContent: "center",
+//             border: "solid 1px black",
+//           }}
+//         >
+//           <VideoTileGrid
+//             layout="standard"
+//             noRemoteVideoView="   ::: No remote video yet (send this URL to a friend, or open it in an another browser window to add a remote participant) :::"
+//             css="border: solid 5px red"
+//           />
+//         </div>
+//       </div>
+//     </div>
+//     // </div>
+//   );
+//   return MeetingView();
+// };
+// export default Login;

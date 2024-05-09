@@ -1,9 +1,150 @@
 import Image from "next/image";
 import { Inter } from "next/font/google";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/router";
+import { ValidateEmail, ValidatePassword } from "./utils/Validators";
+import DateTimeDisplay from "./utils/getDate";
+import heroImage from "@/public/assets/images/landingHero.svg"
+import avatar from "@/public/assets/images/avatar.png"
+import { Add, Calendar } from "iconsax-react";
+import { setInterval } from "timers";
+import ScheduleMeeting from "./components/modals/ScheduleMeeting";
+
+import 'react-datetime-picker/dist/DateTimePicker.css';
+import 'react-calendar/dist/Calendar.css';
+import 'react-clock/dist/Clock.css';
+
+import JoinMeeting from "./components/modals/JoinMeeting";
+import { useLocalVideo, useMeetingManager, LocalVideo, useAudioVideo, VideoTileGrid, DeviceLabels, AudioInputControl, ControlBar, AudioOutputControl, VideoInputControl, ControlBarButton, Phone, VideoTile } from "amazon-chime-sdk-component-library-react";
+import { MeetingSessionConfiguration, DefaultDeviceController, VideoSource, AudioVideoObserver } from "amazon-chime-sdk-js";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
+  const [loggedIn, setLoggedIn] = useState(true)
+  const currentTimeRef = useRef<HTMLDivElement>(null);
+  const currentDateRef = useRef<HTMLDivElement>(null);
+  const currentVideoRef = useRef(null);
+  const navigate = useRouter();
+  // const ctx = useContext(AppCtx);
+  const [authData, setAuthData] = useState({
+    email: '',
+    password: ''
+  });
+  const [errMessage, setErrMessage] = useState({
+    email: '',
+    password: '',
+    link: '',
+  })
+  const [openModal, setOpenModal] = useState(false)
+  const [successRes, setSuccessRes] = useState("")
+  const [errorColour, setErrorColour] = useState(false)
+  const [showModal, setShowModal] = useState("");
+
+  const videoRef = useRef(null);
+
+
+  const handleInput = (input: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = input.target;
+    const addColour = (elem: React.ChangeEvent<HTMLInputElement>) => {
+      elem.target.classList.add('border-cil-error-red');
+      elem.target.classList.add('placeholder:text-cil-error-red')
+      elem.target.classList.remove('bg-cil-slate-200')
+      setErrMessage(prevState => ({
+        ...prevState,
+        [name]: `Invalid ${name}`
+      }));
+    }
+    const removeColour = (elem: React.ChangeEvent<HTMLInputElement>) => {
+      elem.target.classList.remove('border-cil-error-red');
+      elem.target.classList.remove('placeholder:text-cil-error-red')
+      elem.target.classList.add('bg-cil-slate-200')
+      setErrMessage(prevState => ({
+        ...prevState,
+        [name]: ''
+      }));
+    }
+    if (name === "email") {
+      if ((!ValidateEmail(value))) {
+        addColour(input)
+      } else {
+        removeColour(input)
+      }
+    } else if (name === "password") {
+      if ((!ValidatePassword(value))) {
+        addColour(input)
+      } else {
+        removeColour(input)
+      }
+    } else if (name === "link") {
+      if ((!ValidateEmail(value))) {
+        setErrorColour(true)
+        setErrMessage(prevState => ({
+          ...prevState,
+          link: "Invalid meeting link",
+        }))
+
+      } else {
+        setErrorColour(false)
+        setErrMessage(prevState => ({
+          ...prevState,
+          link: "",
+        }))
+      }
+    }
+
+    if (input.target.value.length === 0) {
+      setErrMessage(prevState => ({
+        ...prevState,
+        [name]: `Enter your ${name}`
+      }));
+    } else {
+      setAuthData(prevState => ({
+        ...prevState,
+        [name]: value
+      }));
+    }
+  }
+
+  useEffect(() => {
+    const updateCurrentTime = () => {
+      const smallTime = document.getElementById("small-screen-time")
+      const smallDate = document.getElementById("small-screen-date")
+      const displayDate = DateTimeDisplay;
+      const { hours, minutes, ampm, day, dayOfWeek, month } = displayDate();
+      if (currentTimeRef.current !== null && currentDateRef.current !== null) {
+        currentTimeRef.current.textContent = `${hours < 10 ? ('0' + hours) : hours}:${minutes < 10 ? ('0' + minutes) : minutes} ${ampm}`;
+        currentDateRef.current.textContent = `${dayOfWeek} ${month}. ${day}`;
+      }
+      if (smallTime && smallDate) {
+        smallTime.innerHTML = `${hours < 10 ? ('0' + hours) : hours}:${minutes < 10 ? ('0' + minutes) : minutes} ${ampm}`;
+        smallDate.innerHTML = `${dayOfWeek} ${month}. ${day}`;
+      }
+    };
+
+    // Update the time initially
+    updateCurrentTime()
+
+    // Update the time every minute 
+    const intervalId = setInterval(updateCurrentTime, 60000);
+
+    // Clear the interval when the component unmounts
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+
+
+  const handleShowModal = (type: string) => {
+    setShowModal(type);
+    document.body.classList.add('overflow-hidden');
+  };
+
+  const handleCloseModal = () => {
+    setShowModal("");
+    document.body.classList.remove('overflow-hidden');
+  };
+
   return (
     <main className="md:pb-20 pt-6 md:pt-10">
       <div className="flex justify-between items-center px-6 md:px-20 pb-6 md:pb-7 shadow-1xl">
@@ -11,7 +152,7 @@ export default function Home() {
           <h1 className=" text-xl md:text-3xl text-cs-purple-650 font-bold">CecureStream</h1>
           <div className=" text-xs text-cs-grey-700 font-medium border-[0.5px] border-cs-grey-700 py-[2px] px-2 rounded-lg border-solid">Beta</div>
         </div>
-        {/* <div className={`${loggedIn ? 'md:flex hidden' : 'hidden'} justify-between gap-x-3 items-center `}>
+        <div className={`${loggedIn ? 'md:flex hidden' : 'hidden'} justify-between gap-x-3 items-center `}>
           <div className=" text-cs-grey-800 font-normal hidden md:block" ref={currentTimeRef}></div>
           <div className=" w-[1px] bg-cs-grey-200 h-[24px] hidden md:block"></div>
           <div className=" text-cs-grey-800 font-normal hidden md:block" ref={currentDateRef}></div>
@@ -63,9 +204,11 @@ export default function Home() {
         </div>
         <div className="basis-full my-4 md:my-0">
           <Image src={heroImage} alt="hero" height={490} width={600} className="md:w-[600px] md:h-[490px]" />
-        </div> */}
+        </div>
       </div>
 
+      {showModal === "schedule" && <ScheduleMeeting onClose={handleCloseModal} />}
+      {showModal === "joinMeeting" && <JoinMeeting onClose={handleCloseModal} />}
     </main>
   );
 }
