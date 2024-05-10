@@ -2,7 +2,7 @@ import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import localFont from 'next/font/local'
 
-import { MeetingProviderComponent } from "./context/StoreContext";
+import { MeetingProviderComponent } from "../context/StoreContext";
 
 const metropolis_Font = localFont({
   src: [

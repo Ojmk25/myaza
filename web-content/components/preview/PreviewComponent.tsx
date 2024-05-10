@@ -2,18 +2,18 @@
 import Image from "next/image";
 import { ConsoleLogger, DefaultDeviceController } from "amazon-chime-sdk-js"
 import { useContext, useEffect, useRef, useState } from "react";
-import DateTimeDisplay from "@/pages/utils/getDate";
+import DateTimeDisplay from "@/utils/getDate";
 import avatar from "@/public/assets/images/avatar.png"
 import { Add, Calendar, MicrophoneSlash1, MoreCircle, VideoSlash, Microphone, Video } from "iconsax-react";
-import { AuthInput } from "@/pages/components/auth/AuthInput";
+import { AuthInput } from "@/components/auth/AuthInput";
 import Link from "next/link";
-import { SubmitButton } from "@/pages/components/auth/SubmitButton";
-import { ValidateEmail, ValidatePassword } from "@/pages/utils/Validators";
+import { SubmitButton } from "@/components/auth/SubmitButton";
+import { ValidateEmail, ValidatePassword } from "@/utils/Validators";
 import { useToggleLocalMute } from "amazon-chime-sdk-component-library-react";
 import { useRouter } from "next/navigation";
-import { AppCtx } from "@/pages/context/StoreContext";
-import { ToggleVideoButton } from "@/pages/components/meetingComponents/meetingControlButtons/ToggleVideo";
-import { ToggleAudio } from "@/pages/components/meetingComponents/meetingControlButtons/ToggleAudio";
+import { AppCtx } from "@/context/StoreContext";
+import { ToggleVideoButton } from "@/components/meetingComponents/meetingControlButtons/ToggleVideo";
+import { ToggleAudio } from "@/components/meetingComponents/meetingControlButtons/ToggleAudio";
 import AudioLevelIndicator from "./AudioLevelIndicator";
 
 

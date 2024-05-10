@@ -20,8 +20,8 @@ function generateCustomId() {
   return `${generateThreeLetters()}-${generateThreeLetters()}-${generateFourLetters()}`;
 }
 
-import { ValidateEmail, ValidatePassword } from '@/pages/utils/Validators';
-import copyTextToClipboard from '@/pages/utils/clipBoard';
+import { ValidateEmail, ValidatePassword } from '@/utils/Validators';
+import copyTextToClipboard from '@/utils/clipBoard';
 
 type ValuePiece = Date | null;
 

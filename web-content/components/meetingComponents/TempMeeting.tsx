@@ -1,12 +1,12 @@
 'use client'
 import { ContentShare, LocalVideo, RemoteVideo, useAttendeeStatus, useContentShareControls, useContentShareState, useLocalVideo, useMeetingManager, useRemoteVideoTileState, useRosterState, useToggleLocalMute, VideoTile, VideoTileGrid } from "amazon-chime-sdk-component-library-react";
 import { MeetingSessionConfiguration, VideoTileState } from "amazon-chime-sdk-js";
-import MeetingSection from '@/pages/components/meetingComponents/MeetingSection';
-import MeetingControl from "@/pages/components/meetingComponents/MeetingControl";
+import MeetingSection from '@/components/meetingComponents/MeetingSection';
+import MeetingControl from "@/components/meetingComponents/MeetingControl";
 import { useState } from "react";
 import { ArrowLeft, Coffee, InfoCircle, Setting2 } from "iconsax-react";
-import ShareScreen from "@/pages/components/modals/ShareScreen";
-import Settings from "@/pages/components/modals/Settings";
+import ShareScreen from "@/components/modals/ShareScreen";
+import Settings from "@/components/modals/Settings";
 
 export default function TempMeeting() {
   const meetingManager = useMeetingManager();

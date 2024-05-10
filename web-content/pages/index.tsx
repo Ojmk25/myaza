@@ -2,19 +2,19 @@ import Image from "next/image";
 import { Inter } from "next/font/google";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
-import { ValidateEmail, ValidatePassword } from "./utils/Validators";
-import DateTimeDisplay from "./utils/getDate";
+import { ValidateEmail, ValidatePassword } from "../utils/Validators";
+import DateTimeDisplay from "../utils/getDate";
 import heroImage from "@/public/assets/images/landingHero.svg"
 import avatar from "@/public/assets/images/avatar.png"
 import { Add, Calendar } from "iconsax-react";
 import { setInterval } from "timers";
-import ScheduleMeeting from "./components/modals/ScheduleMeeting";
+import ScheduleMeeting from "../components/modals/ScheduleMeeting";
 
 import 'react-datetime-picker/dist/DateTimePicker.css';
 import 'react-calendar/dist/Calendar.css';
 import 'react-clock/dist/Clock.css';
 
-import JoinMeeting from "./components/modals/JoinMeeting";
+import JoinMeeting from "../components/modals/JoinMeeting";
 import { useLocalVideo, useMeetingManager, LocalVideo, useAudioVideo, VideoTileGrid, DeviceLabels, AudioInputControl, ControlBar, AudioOutputControl, VideoInputControl, ControlBarButton, Phone, VideoTile } from "amazon-chime-sdk-component-library-react";
 import { MeetingSessionConfiguration, DefaultDeviceController, VideoSource, AudioVideoObserver } from "amazon-chime-sdk-js";
 

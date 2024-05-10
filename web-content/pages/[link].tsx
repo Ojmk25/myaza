@@ -1,8 +1,8 @@
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router"
-import TempMeeting from "./components/meetingComponents/TempMeeting";
+import TempMeeting from "../components/meetingComponents/TempMeeting";
 
-const PreviewComponent = dynamic(() => import('@/pages/components/preview/PreviewComponent'), {
+const PreviewComponent = dynamic(() => import('@/components/preview/PreviewComponent'), {
   ssr: false
 })
 export default function Link() {

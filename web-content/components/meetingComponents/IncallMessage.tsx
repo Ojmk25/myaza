@@ -5,8 +5,8 @@ import { useAudioVideo } from 'amazon-chime-sdk-component-library-react';
 import closeIconPurple from "@/public/assets/images/closeIconPurple.svg";
 import avatar from "@/public/assets/images/avatar.png";
 import { EmojiNormal, Send } from "iconsax-react";
-import { AppCtx, StoreContext } from '@/pages/context/StoreContext';
-import { timeSince } from '@/pages/utils/formatTime';
+import { AppCtx, StoreContext } from '@/context/StoreContext';
+import { timeSince } from '@/utils/formatTime';
 
 
 const Chat = ({ attendeeIDProp, sideViewFunc }: { attendeeIDProp: string | null | undefined, sideViewFunc: (value: string) => void }) => {
@@ -42,7 +42,7 @@ const Chat = ({ attendeeIDProp, sideViewFunc }: { attendeeIDProp: string | null 
     return () => {
       audioVideo.realtimeUnsubscribeFromReceiveDataMessage('chat');
     };
-  }, [audioVideo, attendeeIDProp]);
+  }, [audioVideo]);
 
 
   const sendMessage = () => {

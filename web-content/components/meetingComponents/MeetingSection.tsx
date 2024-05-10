@@ -15,7 +15,7 @@ import { LocalAttendeeCard } from "./LocalAttendeeCard";
 import { AttendeeListCard } from "./AttendeeListCard";
 import { Message, DataMessage, DefaultRealtimeController, } from "amazon-chime-sdk-js";
 import Chat from "./IncallMessage";
-import copyTextToClipboard from "@/pages/utils/clipBoard";
+import copyTextToClipboard from "@/utils/clipBoard";
 
 
 export default function MeetingSection({ attendeIDString, externalID, sideView, sideViewFunc, meetingManager }: { attendeIDString: string | null | undefined, externalID: string | null | undefined, sideView?: string, sideViewFunc: (value: string) => void, meetingManager: MeetingManager }) {
