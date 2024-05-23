@@ -1,7 +1,7 @@
 'use client'
 import Image from "next/image";
 import { ConsoleLogger, DefaultDeviceController } from "amazon-chime-sdk-js"
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import DateTimeDisplay from "@/utils/getDate";
 import avatar from "@/public/assets/images/avatar.png"
 import { Add, Calendar, MicrophoneSlash1, MoreCircle, VideoSlash, Microphone, Video } from "iconsax-react";
@@ -25,7 +25,7 @@ export default function PreviewComponent() {
   const currentTimeRefSmall = useRef<HTMLDivElement>(null);
   const currentDateRefSmall = useRef<HTMLDivElement>(null);
   const [errorColour, setErrorColour] = useState(false);
-  const videRef = useRef<HTMLVideoElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const navigate = useRouter()
   const { muted, toggleMute } = useToggleLocalMute();
   const isActiveRef = useRef(false);
@@ -60,31 +60,51 @@ export default function PreviewComponent() {
   const logger = new ConsoleLogger("MyLogger");
 
   //Initialize DefaultDeviceController
-  const deviceController = new DefaultDeviceController(logger, { enableWebAudio: true });
+  // const deviceController = new DefaultDeviceController(logger, { enableWebAudio: true });
+  const deviceController = new DefaultDeviceController(logger);
+
+  useLayoutEffect(() => {
+    return () => {
+      const videoElement = videoRef.current as HTMLVideoElement;
+      if (videoElement) {
+        deviceController.stopVideoPreviewForVideoInput(videoElement);
+        deviceController.stopVideoInput()
+        deviceController.stopAudioInput();
+      }
+    };
+  }, []);
+
   useEffect(() => {
     const init = async () => {
 
       //List the device list
       const deviceList = await deviceController.listVideoInputDevices();
-      // const audioList = await deviceController.listAudioInputDevices();
-      //Choose video/audio device
+      const audioList = await deviceController.listAudioInputDevices();
+      // Choose video/audio device
       await deviceController.startVideoInput(deviceList[0].deviceId)
-      // await deviceController.startAudioInput(audioList[0].deviceId)
+      await deviceController.startAudioInput(audioList[0].deviceId)
 
       // //Grab the video element
-      const videoElement = videRef.current as HTMLVideoElement;
+      const videoElement = videoRef.current as HTMLVideoElement;
 
-      // //Start video/audio preview
+      //Start video/audio preview
       deviceController.startVideoPreviewForVideoInput(videoElement);
-      // deviceController.chooseAudioOutput(audioList[0].deviceId);
+      deviceController.chooseAudioOutput(audioList[0].deviceId);
     }
 
     init()
+    return () => {
+      const videoElement = videoRef.current as HTMLVideoElement;
+      if (videoElement) {
+        deviceController.stopVideoInput()
+        deviceController.stopAudioInput();
+        deviceController.stopVideoPreviewForVideoInput(videoElement);
+      }
+
+      // window.location.reload();
+    }
   }, [deviceController])
 
-  useEffect(() => {
-    toggleAudio()
-  }, [])
 
   useEffect(() => {
     const updateCurrentTime = () => {
@@ -195,19 +215,8 @@ export default function PreviewComponent() {
   }
 
 
-  // // Function to toggle audio stream on and off
-  // function toggleAudio() {
-  //   const audioTracks = videoElement.srcObject.getAudioTracks()[0];
-  //   audioTracks.enabled = !audioTracks.enabled;
-  // }
-
-  //   function toggleAudio() {
-  //     const muted = deviceController.realtimeMuteLocalAudio();
-  //     console.log('Audio toggled:', !muted ? 'on' : 'off');
-  // }
-
   async function toggleVideo() {
-    const videoElement = videRef.current as HTMLVideoElement;
+    const videoElement = videoRef.current as HTMLVideoElement;
     if (deviceController['activeDevices'].video && deviceController['activeDevices'].video.groupId.length > 1) {
       await deviceController.stopVideoInput()
     } else {
@@ -217,110 +226,6 @@ export default function PreviewComponent() {
     }
 
   }
-  // Function to toggle audio
-  // const toggleAudio = async () => {
-  //   if (audioEnabled) {
-  //     await deviceController.stopAudioInput()
-  //       .then(() => {
-  //         console.log('Audio input stopped successfully');
-  //         setAudioEnabled(false);
-  //       })
-  //       .catch(error => {
-  //         console.error('Error stopping audio input:', error);
-  //       });
-  //   } else {
-  //     const audioList = await deviceController.listAudioInputDevices();
-  //     deviceController.startAudioInput(audioList[0].deviceId)
-  //       .then(() => {
-  //         console.log('Audio input started successfully');
-  //         setAudioEnabled(true);
-  //       })
-  //       .catch(error => {
-  //         console.error('Error starting audio input:', error);
-  //       });
-  //   }
-  // };
-
-  // const toggleAudio = async () => {
-  //   if (audioEnabled && audioStream) {
-  //     await deviceController.stopAudioInput()
-  //       .then(() => {
-  //         console.log('Audio input stopped successfully');
-  //         audioStream.getTracks().forEach(track => track.stop());
-  //         audioContext?.close();
-  //         setAudioStream(null);
-  //         setAudioContext(null);
-  //         setAudioEnabled(false);
-  //       })
-  //       .catch(error => {
-  //         console.error('Error stopping audio input:', error);
-  //       });
-  //   } else {
-  //     const audioList = await deviceController.listAudioInputDevices();
-  //     navigator.mediaDevices.getUserMedia({ audio: { deviceId: audioList[0].deviceId } })
-  //       .then(stream => {
-  //         setAudioStream(stream);
-  //         const newAudioContext = new AudioContext();
-  //         setAudioContext(newAudioContext);
-  //         setAudioEnabled(true);
-  //         console.log('Audio input started successfully');
-  //       })
-  //       .catch(error => {
-  //         console.error('Error starting audio input:', error);
-  //       });
-  //   }
-  // };
-
-
-  // useEffect(() => {
-  //   if (!audioStream || !audioContext) {
-  //     setAudioLevel(0);
-  //     return;
-  //   }
-
-  //   const source = audioContext.createMediaStreamSource(audioStream);
-  //   const analyser = audioContext.createAnalyser();
-  //   const dataArray = new Uint8Array(analyser.frequencyBinCount);
-  //   source.connect(analyser);
-  //   analyser.fftSize = 256;
-
-  //   const getAudioLevel = () => {
-  //     if (!audioEnabled) return;
-  //     analyser.getByteFrequencyData(dataArray);
-  //     let sum = 0;
-  //     for (let i = 0; i < dataArray.length; i++) {
-  //       sum += dataArray[i];
-  //     }
-  //     let average = sum / dataArray.length;
-  //     setAudioLevel(average);
-  //     requestAnimationFrame(getAudioLevel);
-  //   };
-
-  //   getAudioLevel();
-
-  //   return () => {
-  //     source.disconnect();
-  //     analyser.disconnect();
-  //   };
-  // }, [audioStream, audioContext, audioEnabled]);
-
-
-  const toggleAudio = async () => {
-    if (audioEnabled) {
-      audioStream?.getTracks().forEach(track => track.stop());
-      audioContext?.close();
-      setAudioStream(null);
-      setAudioContext(null);
-      setAudioEnabled(false);
-    } else {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const newAudioContext = new AudioContext();
-      setAudioStream(stream);
-      setAudioContext(newAudioContext);
-      setAudioEnabled(true);
-    }
-  };
-
 
   return (
     <>
@@ -354,7 +259,7 @@ export default function PreviewComponent() {
             {/* <Image src={avatar} alt="hero" height={490} width={600} className="w-[600px] h-[490px]" /> */}
             <div className=" relative">
               <div className=" relative bg-cs-black-200 rounded-[4px] md:rounded-[31px]">
-                <video id="video-preview" autoPlay className="rounded-[4px] md:rounded-[31px] w-full object-cover h-[302px] sm:h-[342px] md:h-[200px] lg:h-[261px] xl:h-[378px] " ref={videRef}></video>
+                <video id="video-preview" autoPlay className="rounded-[4px] md:rounded-[31px] w-full object-cover h-[302px] sm:h-[342px] md:h-[200px] lg:h-[261px] xl:h-[378px] " ref={videoRef}></video>
                 <div className="" ref={audioLevelDisplayRef}>
                 </div>
               </div>

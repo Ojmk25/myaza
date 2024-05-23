@@ -97,3 +97,61 @@ export const MeetingProviderComponent = ({ children }: { children: React.ReactNo
 }
 
 // export default StoreContext;
+
+
+
+
+
+// import React, {
+//   createContext,
+//   useReducer,
+//   ReactNode,
+//   Dispatch,
+//   useMemo,
+// } from 'react'
+// import referenceStoreReducer, {
+//   referenceInitialState,
+//   ReferenceAction,
+//   referenceInitialStateProps,
+// } from './referenceStore'
+
+// export interface StoreContextProps {
+//   reference: {
+//     data: referenceInitialStateProps
+//     dispatchReference: Dispatch<ReferenceAction>
+//   }
+// }
+
+// export const StoreContext = createContext<StoreContextProps | undefined>(
+//   undefined
+// )
+
+// interface StoreContextProviderProps {
+//   children: ReactNode
+// }
+
+// const StoreContextProvider: React.FC<StoreContextProviderProps> = ({
+//   children,
+// }) => {
+//   const [reference, dispatchReference] = useReducer(
+//     referenceStoreReducer,
+//     referenceInitialState
+//   )
+
+//   const storeContextValue: StoreContextProps = useMemo(() => {
+//     return {
+//       reference: {
+//         data: reference,
+//         dispatchReference: dispatchReference,
+//       },
+//     }
+//   }, [reference, dispatchReference])
+
+//   return (
+//     <StoreContext.Provider value={storeContextValue}>
+//       {children}
+//     </StoreContext.Provider>
+//   )
+// }
+
+// export default StoreContextProvider

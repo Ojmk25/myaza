@@ -1,5 +1,3 @@
-import { MeetingSessionConfiguration } from "amazon-chime-sdk-js";
-
 
 export const ValidateEmail = (email: string) => {
   if (!email && email.length >= 4) return false
@@ -8,13 +6,64 @@ export const ValidateEmail = (email: string) => {
     /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,3}))$/
   return regex.test(email)
 }
+/**
+ * Validates if the input string meets the following criteria:
+ * - At least 8 characters long
+ * - Contains at least one special character
+ * - Contains at least one capital letter
+ * - Contains at least one number
+ * 
+ * @param input - The string to validate
+ * @returns A boolean indicating whether the input meets the criteria
+ */
+export const ValidatePassword = (input: string): boolean => {
+  const lengthRegex = /.{8,}/; // At least 8 characters
+  const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/; // At least one special character
+  const capitalLetterRegex = /[A-Z]/; // At least one capital letter
+  const numberRegex = /[0-9]/; // At least one number
 
-export const ValidatePassword = (password: string) => {
-  if (password && password.length >= 4) {
-    return password;
+  return lengthRegex.test(input) &&
+    specialCharRegex.test(input) &&
+    capitalLetterRegex.test(input) &&
+    numberRegex.test(input);
+}
+
+
+
+export const ValidateText = (text: string) => {
+  if (text && text.length >= 3) {
+    return text;
   }
   return false;
 };
+
+
+/**
+ * Validates if the input string matches the pattern 'pub-ldj-ftsg'.
+ * @param str - The string to validate.
+ * @returns `true` if the string matches the pattern, otherwise `false`.
+ */
+export const ValidateLink = (str: string): boolean => {
+  // Define the regular expression pattern
+  const pattern = /^[a-z]{3}-[a-z]{3}-[a-z]{4}$/i;
+
+  // Test the string against the pattern
+  return pattern.test(str);
+}
+
+
+/**
+ * Checks if all values in an object are true.
+ * @param obj - The object to check.
+ * @returns `true` if all values are true, otherwise `false`.
+ */
+export const activateButton = (obj: Record<string, boolean>): boolean => {
+  return Object.values(obj).every(value => value === true);
+}
+
+
+
+
 
 //  const fetchData = async () => {
 //   try {

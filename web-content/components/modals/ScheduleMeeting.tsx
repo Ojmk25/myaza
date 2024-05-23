@@ -4,24 +4,12 @@ import closeIcon from '@/public/assets/images/closeIcon.svg'
 import { Calendar, Clock, UserAdd, Video, Copy } from 'iconsax-react';
 import { AuthInput } from '../auth/AuthInput';
 import DateTimePicker from 'react-datetime-picker';
-import { nanoid } from 'nanoid';
-import { customAlphabet } from 'nanoid';
+
 import style from './style.module.css'
-
-// Define the alphabet as lowercase letters
-const alphabet = 'abcdefghijklmnopqrstuvwxyz';
-
-// Create nanoid generators for different parts
-const generateThreeLetters = customAlphabet(alphabet, 3);
-const generateFourLetters = customAlphabet(alphabet, 4);
-
-// Function to generate the custom ID
-function generateCustomId() {
-  return `${generateThreeLetters()}-${generateThreeLetters()}-${generateFourLetters()}`;
-}
 
 import { ValidateEmail, ValidatePassword } from '@/utils/Validators';
 import copyTextToClipboard from '@/utils/clipBoard';
+import { generateCustomId } from '@/utils/customIDGenerator';
 
 type ValuePiece = Date | null;
 
@@ -63,8 +51,6 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
     code: '',
   })
 
-
-  console.log(fomrData);
 
   const handleInput = (input: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = input.target;

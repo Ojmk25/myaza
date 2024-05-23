@@ -7,7 +7,7 @@ import videoImg from "@/public/assets/images/video.png"
 import activeVoice from '@/public/assets/images/activeVoice.svg'
 import closeIconPurple from "@/public/assets/images/closeIconPurple.svg"
 import raisedHand from '@/public/assets/images/raisedHand.svg'
-import { RefObject, createRef, useEffect, useRef, useState } from "react";
+import { RefObject, createRef, useEffect, useLayoutEffect, useRef, useState } from "react";
 import dottedLine from "@/public/assets/images/dottedLine.svg"
 import { LocalVideo, VideoTileGrid, useLocalVideo, useToggleLocalMute, PreviewVideo, FeaturedRemoteVideos, VideoTile, RemoteVideo, useRemoteVideoTileState, useRosterState, useAttendeeStatus, useContentShareControls, ContentShare, useContentShareState, useAudioVideo, MeetingManager, RosterAttendeeType } from 'amazon-chime-sdk-component-library-react';
 import { RemoteAttendeeCard } from "./RemoteAttendeeCard";
@@ -17,7 +17,10 @@ import { Message, DataMessage, DefaultRealtimeController, } from "amazon-chime-s
 import Chat from "./IncallMessage";
 import copyTextToClipboard from "@/utils/clipBoard";
 
-
+type DynamicWidth = {
+  width: number | string;
+  maxWidth: number | string;
+}
 export default function MeetingSection({ attendeIDString, externalID, sideView, sideViewFunc, meetingManager }: { attendeIDString: string | null | undefined, externalID: string | null | undefined, sideView?: string, sideViewFunc: (value: string) => void, meetingManager: MeetingManager }) {
   const { roster } = useRosterState();
   const attendees = Object.values(roster);
@@ -34,6 +37,29 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
   const participantsRef = useRef<HTMLDivElement>(null)
   // const [sideView, setSideView] = useState('');
   const [tooltipMessage, setTooltipMessage] = useState('');
+  const containerTileRef = useRef<HTMLDivElement>(null);
+  const [dynamicWidth, setDynamicWidth] = useState<DynamicWidth>({ width: '', maxWidth: '' })
+  const [screenWidth, setScreenWidth] = useState<number>(0);
+  const [changingWidth, setChangingWidth] = useState<number>(0)
+
+  useEffect(() => {
+    // Function to update screenWidth state when the window is resized
+    const handleResize = () => {
+      setScreenWidth(window.innerWidth);
+    };
+
+    // Initial width when component mounts
+    setScreenWidth(window.innerWidth);
+
+    // Add event listener to window resize event
+    window.addEventListener('resize', handleResize);
+
+    // Cleanup function to remove event listener when component unmounts
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
 
 
   const ShowVisualizer = ({ attendee, meetingManager }: { attendee: RosterAttendeeType, meetingManager: MeetingManager }) => {
@@ -58,7 +84,7 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
       meetingManager.audioVideo!.realtimeSubscribeToVolumeIndicator(attendee.chimeAttendeeId, volumeIndicatorCallback);
 
       return () => {
-        meetingManager.audioVideo!.realtimeUnsubscribeFromVolumeIndicator(attendee.chimeAttendeeId);
+        meetingManager.audioVideo?.realtimeUnsubscribeFromVolumeIndicator(attendee.chimeAttendeeId);
       };
     }, [meetingManager, attendee.chimeAttendeeId]);
 
@@ -99,11 +125,31 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
     const { name } = attendee;
 
     if (i === 0) {
-      return <LocalAttendeeCard key={attendee.chimeAttendeeId} attendeeId={attendee.chimeAttendeeId} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} audioState={<ShowVisualizer meetingManager={meetingManager} attendee={attendee} />} />
+      return <LocalAttendeeCard key={attendee.chimeAttendeeId} attendeeId={attendee.chimeAttendeeId} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} audioState={<ShowVisualizer meetingManager={meetingManager} attendee={attendee} />} widthProp={dynamicWidth.width} maxWidthProp={dynamicWidth.maxWidth} />
     } else {
-      return <RemoteAttendeeCard key={attendee.chimeAttendeeId} attendeeId={attendee.chimeAttendeeId} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} audioState={<ShowVisualizer meetingManager={meetingManager} attendee={attendee} />} />
+      return <RemoteAttendeeCard key={attendee.chimeAttendeeId} attendeeId={attendee.chimeAttendeeId} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} audioState={<ShowVisualizer meetingManager={meetingManager} attendee={attendee} />} widthProp={dynamicWidth.width} maxWidthProp={dynamicWidth.maxWidth} />
     }
   });
+
+
+  // const AttendeeItemsList = ({ attendees }: { attendees: RosterAttendeeType[] }) => {
+  //   return (
+  //     <>
+  //       {
+  //         attendees.map((attendee, i) => {
+  //           const tilerId = attendeeIdToTileId[attendee.chimeAttendeeId]
+  //           const { name } = attendee;
+  //           if (i === 0) {
+  //             return <LocalAttendeeCard key={attendee.chimeAttendeeId} attendeeId={attendee.chimeAttendeeId} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} audioState={<ShowVisualizer meetingManager={meetingManager} attendee={attendee} />} widthProp={dynamicWidth} />
+  //           } else {
+  //             return <RemoteAttendeeCard key={attendee.chimeAttendeeId} attendeeId={attendee.chimeAttendeeId} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} audioState={<ShowVisualizer meetingManager={meetingManager} attendee={attendee} />} widthProp={dynamicWidth} />
+  //           }
+  //         })
+  //       }
+  //     </>
+  //   )
+  // };
+
 
   const handleCopyClick = (value: string) => {
     copyTextToClipboard(value,
@@ -131,10 +177,53 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
 
 
 
+  useEffect(() => {
+    if (containerTileRef.current && changingWidth <= 699) {
+      if (attendees.length < 3) {
+        setDynamicWidth({ width: '100%', maxWidth: '100%' })
+      } else {
+        setDynamicWidth({ width: '100%', maxWidth: 230 })
+      }
+    } else if (containerTileRef.current && changingWidth >= 700 || changingWidth <= 890) {
+      if (attendees.length < 5) {
+        setDynamicWidth({ width: '100%', maxWidth: '100%' })
+      } else {
+        setDynamicWidth({ width: '100%', maxWidth: 210 })
+      }
+    } else if (containerTileRef.current && changingWidth >= 891) {
+      if (attendees.length < 4) {
+        setDynamicWidth({ width: '100%', maxWidth: '100%' })
+      } else {
+        setDynamicWidth({ width: '100%', maxWidth: 300 })
+      }
+    }
+
+  }, [containerTileRef.current?.offsetWidth, changingWidth])
+
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        if (entry.target === containerTileRef.current) {
+          setChangingWidth(entry.contentRect.width);
+        }
+      }
+    });
+
+    if (containerTileRef.current) {
+      resizeObserver.observe(containerTileRef.current);
+    }
+
+    return () => {
+      if (containerTileRef.current) {
+        resizeObserver.unobserve(containerTileRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div className="flex flex-4 overflow-hidden">
       {tileId && (
-        <div className=" flex-5 bg-cs-black-200 px-10 py-5 rounded-[4px]">
+        <div className=" flex-5 bg-cs-black-200 px-10 py-5 rounded-[4px] mr-4">
           <div className=" h-full flex flex-col">
             <div className="flex gap-x-3 flex-2 items-center">
               <div className="p-[4px] bg-cs-grey-50 rounded-lg"><RecordCircle size="24" color="#CB3A32" variant="Bulk" /></div>
@@ -152,35 +241,47 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
       )}
 
 
-      <div className="flex-6 flex lg:pl-6 gap-4">
-
-        <div className=" flex gap-8 h-full w-full">
-          {attendeeItems}
+      <div className="flex-6 flex">
+        <div className={`w-full @container/meetingTiles ${screenWidth < 1024 && sideView !== '' && tileId ? 'hidden' : ''}`} ref={containerTileRef}>
+          <div className="w-full flex gap-4 h-full flex-4 flex-wrap justify-center" >
+            {attendeeItems}
+            {/* {testArray.map((array) =>
+              <div className=" bg-black flex-4" style={{ width: dynamicWidth.width, maxWidth: dynamicWidth.maxWidth, minWidth: 200 }}></div>
+            )} */}
+          </div>
         </div>
+        {/* @[300px]/meetingTiles:flex-row @[300px]/meetingTiles:flex-wrap */}
+        {/* <div className="w-full @container/meetingTiles">
+          <div className="w-full flex flex-col gap-4 h-full flex-4 @[300px]/meetingTiles:flex-row flex-wrap">
+            <AttendeeItemsList attendees={attendees} />
+          </div>
+        </div> */}
 
-        <div className='w-0 overflow-hidden transition-all' ref={participantsRef} style={sideView !== '' ? {
+        <div className='w-0 overflow-hidden transition-all @container/bigScreenSideCards' ref={participantsRef} style={sideView !== '' ? {
           width: participantsRef.current?.scrollWidth + "px",
           // height: participantsRef.current?.scrollHeight + "px",
           overflow: 'visible',
-          flex: '1 1 35%',
+          flex: '1 1 50%',
+          minWidth: screenWidth < 1025 ? 190 : 300,
+          marginLeft: 16,
         } : {
           width: '0px',
           // height: '0px',
           overflow: 'hidden',
           flex: '1 1 0%',
+          marginLeft: 0,
         }}>
-          {sideView === 'Participants' && <div className={` h-full ml-6 bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-4 pt-5`}>
+          {sideView === 'Participants' && <div className={` h-full bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-2 @[300px]/bigScreenSideCards:px-4 pt-5 overflow-y-scroll no-scrollbar`}>
             <div className=" flex justify-between items-center">
-              <h3 className=" text-cs-grey-dark font-medium text-2xl">Participants <span className=" text-cs-grey-100 font-medium text-base">({attendees.length})</span></h3>
-              <Image src={closeIconPurple} alt="close-icon" onClick={() => sideViewFunc('')} className="cursor-pointer" />
-
+              <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-2xl">Participants <span className=" text-cs-grey-100 font-medium text-sm @[300px]/bigScreenSideCards:text-base">({attendees.length})</span></h3>
+              <Image src={closeIconPurple} alt="close-icon" onClick={() => sideViewFunc('')} className="cursor-pointer w-5 @[300px]/bigScreenSideCards:w-6" />
             </div>
-            <div className=" relative mt-7 mb-5">
-              <input type="text" name="" id="" className=" w-full border border-cs-grey-300 h-12 rounded-[10px] outline-none pl-12 placeholder:text-sm placeholder:font-normal" placeholder="Search for participants" />
-              <SearchNormal1 size="20" color="#898989" className=" absolute top-[14px] left-[14px]" />
+            <div className=" relative mt-5 mb-3">
+              <input type="text" name="" id="" className=" w-full border border-cs-grey-300 h-8 @[300px]/bigScreenSideCards:h-10 rounded-[10px] outline-none pl-7 @[300px]/bigScreenSideCards:pl-10 placeholder:text-sm placeholder:font-normal" placeholder="Search for participants" />
+              <SearchNormal1 size="18" color="#898989" className=" absolute top-[7px] left-[10px] @[300px]/bigScreenSideCards:top-[12px] @[300px]/bigScreenSideCards:left-[14px] @[300px]/bigScreenSideCards:w-[18px] @[300px]/bigScreenSideCards:h-[18px]" />
             </div>
 
-            <div>
+            <div className="">
               {attendees.map((attendee) => (
                 <AttendeeListCard attendeeId={attendee.chimeAttendeeId} key={attendee.chimeAttendeeId} />
               ))}
@@ -201,27 +302,26 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
             <Chat attendeeIDProp={attendeIDString} sideViewFunc={sideViewFunc} />
           </div>
 
-          {sideView === 'Conference Info' && <div className=" flex-6 ml-6 bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-4 pt-5">
+          {sideView === 'Conference Info' && <div className=" flex-6 bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-4 pt-5">
             <div className=" flex justify-between items-center">
-              <h3 className=" text-cs-grey-dark font-medium text-2xl">Conference Info</h3>
-              <Image src={closeIconPurple} alt="profile" onClick={() => sideViewFunc('')} className=" cursor-pointer" />
+              <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-2xl">Conference Info</h3>
+              <Image src={closeIconPurple} alt="profile" onClick={() => sideViewFunc('')} className=" cursor-pointer w-5 @[300px]/bigScreenSideCards:w-6" />
             </div>
             <div className=" relative mt-7 mb-5">
-              <h3 className=" text-cs-grey-dark font-medium text-xl">[Meeting Name]</h3>
-              <p className=" text-sm text-cs-black-200 font-normal mb-4 mt-6">Invite others to join by copying the meting link and sharing it: </p>
+              <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-xl">[Meeting Name]</h3>
+              <p className=" text-xs @[300px]/bigScreenSideCards:text-sm text-cs-black-200 font-normal mb-4 mt-6">Invite others to join by copying the meting link and sharing it: </p>
             </div>
             <div className=" relative mt-7 mb-5">
-              <input type="text" name="" id="" className=" w-full border border-[#F1F1F1] h-12 rounded-[10px] outline-none px-4 placeholder:text-sm placeholder:font-normal placeholder:text-cs-black-200" placeholder="xap-ert-olik" />
-              <Copy size="20" color="#5E29B7" className=" absolute top-[14px] right-[14px] cursor-pointer" onClick={async () => handleCopyClick(`https://cecurecast.com/xap-ert-olik`)} />
+              <input type="text" name="" id="" className=" w-full border border-[#F1F1F1] h-10 @[300px]/bigScreenSideCards:h-12 rounded-[10px] outline-none px-4 placeholder:text-sm placeholder:font-normal placeholder:text-cs-black-200" placeholder="xap-ert-olik" />
+              <Copy size="18" color="#5E29B7" className=" absolute top-[14px] right-[14px] cursor-pointer" onClick={async () => handleCopyClick(`https://cecurecast.com/xap-ert-olik`)} />
               {tooltipMessage && <div className=" absolute text-xs text-cs-grey-50 p-2 bg-cs-purple-650 z-10 rounded">{tooltipMessage}</div>}
             </div>
 
-            <button className="flex items-center text-cs-purple-650 font-bold py-5 px-4 border border-cs-purple-650 rounded-lg max-h-[52px]"><Add size="22" color="#5E29B7" /> Add participants</button>
+            <button className="flex items-center text-cs-purple-650 font-bold py-2 px-3 @[300px]/bigScreenSideCards:py-3 @[300px]/bigScreenSideCards:px-4 border border-cs-purple-650 rounded-lg max-h-[52px]"><Add size="18" color="#5E29B7" /> Add participants</button>
           </div>
           }
 
         </div>
-
 
 
         {/* <div className=" bg-cs-black-200 flex-1 p-2 rounded flex flex-col sm:max-w-[352px]">

@@ -106,7 +106,7 @@ export default function MeetingControl({ bgColor, onOpen, sideView, sideViewFunc
 
             <div className="text-center cursor-pointer">
               <div className="p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto">
-                <Image src={raisedHand} alt="hand" width={24} height={24} className="min-w-6 max-w-5" />
+                <Image src={raisedHand} alt="hand" width={18} height={18} className="min-w-6 max-w-5" />
 
               </div>
               <h6 className=" text-cs-grey-100 font-medium text-xs">Raise hand</h6>
@@ -118,7 +118,7 @@ export default function MeetingControl({ bgColor, onOpen, sideView, sideViewFunc
           </div>
         </div>
 
-        <div className=" flex gap-x-6 flex-2 justify-end">
+        <div className=" flex gap-x-4 lg:gap-x-6 flex-2 justify-end">
           <div className="text-center cursor-pointer" onClick={() => handleLocalSideView('Participants')}>
             <div className={`p-3 ${sideView === 'Participants' ? 'bg-[#5E29B7]' : 'bg-[#E1C6FF4D]'} rounded-md max-w-12  mx-auto`}>
               {sideView === 'Participants' ? (

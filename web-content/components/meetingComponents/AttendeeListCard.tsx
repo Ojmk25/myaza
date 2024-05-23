@@ -10,12 +10,12 @@ export const AttendeeListCard = ({ attendeeId }: { attendeeId: string }) => {
 
   return (
     <div className=" flex justify-between items-center py-3 border-b border-solid border-b-[#EFEDED]">
-      <div className=" flex items-center gap-x-2">
+      <div className=" flex items-center gap-x-2 overflow-hidden max-w-full whitespace-nowrap">
         <Image src={avatar} alt="profile" className=" rounded-full w-6 h-6 object-cover" />
-        <h4 className=" text-cs-grey-dark font-medium text-sm">{attendeeId}</h4>
+        <h4 className=" text-cs-grey-dark font-medium text-sm overflow-hidden text-ellipsis">{attendeeId}</h4>
       </div>
       <div>
-        {muted ? (<MicrophoneSlash1 size="24" color="#5E29B7" />) : (<Image src={activeVoice} alt="profile" />)}
+        {muted ? (<MicrophoneSlash1 size="18" color="#5E29B7" />) : (<Image src={activeVoice} alt="profile" />)}
       </div>
     </div>
   )

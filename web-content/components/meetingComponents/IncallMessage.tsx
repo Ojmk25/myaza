@@ -81,11 +81,11 @@ const Chat = ({ attendeeIDProp, sideViewFunc }: { attendeeIDProp: string | null 
 
   return (
     <div className='h-full'>
-      <div className=" flex-6 ml-6 bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-4 pt-5 h-full">
+      <div className=" flex-6 bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-2 @[300px]/bigScreenSideCards:px-4 pt-5 h-full">
         <div className=" flex flex-col justify-between h-full">
           <div className=" flex justify-between items-center">
-            <h3 className=" text-cs-grey-dark font-medium text-2xl">Chat</h3>
-            <Image src={closeIconPurple} alt="profile" className=' cursor-pointer' onClick={() => sideViewFunc('')} />
+            <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-2xl">Chat</h3>
+            <Image src={closeIconPurple} alt="profile" className=' cursor-pointer w-5 @[300px]/bigScreenSideCards:w-6' onClick={() => sideViewFunc('')} />
           </div>
 
           <div className='flex flex-col overflow-y-scroll h-full no-scrollbar' ref={chatScroll}>
@@ -114,17 +114,17 @@ const Chat = ({ attendeeIDProp, sideViewFunc }: { attendeeIDProp: string | null 
             ))}
           </div>
 
-          <div className=" flex gap-x-2 border-solid border-t-[1px] border-cs-grey-55 py-4">
-            <input type="text" name="" id="" className=" w-full border border-cs-grey-55 h-12 rounded-[10px] outline-none px-4 placeholder:text-sm placeholder:font-normal placeholder:text-cs-grey-dark" placeholder="Hello Everyone 👋" value={inputMessage}
+          <div className=" flex gap-x-2 border-solid border-t-[1px] border-cs-grey-55 py-4 items-center">
+            <input type="text" name="" id="" className=" w-full border border-cs-grey-55 h-8 @[300px]/bigScreenSideCards:h-10 rounded-[10px] outline-none px-2 @[300px]/bigScreenSideCards:px-4 placeholder:text-sm placeholder:font-normal placeholder:text-cs-grey-dark" placeholder="Hello Everyone 👋" value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)} onKeyDown={handleEnterKeyPress} />
             <div className="text-center cursor-pointer">
-              <div className="p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto">
-                <EmojiNormal size="24" color="#5E29B7" className="mx-auto" />
+              <div className="p-2 @[300px]/bigScreenSideCards:p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto">
+                <EmojiNormal size="14" color="#5E29B7" className="mx-auto" />
               </div>
             </div>
             <div className="text-center cursor-pointer" onClick={sendMessage}>
-              <div className="p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto">
-                <Send size="24" color="#5E29B7" className="mx-auto" />
+              <div className="p-2 @[300px]/bigScreenSideCards:p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto">
+                <Send size="14" color="#5E29B7" className="mx-auto" />
               </div>
             </div>
           </div>

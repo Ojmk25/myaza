@@ -96,23 +96,22 @@ export default function TempMeeting() {
             <div className="flex justify-between gap-x-2 items-center">
               <div className={` ${sideView === 'Conference Info' ? 'bg-[#5E29B7]' : 'bg-[#E1C6FF4D]'} p-[10px] rounded-lg items-center cursor-pointer`} onClick={() => handleConference('Conference Info')}>
                 {sideView === 'Conference Info' ? (
-                  <InfoCircle size="22" color="#FAFAFA" className="mx-auto max-w-5" />
+                  <InfoCircle size="18" color="#FAFAFA" className="mx-auto max-w-5" />
                 ) : (
-                  <InfoCircle size="22" color="#5E29B7" className="mx-auto max-w-5" />
+                  <InfoCircle size="18" color="#5E29B7" className="mx-auto max-w-5" />
                 )}
               </div>
-              <div className="bg-[#E1C6FF4D] p-[10px] rounded-lg flex justify-center items-center cursor-pointer" onClick={() => handleShowModal("settings")}><Setting2 size="20" color="#5E29B7" className="mx-auto max-w-5" /></div>
+              <div className="bg-[#E1C6FF4D] p-[10px] rounded-lg flex justify-center items-center cursor-pointer" onClick={() => handleShowModal("settings")}><Setting2 size="18" color="#5E29B7" className="mx-auto max-w-5" /></div>
 
               <div className="bg-[#E1C6FF4D] p-[10px] rounded-lg flex justify-center items-center cursor-pointer">
-                <Coffee size="20" color="#5E29B7" className="mx-auto max-w-5" />
+                <Coffee size="18" color="#5E29B7" className="mx-auto max-w-5" />
               </div>
             </div>
           </div>
           <div className=" flex gap-x-2 items-center">
-            <ArrowLeft size="20" color="#080808" className="" />
+            <ArrowLeft size="18" color="#080808" className="" />
             <h2>AWS Conference</h2>
           </div>
-
         </div>
 
         <div className=" hidden md:flex justify-between items-center py-4">
@@ -124,9 +123,9 @@ export default function TempMeeting() {
           <div className="flex justify-between gap-x-4 items-center">
             <div className={` flex ${sideView === 'Conference Info' ? 'bg-[#5E29B7]' : 'bg-[#E1C6FF4D]'} py-[10px] px-[10px] gap-x-[10px] rounded-lg items-center cursor-pointer`} onClick={() => handleConference('Conference Info')}>
               {sideView === 'Conference Info' ? (
-                <InfoCircle size="24" color="#FAFAFA" className="mx-auto" />
+                <InfoCircle size="20" color="#FAFAFA" className="mx-auto" />
               ) : (
-                <InfoCircle size="24" color="#5E29B7" className="mx-auto" />
+                <InfoCircle size="20" color="#5E29B7" className="mx-auto" />
               )}
               <div className={`${sideView === 'Conference Info' ? 'text-cs-grey-50' : 'text-cs-purple-650'} font-semibold`}>Conference Info</div>
             </div>

@@ -63,11 +63,13 @@ const config: Config = {
         "2": '1 1 25%',
         "3": "1 1 50%",
         "4": "1 1 100%",
-        "5": "1 1 65%",
-        "6": "1 1 35%"
+        "5": "1 1 60%",
+        "6": "1 1 40%"
       }
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/container-queries'),
+  ],
 };
 export default config;

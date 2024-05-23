@@ -1,12 +1,12 @@
 import { EyeSlash } from "iconsax-react";
 import { useState } from "react";
 
-export const AuthInput = ({ label, action, errorMessage, inputType, inputName, placeHolder }: { label: string, action: (input: React.ChangeEvent<HTMLInputElement>) => void, errorMessage: string, inputType: string, inputName: string, placeHolder: string }) => {
+export const AuthInput = ({ label, action, errorMessage, inputType, inputName, placeHolder, value }: { label: string, action: (input: React.ChangeEvent<HTMLInputElement>) => void, errorMessage: string, inputType: string, inputName: string, placeHolder: string, value?: string }) => {
   const [checkPassword, setCheckPassword] = useState(false);
 
   return (
     <>{inputType === "password" ? (
-      <div className="flex flex-col mt-[24px]">
+      <div className="flex flex-col mt-2">
         <label htmlFor={inputName} className=" text-sm font-medium text-cs-grey-100">{label}</label>
         <div>
           <div className="relative">
@@ -14,27 +14,29 @@ export const AuthInput = ({ label, action, errorMessage, inputType, inputName, p
               onChange={(e) => action(e)}
               type={checkPassword ? "text" : "password"}
               name={inputName}
-              className="h-[48px] px-[16px] py-[13px] border-[#9F9F9F] border w-full mt-[6px] placeholder:text-[#898989] placeholder:text-sm rounded-[10px] outline-none"
+              className="h-[48px] px-[16px] pt-[10px] pb-[13px] border-[#9F9F9F] border w-full placeholder:text-[#898989] placeholder:text-sm rounded-[10px] outline-none"
               placeholder={placeHolder}
               id={inputName}
+              value={value}
             />
-            <EyeSlash size="18" color="#636C7E" className="absolute top-[21px] right-[16px] cursor-pointer" onClick={() => { setCheckPassword(!checkPassword) }} />
+            <EyeSlash size="18" color="#636C7E" className="absolute top-[16px] right-[16px] cursor-pointer" onClick={() => { setCheckPassword(!checkPassword) }} />
           </div>
-          <p className="text-sm text-cs-error-500 mt-1">{errorMessage}</p>
+          <p className="text-xs text-cs-error-500 min-h-4">{errorMessage}</p>
         </div>
       </div>
     ) : (
-      <div className="flex flex-col mt-[22px] w-full">
+      <div className="flex flex-col mt-2 w-full">
         <label htmlFor={inputName} className=" text-sm font-medium text-cs-grey-100">{label}</label>
         <input
           onChange={(e) => action(e)}
           type={inputType}
           name={inputName}
-          className="h-[48px] px-[16px] py-[13px] border-[#9F9F9F] border rounded-[10px] w-full mt-[6px] placeholder:text-[#898989] placeholder:text-sm outline-none"
+          className="h-[48px] px-[16px] pt-[10px] pb-[13px] border-[#9F9F9F] border rounded-[10px] w-full placeholder:text-[#898989] placeholder:text-sm outline-none"
           placeholder={placeHolder}
           id={inputName}
+          value={value}
         />
-        <p className="text-sm text-cs-error-500 mt-1">{errorMessage}</p>
+        <p className="text-xs text-cs-error-500 min-h-4">{errorMessage}</p>
       </div>
     )}
     </>
