@@ -7,11 +7,10 @@ const PreviewComponent = dynamic(() => import('@/components/preview/PreviewCompo
 })
 export default function Link() {
   const router = useRouter()
-  console.log(router.query.link);
 
   return <>
-    {router.query.link === 'preview' && <PreviewComponent />}
-    {router.query.link === 'meeting' && <TempMeeting />}
+    {router.query.link === 'preview' ? <PreviewComponent /> : <TempMeeting param={router.query.link} />}
+    {/* {router.query.link === 'meeting' && <TempMeeting />} */}
   </>
 }
 

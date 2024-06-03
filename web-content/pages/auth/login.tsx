@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 import { loginUser } from "@/services/authService";
 import { SuccessSlideIn } from "@/components/SuccessSlideIn";
 import { FailureSlideIn } from "@/components/FailureSlideIn";
+import LoadingScreen from "@/components/modals/LoadingScreen";
 
 export default function Login() {
   const navigate = useRouter()
@@ -25,6 +26,7 @@ export default function Login() {
   })
   const [openModal, setOpenModal] = useState(false)
   const [successRes, setSuccessRes] = useState<any>()
+  const [loading, setLoading] = useState(false);
   const [errorColour, setErrorColour] = useState(false)
 
   const [validateSuccess, setValidateSuccess] = useState({
@@ -100,8 +102,9 @@ export default function Login() {
   }
 
   const handleSignUpSubmit = async () => {
+    setLoading(true)
     const clearAll = () => {
-      // setLoading(false)
+      setLoading(false)
       setTimeout(() => {
         setSuccessRes("")
         setOpenModal(false)
@@ -109,6 +112,7 @@ export default function Login() {
     }
     try {
       const data = await loginUser(loginPayload)
+      setLoading(true)
       setSuccessRes(data)
       setOpenModal(true)
       setTimeout(() => {
@@ -117,10 +121,14 @@ export default function Login() {
 
     } catch (error) {
       console.log(error)
+      setLoading(true)
+      setOpenModal(true)
     } finally {
       clearAll()
     }
   }
+
+  console.log(loading);
 
   return (
     <AuthLayout>
@@ -143,6 +151,7 @@ export default function Login() {
 
       <SuccessSlideIn openModal={openModal} response={successRes && successRes?.response.statusCode === 200} successActionResponse={successRes && successRes?.response.body.message} closeModal={() => { }} />
       <FailureSlideIn openModal={openModal} response={successRes && successRes?.response.statusCode !== 200} errResponse={successRes && successRes?.response.body.message} closeModal={() => { }} />
+      {loading && <LoadingScreen />}
     </AuthLayout>
   )
 }

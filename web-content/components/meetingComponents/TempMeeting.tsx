@@ -3,12 +3,14 @@ import { ContentShare, LocalVideo, RemoteVideo, useAttendeeStatus, useContentSha
 import { MeetingSessionConfiguration, VideoTileState } from "amazon-chime-sdk-js";
 import MeetingSection from '@/components/meetingComponents/MeetingSection';
 import MeetingControl from "@/components/meetingComponents/MeetingControl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, Coffee, InfoCircle, Setting2 } from "iconsax-react";
 import ShareScreen from "@/components/modals/ShareScreen";
 import Settings from "@/components/modals/Settings";
+import { useRouter } from "next/router"
+import { mer } from "@/services/userService";
 
-export default function TempMeeting() {
+export default function TempMeeting({ param }: { param: string | string[] | undefined }) {
   const meetingManager = useMeetingManager();
   const { roster } = useRosterState();
   const attendees = Object.values(roster);
@@ -17,11 +19,14 @@ export default function TempMeeting() {
   const { muted, toggleMute } = useToggleLocalMute();
   const { isVideoEnabled, toggleVideo } = useLocalVideo();
   const [sideView, setSideView] = useState('');
+  const router = useRouter();
+  const [theRoute, setTheRoute] = useState('')
 
 
 
 
   const joinMeeting = async () => {
+
     // Fetch the meeting and attendee data from your server application
     const response = await fetch('https://dibxzaa24vvschnzknjn7m65pe0dvnlh.lambda-url.us-east-1.on.aws/',
       {
@@ -38,21 +43,36 @@ export default function TempMeeting() {
         name: user.name,
       }
     }
+    const getSessionItem = async () => {
+      return sessionStorage.getItem(router.query.link as string)
+    }
+    const meetingDetails = await getSessionItem()
+    const parsedmeetingDetails = JSON.parse(meetingDetails as string)
 
 
 
-    // Initalize the `MeetingSessionConfiguration`
-    const meetingSessionConfiguration = new MeetingSessionConfiguration(data.Meeting, data.Attendee);
+    const meetingSessionConfiguration = new MeetingSessionConfiguration(parsedmeetingDetails.MeetingDetails, parsedmeetingDetails.HostDetails[0]);
+
+    await meetingManager.join(meetingSessionConfiguration);
+
+
+
+
+
+
+
+    // const meetingSessionConfiguration = new MeetingSessionConfiguration(data.Meeting, data.Attendee);
+    // const meetingSessionConfiguration = new MeetingSessionConfiguration(mer.body.data.MeetingDetails, mer.body.data.HostDetails);
 
 
 
     // Create a `MeetingSession` using `join()` function with the `MeetingSessionConfiguration`
-    await meetingManager.join(meetingSessionConfiguration);
+    // await meetingManager.join(meetingSessionConfiguration);
 
     // At this point you could let users setup their devices, or by default
     // the SDK will select the first device in the list for the kind indicated
     // by `deviceLabels` (the default value is DeviceLabels.AudioAndVideo)
-    meetingManager.getAttendee(data.Attendee.AttendeeId, data.Meeting.ExternalMeetingId)
+    // meetingManager.getAttendee(data.Attendee.AttendeeId, data.Meeting.ExternalMeetingId)
 
     // Start the `MeetingSession` to join the meeting
     await meetingManager.start();
@@ -82,6 +102,22 @@ export default function TempMeeting() {
     }
   }
 
+  useEffect(() => {
+    if (router.isReady) {
+      // Extract the full URL
+      const fullUrl = window.location.href;
+
+      // You can also extract specific parts, like query parameters
+      const { query } = router;
+
+      // Update the state with the full URL or specific parts as needed
+      // setCurrentUrl(fullUrl);
+      console.log('Query Parameters:', query);
+
+      console.log(window.location.pathname);
+      // joinMeeting()
+    }
+  }, [router.isReady, router.asPath]);
 
   return (
     <>

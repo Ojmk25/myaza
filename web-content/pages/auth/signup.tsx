@@ -13,6 +13,7 @@ import { envFn, updateSignUpUser } from "@/config";
 import { SuccessSlideIn } from "@/components/SuccessSlideIn";
 import { FailureSlideIn } from "@/components/FailureSlideIn";
 import { useRouter } from "next/router";
+import LoadingScreen from "@/components/modals/LoadingScreen";
 
 
 export default function Signup() {
@@ -37,6 +38,7 @@ export default function Signup() {
   })
   const [subdomainLink, setSubdomainLink] = useState<string | null>(null);
   const navigate = useRouter()
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const subdomainString = subDomain();
@@ -147,8 +149,9 @@ export default function Signup() {
   }
 
   const handleSignUpSubmit = async () => {
+    setLoading(true)
     const clearAll = () => {
-      // setLoading(false)
+      setLoading(false)
       setTimeout(() => {
         setSuccessRes("")
         setOpenModal(false)
@@ -156,6 +159,7 @@ export default function Signup() {
     }
     try {
       const data = await registerUser(registerPayload)
+      setLoading(true)
       setSuccessRes(data.data.body)
       setOpenModal(true)
       setTimeout(() => {
@@ -164,6 +168,7 @@ export default function Signup() {
       }, 3000)
 
     } catch (error) {
+      setLoading(true)
       console.log(error)
     } finally {
       clearAll()
@@ -195,7 +200,7 @@ export default function Signup() {
       <div className="border border-solid border-cs-grey-150 rounded-lg flex items-center justify-center w-full py-[10px] text-cs-grey-dark font-medium text-sm lg:text-base"><Image src={googleIcon} alt="google" className=" mr-2" />  Sign in with Google</div>
       <SuccessSlideIn openModal={openModal} response={successRes?.status === 'Success'} successActionResponse="Signup successful" closeModal={() => { }} />
       <FailureSlideIn openModal={openModal} response={successRes?.status === 'Error'} errResponse={successRes?.message} closeModal={() => { }} />
-
+      {loading && <LoadingScreen />}
     </AuthLayout>
 
   )

@@ -12,6 +12,7 @@ import { getSignUpUser, updateSignUpUser } from "@/config";
 import { useRouter } from "next/router";
 import { SuccessSlideIn } from "@/components/SuccessSlideIn";
 import { FailureSlideIn } from "@/components/FailureSlideIn";
+import LoadingScreen from "@/components/modals/LoadingScreen";
 
 export default function Verify() {
   const context = useContext(AppCtx)
@@ -19,6 +20,7 @@ export default function Verify() {
   const [allowSubmit, setAllowSubmit] = useState(false)
   const [countDown, setCountDown] = useState(60)
   const [signUpCode, setSignUpCode] = useState('')
+  const [loading, setLoading] = useState(false);
 
   const padZero = (num: number) => {
     return num < 10 ? `0${num}` : num;
@@ -105,13 +107,14 @@ export default function Verify() {
 
 
   const handleConfirmSIgnUp = async () => {
+    setLoading(true)
     const confirmSignUpPayload = {
       user_name: getSignUpUser(),
       code: signUpCode,
 
     }
     const clearAll = () => {
-      // setLoading(false)
+      setLoading(false)
       setTimeout(() => {
         setSuccessRes("")
         setOpenModal(false)
@@ -119,8 +122,7 @@ export default function Verify() {
     }
     try {
       const { data } = await confirmSignUpOpt(confirmSignUpPayload)
-      console.log(data);
-
+      setLoading(true)
       setSuccessRes(data)
       setOpenModal(true)
       setTimeout(() => {
@@ -129,6 +131,7 @@ export default function Verify() {
 
     } catch (error) {
       console.log(error)
+      setLoading(true)
     } finally {
       clearAll()
     }
@@ -169,6 +172,7 @@ export default function Verify() {
 
       <SuccessSlideIn openModal={openModal} response={successRes?.body && successRes?.body.status === 'Success'} successActionResponse="Password confirmed" closeModal={() => { }} />
       <FailureSlideIn openModal={openModal} response={successRes?.body && successRes?.body.status === 'Error'} errResponse={successRes?.body && successRes?.body.message} closeModal={() => { }} />
+      {loading && <LoadingScreen />}
     </AuthLayout>
   )
 }

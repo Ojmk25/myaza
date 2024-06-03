@@ -12,9 +12,8 @@ export const subDomain = (): string | null => {
     const hostname = window.location.hostname;
     return hostname.split('.')[0];
   } else {
-    console.log('nothing comeout');
+    console.log('window still undefined');
   }
-  console.log('nothing comeout');
   return null;
 }
 

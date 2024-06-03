@@ -71,6 +71,8 @@ export default function PreviewComponent() {
         deviceController.stopVideoInput()
         deviceController.stopAudioInput();
       }
+      console.log('called after');
+
     };
   }, []);
 

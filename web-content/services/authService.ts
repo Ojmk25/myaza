@@ -5,7 +5,7 @@ import * as http from "@/services/httpServices"
 const apiLogIn = getApiPath('open', 'login')
 const apiSignUp = getApiPath('open/', 'sign-up')
 const apiConfirmSignUp = getApiPath('open/', 'confirm-sign-up')
-const apiInstantMeeting = getApiPath('meeting/', 'instant-meeting')
+
 // const apiResendCode = getApiPath('open/user', 'resend-verification')
 // const apiForgotPassword = getApiPath('open/user', 'forgot-password')
 // const apiConfirmForgotPassword = getApiPath(
@@ -139,6 +139,34 @@ export const IsAuthenticated = () => {
     }
   }
   return false
+}
+
+export const getNameAbbreviation = () => {
+  let clientData
+  let first_name
+  let surname
+  let initials
+
+  if (
+    localStorage.getItem('cecureStreamAuthToken') ||
+    sessionStorage.getItem('cecureStreamAuthToken')
+  ) {
+    try {
+      const token =
+        JSON.parse(localStorage.getItem('cecureStreamAuthToken') || '') ||
+        JSON.parse(sessionStorage.getItem('cecureStreamAuthToken') || '')
+      if (token) {
+        clientData = token?.uData
+        first_name = clientData.given_name
+        surname = clientData.family_name
+        initials = first_name.charAt(0).toUpperCase() + surname.charAt(0).toUpperCase()
+      }
+    } catch (error) {
+      console.error('Error parsing JSON:', error)
+    }
+  }
+
+  return initials
 }
 
 export const sessionExpired = () => {
@@ -290,19 +318,3 @@ export const checkUsernameApi = async (data: any) => {
 }
 */
 
-export const createInstantMeeting = async (data: any) => {
-  const authToken = sessionStorage.getItem('cecureStreamAuthToken')
-  try {
-    if (authToken) {
-      const parsedAuthToken = JSON.parse(authToken)
-      const accessToken = parsedAuthToken?.cecureStreamAcToken
-      return await http.apiCall.post(apiInstantMeeting, data, {
-        headers: {
-          Authorization: accessToken,
-        },
-      })
-    }
-  } catch (error) {
-    console.log(error)
-  }
-}
