@@ -128,7 +128,6 @@ export default function Login() {
     }
   }
 
-  console.log(loading);
 
   return (
     <AuthLayout>

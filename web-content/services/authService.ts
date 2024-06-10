@@ -6,7 +6,7 @@ const apiLogIn = getApiPath('open', 'login')
 const apiSignUp = getApiPath('open/', 'sign-up')
 const apiConfirmSignUp = getApiPath('open/', 'confirm-sign-up')
 
-// const apiResendCode = getApiPath('open/user', 'resend-verification')
+const apiResendCode = getApiPath('open', 'resend-verify-code')
 // const apiForgotPassword = getApiPath('open/user', 'forgot-password')
 // const apiConfirmForgotPassword = getApiPath(
 //   'open/user',
@@ -19,6 +19,7 @@ const apiConfirmSignUp = getApiPath('open/', 'confirm-sign-up')
 export interface ForgotPAsswordUserDetailsProps {
 
 }
+// https://api.dev.cecurecast.com/open/v1/resend-verify-code
 
 export interface RegisterPayload {
   first_name: string
@@ -169,6 +170,36 @@ export const getNameAbbreviation = () => {
   return initials
 }
 
+export const getFullName = () => {
+  let clientData
+  let first_name
+  let surname
+  let user_id
+  let email
+
+  if (
+    localStorage.getItem('cecureStreamAuthToken') ||
+    sessionStorage.getItem('cecureStreamAuthToken')
+  ) {
+    try {
+      const token =
+        JSON.parse(localStorage.getItem('cecureStreamAuthToken') || '') ||
+        JSON.parse(sessionStorage.getItem('cecureStreamAuthToken') || '')
+      if (token) {
+        clientData = token?.uData
+        first_name = clientData.given_name.charAt(0).toUpperCase() + clientData.given_name.slice(1)
+        surname = clientData.family_name.charAt(0).toUpperCase() + clientData.family_name.slice(1)
+        user_id = clientData['cognito:username']
+        email = clientData.email
+      }
+    } catch (error) {
+      console.error('Error parsing JSON:', error)
+    }
+  }
+
+  return { first_name, surname, user_id, email }
+}
+
 export const sessionExpired = () => {
   sessionStorage.setItem('cecure-stream-session-expired', `${true}`)
   // window.location.reload()
@@ -216,13 +247,13 @@ export const confirmSignUpOpt = async (data: ConfirmNewSignUpPayload): Promise<C
 //   }
 // }
 // Resend Verification
-// export const resendVerificationOTP = async (data: string) => {
-//   try {
-//     return await http.apiCall.post(apiResendCode, data)
-//   } catch (error) {
-//     return error
-//   }
-// }
+export const resendVerificationOTP = async (data: string) => {
+  try {
+    return await http.apiCall.post(apiResendCode, JSON.stringify(data))
+  } catch (error) {
+    return error
+  }
+}
 // loginUser
 export const loginUser = async (data: LoginPayload): Promise<any> => {
   try {
@@ -263,16 +294,16 @@ export const decodeJwt = (jwt: string) => {
 
 // LogOutUser
 export const logOutUser = () => {
-  sessionStorage.removeItem('askBetty-smActive')
+  // sessionStorage.removeItem('askBetty-smActive')
   sessionStorage.removeItem('cecureStreamAuthToken')
-  sessionStorage.removeItem('env-askBetty')
-  sessionStorage.removeItem('abDep')
+  // sessionStorage.removeItem('env-askBetty')
+  // sessionStorage.removeItem('abDep')
   localStorage.removeItem('cecureStreamAuthToken')
-  localStorage.removeItem('askBetty-smActive')
-  localStorage.removeItem('regPath')
-  localStorage.removeItem('askBetty-acUser')
-  localStorage.removeItem('auth_ab')
-  localStorage.removeItem('auth_data')
+  // localStorage.removeItem('askBetty-smActive')
+  // localStorage.removeItem('regPath')
+  // localStorage.removeItem('askBetty-acUser')
+  // localStorage.removeItem('auth_ab')
+  // localStorage.removeItem('auth_data')
   clearCacheData()
 }
 

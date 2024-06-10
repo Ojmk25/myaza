@@ -7,7 +7,7 @@ import { AppCtx } from "@/context/StoreContext";
 
 import style from './authStyle.module.css'
 import AuthLayout from "@/components/auth/AuthLayout";
-import { confirmSignUpOpt } from "@/services/authService";
+import { confirmSignUpOpt, resendVerificationOTP } from "@/services/authService";
 import { getSignUpUser, updateSignUpUser } from "@/config";
 import { useRouter } from "next/router";
 import { SuccessSlideIn } from "@/components/SuccessSlideIn";
@@ -104,6 +104,33 @@ export default function Verify() {
     }
   }
 
+  const handleResendVerifyPassword = async () => {
+    setLoading(true)
+    const clearAll = () => {
+      setLoading(false)
+      setTimeout(() => {
+        setSuccessRes("")
+        setOpenModal(false)
+      }, 2000)
+    }
+    try {
+      const data = await resendVerificationOTP(getSignUpUser() as string)
+      setLoading(true)
+      setSuccessRes(data)
+      setOpenModal(true)
+      // setTimeout(() => {
+      //   data.response && data?.response?.statusCode === 200 && navigate.push("/");
+      // }, 3000)
+
+    } catch (error) {
+      console.log(error)
+      setLoading(true)
+      setOpenModal(true)
+    } finally {
+      clearAll()
+      setCountDown(120)
+    }
+  }
 
 
   const handleConfirmSIgnUp = async () => {
@@ -137,12 +164,11 @@ export default function Verify() {
     }
   }
 
-  console.log(successRes);
 
   return (
     <AuthLayout>
       <h3 className=" text-2xl font-semibold text-cs-grey-dark mb-1">Verify you account</h3>
-      <p className=" text-cs-grey-100 text-sm">We send a verification code to your email.</p>
+      <p className=" text-cs-grey-100 text-sm">We sent a verification code to your email.</p>
       <form>
         <div id={style.customInput}>
           <PinInput
@@ -167,7 +193,7 @@ export default function Verify() {
 
         <SubmitButton text="Verify account" action={handleConfirmSIgnUp} activate={allowSubmit} />
 
-        <p className=" text-cs-grey-100 font-medium text-sm text-center mt-8">Didn’t see code? {minutes === 0 && seconds === 0 ? <span className=" text-cs-purple-650 cursor-pointer" onClick={() => { setCountDown(120) }}>Resend now</span> : `Resend in ${padZero(minutes)}:${padZero(seconds)}`}</p>
+        <p className=" text-cs-grey-100 font-medium text-sm text-center mt-8">Didn’t see code? {minutes === 0 && seconds === 0 ? <span className=" text-cs-purple-650 cursor-pointer" onClick={handleResendVerifyPassword}>Resend now</span> : `Resend in ${padZero(minutes)}:${padZero(seconds)}`}</p>
       </form>
 
       <SuccessSlideIn openModal={openModal} response={successRes?.body && successRes?.body.status === 'Success'} successActionResponse="Password confirmed" closeModal={() => { }} />

@@ -8,11 +8,13 @@ import style from './style.module.css'
 
 import copyTextToClipboard from '@/utils/clipBoard';
 import { generateCustomId } from '@/utils/customIDGenerator';
-import { createScheduleMeeting, timeToUnixTimestamp } from '@/services/meetingServices';
+import { createScheduleMeeting } from '@/services/meetingServices';
 import LoadingScreen from './LoadingScreen';
 import { SuccessSlideIn } from '../SuccessSlideIn';
 import { FailureSlideIn } from '../FailureSlideIn';
 import MeetingDetailsModal from './MeetingDetailsModal';
+import { ValidateEmail } from '@/utils/Validators';
+import { timeToUnixTimestamp } from '@/utils/meetingFunctions';
 
 interface FormData {
   meetingName: string;
@@ -32,10 +34,12 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
   const [openModal, setOpenModal] = useState(false)
   const [meetDetails, setMeetDetails] = useState<any>();
   const [openMeetingDetails, setOpenMeetingDetails] = useState(false)
+  const [activateEmailButton, setActivateEmailButton] = useState<boolean>(false)
 
   useEffect(() => {
     setToken(generateCustomId())
   }, [])
+
 
   const [formData, setFormData] = useState<FormData>({
     meetingName: '',
@@ -54,7 +58,16 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
         ...prevState,
         date: formatDate(value)
       }));
-    } else {
+    }
+    else if (name === "email" && !ValidateEmail(value)) {
+      setActivateEmailButton(true)
+      setFormData(prevState => ({
+        ...prevState,
+        [name]: value
+      }));
+    }
+    else {
+      setActivateEmailButton(false)
       setFormData(prevState => ({
         ...prevState,
         [name]: value
@@ -65,7 +78,7 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
 
   const addEmailToList = () => {
     const { email, emailList } = formData;
-    if (email && !emailList.includes(email)) {
+    if (email && !emailList.includes(email) && ValidateEmail(email)) {
       setFormData(prev => ({
         ...prev,
         emailList: [...prev.emailList, prev.email],
@@ -153,7 +166,6 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
       setSuccessRes(data?.data.body)
       setOpenModal(true)
       setMeetDetails(data?.data.body)
-      console.log(data?.data);
       setMeetDetails(data?.data.body.data)
       setTimeout(() => {
         if (data?.data.statusCode === 200) {
@@ -233,6 +245,7 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
                   </div>
                   <p className="text-sm text-cs-error-500 mt-1"></p>
                 </div>
+
                 <div className="flex flex-col mt-[22px] w-full lg:w-[441px]" id='calendarStyle'>
                   <label htmlFor='endTime' className="text-sm font-medium text-cs-grey-100">End time</label>
                   <div className={` flex relative ${style.customDateTime}`}>
@@ -242,6 +255,7 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
                   </div>
                   <p className="text-sm text-cs-error-500 mt-1"></p>
                 </div>
+
               </div>
             </form>
 
@@ -251,9 +265,10 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
             <div className='px-6'>
               <div className=' flex gap-x-4'>
                 <input type="email" name="email" id="" className='h-[48px] px-[16px] py-[13px] border-cs-grey-300 border w-full placeholder:text-[#898989] placeholder:text-sm rounded-[10px] outline-none' placeholder='example@mail.com' onChange={(e) => handleInput(e)} value={formData.email} onKeyDown={handleEnterKeyPress} />
-                <button className=' text-cs-purple-500 bg-white border rounded-[10px] border-cs-purple-500 py-[10px] px-5 min-w-20 text-sm' onClick={addEmailToList}>Add</button>
+                <button className=' text-cs-purple-500 bg-white border rounded-[10px] border-cs-purple-500 py-[10px] px-5 min-w-20 text-sm hover:bg-cs-purple-500 hover:text-white' onClick={addEmailToList} disabled={activateEmailButton}>Add</button>
               </div>
               <p className=' text-cs-grey-100 text-xs lg:text-sm'>Add their email and press ENTER</p>
+              {activateEmailButton && <p className=' text-cs-red text-[10px] lg:text-xs'>invalid email address</p>}
               <div className=' my-5'>
                 {formData.emailList.map(email =>
                   <div className=' flex items-center justify-between mb-4' key={email}>
@@ -266,7 +281,7 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
 
             <div className='flex justify-end gap-x-1 px-6'>
               <button className=' bg-cs-grey-60-light text-cs-grey-100 py-4 px-4 rounded-[10px] w-36' onClick={onClose}>Cancel</button>
-              <button className='bg-cs-purple-650  text-cs-grey-50 py-4 px-4 rounded-[10px] w-36' onClick={handleScheduleMeeting}>Create</button>
+              <button className='bg-cs-purple-650  text-cs-grey-50 py-4 px-4 rounded-[10px] w-36 hover:bg-cs-purple-650/80' onClick={handleScheduleMeeting}>Create</button>
             </div>
           </div>
         </div>

@@ -16,6 +16,8 @@ import { AttendeeListCard } from "./AttendeeListCard";
 import { Message, DataMessage, DefaultRealtimeController, } from "amazon-chime-sdk-js";
 import Chat from "./IncallMessage";
 import copyTextToClipboard from "@/utils/clipBoard";
+import { processString } from "@/utils/meetingFunctions";
+import ShowVisualizer from "./ShowVisualizer";
 
 type DynamicWidth = {
   width: number | string;
@@ -62,72 +64,17 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
 
 
 
-  const ShowVisualizer = ({ attendee, meetingManager }: { attendee: RosterAttendeeType, meetingManager: MeetingManager }) => {
-    const [audioState, setAudioState] = useState<{ attendeeId: string, volume: number, mute: boolean | null, signalStrength: number | null }>({
-      attendeeId: '',
-      volume: 0,
-      mute: true,
-      signalStrength: 0,
-    })
 
-
-    useEffect(() => {
-      const volumeIndicatorCallback = (attendeeId: string, volume: number | null, muted: boolean | null, signalStrength: number | null) => {
-        setAudioState({
-          attendeeId: attendeeId,
-          volume: volume || 0,
-          mute: muted,
-          signalStrength: signalStrength || 0
-        });
-      };
-
-      meetingManager.audioVideo!.realtimeSubscribeToVolumeIndicator(attendee.chimeAttendeeId, volumeIndicatorCallback);
-
-      return () => {
-        meetingManager.audioVideo?.realtimeUnsubscribeFromVolumeIndicator(attendee.chimeAttendeeId);
-      };
-    }, [meetingManager, attendee.chimeAttendeeId]);
-
-    const visualizerStyle = (factor: number) => ({
-      height: `${Math.max(3, audioState.volume * factor)}px`,
-      width: '4px',
-    });
-
-    const audioVisualizer = (
-      <>
-        {
-          audioState.mute ? (
-            <div className=" flex justify-center items-end p-[6px] bg-[#333333] rounded-full absolute top-[10px] right-[10px] w-[30px] h-[30px]">
-              <MicrophoneSlash1 size="18" color="#FAFAFA" />
-            </div>
-          ) : (
-            <div className="flex justify-center items-center p-[6px] bg-[#6c3ec2] rounded-full absolute top-[10px] right-[10px] w-[30px] h-[30px] gap-x-[2px]">
-              <div style={visualizerStyle(6)} className="bg-cs-grey-50"></div>
-              <div style={visualizerStyle(15)} className="bg-cs-grey-50"></div>
-              <div style={visualizerStyle(25)} className="bg-cs-grey-50"></div>
-              <div style={visualizerStyle(15)} className="bg-cs-grey-50"></div>
-              <div style={visualizerStyle(6)} className="bg-cs-grey-50"></div>
-            </div>
-          )}
-      </>
-    );
-
-    return (
-      <div>
-        {audioVisualizer}
-      </div>
-    );
-  }
 
   const attendeeItems = attendees.map((attendee, i) => {
     const tilerId = attendeeIdToTileId[attendee.chimeAttendeeId]
 
-    const { name } = attendee;
+    const { name, externalUserId } = attendee;
 
     if (i === 0) {
-      return <LocalAttendeeCard key={attendee.chimeAttendeeId} attendeeId={attendee.chimeAttendeeId} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} audioState={<ShowVisualizer meetingManager={meetingManager} attendee={attendee} />} widthProp={dynamicWidth.width} maxWidthProp={dynamicWidth.maxWidth} />
+      return <LocalAttendeeCard key={attendee.chimeAttendeeId} attendeeId={attendee.chimeAttendeeId} name={externalUserId} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} audioState={<ShowVisualizer meetingManager={meetingManager} attendee={attendee} />} widthProp={dynamicWidth.width} maxWidthProp={dynamicWidth.maxWidth} />
     } else {
-      return <RemoteAttendeeCard key={attendee.chimeAttendeeId} attendeeId={attendee.chimeAttendeeId} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} audioState={<ShowVisualizer meetingManager={meetingManager} attendee={attendee} />} widthProp={dynamicWidth.width} maxWidthProp={dynamicWidth.maxWidth} />
+      return <RemoteAttendeeCard key={attendee.chimeAttendeeId} attendeeId={attendee.chimeAttendeeId} name={externalUserId} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} audioState={<ShowVisualizer meetingManager={meetingManager} attendee={attendee} />} widthProp={dynamicWidth.width} maxWidthProp={dynamicWidth.maxWidth} />
     }
   });
 
@@ -226,14 +173,14 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
         <div className=" flex-5 bg-cs-black-200 px-10 py-5 rounded-[4px] mr-4">
           <div className=" h-full flex flex-col">
             <div className="flex gap-x-3 flex-2 items-center">
-              <div className="p-[4px] bg-cs-grey-50 rounded-lg"><RecordCircle size="24" color="#CB3A32" variant="Bulk" /></div>
+              {/* <div className="p-[4px] bg-cs-grey-50 rounded-lg"><RecordCircle size="24" color="#CB3A32" variant="Bulk" /></div>
               <div className=" text-cs-grey-50 font-normal">Conference is recorded</div>
-              <div className=" w-[1px] bg-cs-grey-200 min-h-6"></div>
-              <h3 className=" text-cs-grey-50 font-semibold ">Anthony Femi share screen</h3>
+              <div className=" w-[1px] bg-cs-grey-200 min-h-6"></div> */}
+              <h3 className=" text-cs-grey-50 font-semibold "><span className=" capitalize">{processString(externalID as string)} </span>share screen</h3>
             </div>
             <div className="flex justify-center items-center rounded-lg overflow-hidden h-full">
               <div className=" min-h-[200px] w-full h-full rounded-lg min-w-[200px]" >
-                <ContentShare nameplate="Content share" className=' rounded-lg relative bg-slate-800 min-h-[200px] [&>video]:object-cover' css="border: 1px solid" />
+                <ContentShare nameplate={processString(externalID as string)} className=' rounded-lg relative bg-slate-800 min-h-[200px] [&>video]:object-cover capitalize' css="border: 1px solid" />
               </div>
             </div>
           </div>
@@ -283,7 +230,7 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
 
             <div className="">
               {attendees.map((attendee) => (
-                <AttendeeListCard attendeeId={attendee.chimeAttendeeId} key={attendee.chimeAttendeeId} />
+                <AttendeeListCard attendeeId={attendee.chimeAttendeeId} key={attendee.chimeAttendeeId} externalID={attendee.externalUserId} audioState={<ShowVisualizer meetingManager={meetingManager} attendee={attendee} />} />
               ))}
 
             </div>
@@ -299,7 +246,8 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
               height: '0',
               overflow: 'hidden',
             }}>
-            <Chat attendeeIDProp={attendeIDString} sideViewFunc={sideViewFunc} />
+            {externalID &&
+              <Chat attendeeIDProp={attendeIDString} externalID={processString(externalID as string)} sideViewFunc={sideViewFunc} />}
           </div>
 
           {sideView === 'Conference Info' && <div className=" flex-6 bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-4 pt-5">

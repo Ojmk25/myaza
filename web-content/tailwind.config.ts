@@ -14,7 +14,7 @@ const config: Config = {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
-        "cs-bg": "url('../public/assets/images/bgImg.svg')",
+        // "cs-bg": "url('../public/assets/images/bgImg.svg')",
       },
       fontFamily: {
         sans: ['var(--font-metropolis)']
@@ -26,6 +26,7 @@ const config: Config = {
           "purple-400": "#843DE7",
           "purple-500": "#7133CF",
           "purple-650": "#5E29B7",
+          "purple-650/80": "#5e29b7cc",
 
           "error-50": "#FCF3F2",
           "error-500": "#DE524C",
@@ -73,3 +74,4 @@ const config: Config = {
   ],
 };
 export default config;
+

@@ -3,12 +3,15 @@ import { Coffee, EmojiHappy, InfoCircle, Messages1, Microphone, MicrophoneSlash1
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import DateTimeDisplay from "../../utils/getDate";
-import { useContentShareControls, useContentShareState, useLocalVideo, useToggleLocalMute } from "amazon-chime-sdk-component-library-react";
+import { useContentShareControls, useContentShareState, useLocalVideo, useToggleLocalMute, MeetingManager } from "amazon-chime-sdk-component-library-react";
 import raisedHand from '@/public/assets/images/raisedHand.svg'
+import { useRouter } from "next/navigation";
 
-export default function MeetingControl({ bgColor, onOpen, sideView, sideViewFunc }: {
+
+export default function MeetingControl({ bgColor, onOpen, sideView, sideViewFunc, meetingManager }: {
   bgColor: boolean, onOpen: () => void,
-  sideView?: string, sideViewFunc: (value: string) => void
+  sideView?: string, sideViewFunc: (value: string) => void,
+  meetingManager: MeetingManager
 }) {
   const currentTimeRef = useRef<HTMLDivElement>(null);
   const [changeBg, setChangeBg] = useState(true)
@@ -18,6 +21,7 @@ export default function MeetingControl({ bgColor, onOpen, sideView, sideViewFunc
   const { isLocalUserSharing } = useContentShareState();
   const [localSideView, setLocalSideView] = useState('');
   const [toggleSideView, setToggleSideView] = useState(false);
+  const navigate = useRouter()
 
   useEffect(() => {
     const updateCurrentTime = () => {
@@ -46,6 +50,11 @@ export default function MeetingControl({ bgColor, onOpen, sideView, sideViewFunc
     } else {
       sideViewFunc(value)
     }
+  }
+
+  const handleEndMeeting = () => {
+    meetingManager.audioVideo?.stop();
+    navigate.push('/')
   }
 
   return (
@@ -112,7 +121,7 @@ export default function MeetingControl({ bgColor, onOpen, sideView, sideViewFunc
               <h6 className=" text-cs-grey-100 font-medium text-xs">Raise hand</h6>
             </div>
 
-            <div className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer">
+            <div className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer" onClick={handleEndMeeting}>
               <span>End</span>
             </div>
           </div>

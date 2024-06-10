@@ -13,6 +13,10 @@ import PinInput from "react-pin-input";
 import { ValidateEmail, ValidatePassword } from "@/utils/Validators";
 import { useCountdown } from "@/hooks/useTimeCountDown";
 import { AppCtx } from "@/context/StoreContext";
+import { resendVerificationOTP } from "@/services/authService";
+import { SuccessSlideIn } from "@/components/SuccessSlideIn";
+import { FailureSlideIn } from "@/components/FailureSlideIn";
+import LoadingScreen from "@/components/modals/LoadingScreen";
 
 export default function ForgotPassword() {
   const context = useContext(AppCtx)
@@ -28,9 +32,10 @@ export default function ForgotPassword() {
     password: '',
   })
   const [openModal, setOpenModal] = useState(false)
-  const [successRes, setSuccessRes] = useState("")
+  const [successRes, setSuccessRes] = useState<any>()
   const [errorColour, setErrorColour] = useState(false)
   const [extendTimer, setExtendTimer] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const handleInput = (input: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = input.target;
@@ -87,6 +92,9 @@ export default function ForgotPassword() {
         </div>
       </form>
 
+      <SuccessSlideIn openModal={openModal} response={successRes && successRes?.response.statusCode === 200} successActionResponse={successRes && successRes?.response.body.message} closeModal={() => { }} />
+      <FailureSlideIn openModal={openModal} response={successRes && successRes?.response.statusCode !== 200} errResponse={successRes && successRes?.response.body.message} closeModal={() => { }} />
+      {loading && <LoadingScreen />}
     </AuthLayout>
   )
 }

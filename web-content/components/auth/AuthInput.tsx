@@ -1,7 +1,7 @@
 import { EyeSlash } from "iconsax-react";
 import { useState } from "react";
 
-export const AuthInput = ({ label, action, errorMessage, inputType, inputName, placeHolder, value }: { label: string, action: (input: React.ChangeEvent<HTMLInputElement>) => void, errorMessage: string, inputType: string, inputName: string, placeHolder: string, value?: string }) => {
+export const AuthInput = ({ label, action, errorMessage, inputType, inputName, placeHolder, value, defaultValue, disabledOpt }: { label: string, action: (input: React.ChangeEvent<HTMLInputElement>) => void, errorMessage: string, inputType: string, inputName: string, placeHolder: string, value?: string, defaultValue?: string, disabledOpt?: boolean }) => {
   const [checkPassword, setCheckPassword] = useState(false);
 
   return (
@@ -31,10 +31,12 @@ export const AuthInput = ({ label, action, errorMessage, inputType, inputName, p
           onChange={(e) => action(e)}
           type={inputType}
           name={inputName}
-          className="h-[48px] px-[16px] pt-[10px] pb-[13px] border-[#9F9F9F] border rounded-[10px] w-full placeholder:text-[#898989] placeholder:text-sm outline-none"
+          className={`h-[48px] px-[16px] pt-[10px] pb-[13px] border-[#9F9F9F] border rounded-[10px] w-full placeholder:text-[#898989] placeholder:text-sm outline-none ${disabledOpt && 'bg-[#DFDFDF] border-[#B4B4B4]'}`}
           placeholder={placeHolder}
           id={inputName}
           value={value}
+          defaultValue={defaultValue}
+          disabled={disabledOpt}
         />
         <p className="text-xs text-cs-error-500 min-h-4">{errorMessage}</p>
       </div>

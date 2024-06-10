@@ -3,12 +3,21 @@ import { ContentShare, LocalVideo, RemoteVideo, useAttendeeStatus, useContentSha
 import { MeetingSessionConfiguration, VideoTileState } from "amazon-chime-sdk-js";
 import MeetingSection from '@/components/meetingComponents/MeetingSection';
 import MeetingControl from "@/components/meetingComponents/MeetingControl";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { ArrowLeft, Coffee, InfoCircle, Setting2 } from "iconsax-react";
 import ShareScreen from "@/components/modals/ShareScreen";
 import Settings from "@/components/modals/Settings";
 import { useRouter } from "next/router"
-import { mer } from "@/services/userService";
+import { joinMeetingFnc } from "@/services/meetingServices";
+import { decodeJwt, getFullName } from "@/services/authService";
+import Link from "next/link";
+import Image from "next/image";
+import cecureStream from "@/public/assets/images/cecurestream.svg"
+import cecureStreamSmall from "@/public/assets/images/cecureStreamSmall.svg"
+import { SuccessSlideIn } from "../SuccessSlideIn";
+import { FailureSlideIn } from "../FailureSlideIn";
+import LoadingScreen from "../modals/LoadingScreen";
+
 
 export default function TempMeeting({ param }: { param: string | string[] | undefined }) {
   const meetingManager = useMeetingManager();
@@ -21,64 +30,12 @@ export default function TempMeeting({ param }: { param: string | string[] | unde
   const [sideView, setSideView] = useState('');
   const router = useRouter();
   const [theRoute, setTheRoute] = useState('')
+  const [meetingDetails, setMeetDetails] = useState(null)
+  const [loading, setLoading] = useState(false);
+  const [successRes, setSuccessRes] = useState<any>()
+  const [openModal, setOpenModal] = useState(false)
 
 
-
-
-  const joinMeeting = async () => {
-
-    // Fetch the meeting and attendee data from your server application
-    const response = await fetch('https://dibxzaa24vvschnzknjn7m65pe0dvnlh.lambda-url.us-east-1.on.aws/',
-      {
-        mode: 'cors',
-      });
-    const data = await response.json();
-
-    meetingManager.getAttendee = async (chimeAttendeeId: string, externalUserId?: string) => {
-      const response = await fetch('/my-attendees-endpoint');
-      const user = await response.json();
-      console.log(user);
-
-      return {
-        name: user.name,
-      }
-    }
-    const getSessionItem = async () => {
-      return sessionStorage.getItem(router.query.link as string)
-    }
-    const meetingDetails = await getSessionItem()
-    const parsedmeetingDetails = JSON.parse(meetingDetails as string)
-
-
-
-    const meetingSessionConfiguration = new MeetingSessionConfiguration(parsedmeetingDetails.MeetingDetails, parsedmeetingDetails.HostDetails[0]);
-
-    await meetingManager.join(meetingSessionConfiguration);
-
-
-
-
-
-
-
-    // const meetingSessionConfiguration = new MeetingSessionConfiguration(data.Meeting, data.Attendee);
-    // const meetingSessionConfiguration = new MeetingSessionConfiguration(mer.body.data.MeetingDetails, mer.body.data.HostDetails);
-
-
-
-    // Create a `MeetingSession` using `join()` function with the `MeetingSessionConfiguration`
-    // await meetingManager.join(meetingSessionConfiguration);
-
-    // At this point you could let users setup their devices, or by default
-    // the SDK will select the first device in the list for the kind indicated
-    // by `deviceLabels` (the default value is DeviceLabels.AudioAndVideo)
-    // meetingManager.getAttendee(data.Attendee.AttendeeId, data.Meeting.ExternalMeetingId)
-
-    // Start the `MeetingSession` to join the meeting
-    await meetingManager.start();
-
-
-  };
   const handleShowModal = (type: string) => {
     setShowModal(type);
     document.body.classList.add('overflow-hidden');
@@ -102,32 +59,73 @@ export default function TempMeeting({ param }: { param: string | string[] | unde
     }
   }
 
+
+
   useEffect(() => {
     if (router.isReady) {
-      // Extract the full URL
-      const fullUrl = window.location.href;
-
-      // You can also extract specific parts, like query parameters
       const { query } = router;
 
-      // Update the state with the full URL or specific parts as needed
-      // setCurrentUrl(fullUrl);
-      console.log('Query Parameters:', query);
+      const { first_name, surname, user_id } = getFullName()
 
-      console.log(window.location.pathname);
-      // joinMeeting()
+      const meetingPayload = {
+        meeting_id: query.link,
+        first_name: first_name,
+        last_name: surname,
+        user_id: user_id
+      }
+      const handleJoinMeeting = async () => {
+        const clearAll = () => {
+          setLoading(false)
+          setTimeout(() => {
+            setSuccessRes("")
+            setOpenModal(false)
+          }, 2000)
+        }
+        setLoading(true);
+        try {
+          const response = await joinMeetingFnc(meetingPayload)
+
+          setSuccessRes(response?.data)
+          setMeetDetails(response?.data.body.meeting_info)
+          // setTimeout(() => {
+          //   response?.data && response?.data?.data?.statusCode !== 200 && router.push("/");
+          // }, 2000)
+          const meetingSessionConfiguration = new MeetingSessionConfiguration(response?.data.body.meeting_info, response?.data.body.attendee_info);
+          await meetingManager.join(meetingSessionConfiguration);
+          await meetingManager.start();
+
+        } catch (error) {
+          console.log(error)
+          setLoading(true)
+          setOpenModal(true)
+        } finally {
+          clearAll()
+        }
+
+      }
+
+      handleJoinMeeting()
+
     }
   }, [router.isReady, router.asPath]);
+
+
+  useLayoutEffect(() => {
+    return () => {
+      // if (meetingManager !== null) {
+      // sessionStorage.setItem("meetingJoiner", "yes")
+      meetingManager.audioVideo?.stop();
+      // }
+
+    };
+  }, []);
 
   return (
     <>
       <main className="px-6 flex flex-col h-dvh relative">
         <div className="md:hidden ">
           <div className="flex  justify-between items-center py-4 bg-[#FEFDFF] border-solid border-b border-b-[#FAFAFA]">
-            <div className="flex gap-x-1 items-center">
-              <h1 className=" text-base text-cs-purple-650 font-bold">CecureStream</h1>
-              <div className=" text-xs text-cs-grey-700 font-medium border-[0.5px] border-solid border-cs-grey-700 py-[2px] px-2 rounded-lg">Beta</div>
-            </div>
+            <Link href={'/'} className=" md:hidden"><Image src={cecureStreamSmall} alt="logo" /></Link>
 
             <div className="flex justify-between gap-x-2 items-center">
               <div className={` ${sideView === 'Conference Info' ? 'bg-[#5E29B7]' : 'bg-[#E1C6FF4D]'} p-[10px] rounded-lg items-center cursor-pointer`} onClick={() => handleConference('Conference Info')}>
@@ -151,10 +149,7 @@ export default function TempMeeting({ param }: { param: string | string[] | unde
         </div>
 
         <div className=" hidden md:flex justify-between items-center py-4">
-          <div className="flex gap-x-1 items-center">
-            <h1 className=" text-3xl text-cs-purple-650 font-bold">CecureStream</h1>
-            <div className=" text-xs text-cs-grey-700 font-medium border-[0.5px] border-solid border-cs-grey-700 py-[2px] px-2 rounded-lg">Beta</div>
-          </div>
+          <Link href={'/'} className="hidden md:block" ><Image src={cecureStream} alt="logo" /></Link>
 
           <div className="flex justify-between gap-x-4 items-center">
             <div className={` flex ${sideView === 'Conference Info' ? 'bg-[#5E29B7]' : 'bg-[#E1C6FF4D]'} py-[10px] px-[10px] gap-x-[10px] rounded-lg items-center cursor-pointer`} onClick={() => handleConference('Conference Info')}>
@@ -170,8 +165,7 @@ export default function TempMeeting({ param }: { param: string | string[] | unde
         </div>
 
         {/* grid px-20 gap-x-16 items-center grid-cols-2 */}
-
-        <button onClick={joinMeeting}>Join meeting</button>
+        {/* <button onClick={joinMeeting}>join</button> */}
 
         <MeetingSection
           attendeIDString={meetingManager.meetingSessionConfiguration?.credentials?.attendeeId}
@@ -181,9 +175,12 @@ export default function TempMeeting({ param }: { param: string | string[] | unde
           meetingManager={meetingManager}
         />
 
-        <MeetingControl bgColor onOpen={() => handleShowModal("shareScreen")} sideViewFunc={handleSideView} sideView={sideView} />
+        <MeetingControl bgColor onOpen={() => handleShowModal("shareScreen")} sideViewFunc={handleSideView} sideView={sideView} meetingManager={meetingManager} />
         {showModal === "shareScreen" && <ShareScreen onClose={handleCloseModal} />}
         {showModal === "settings" && <Settings onClose={handleCloseModal} />}
+        {/* <SuccessSlideIn openModal={openModal} response={successRes && successRes?.statusCode === 200} successActionResponse={successRes && successRes?.message} closeModal={() => { }} /> */}
+        <FailureSlideIn openModal={openModal} response={successRes && successRes?.statusCode !== 200} errResponse={successRes && successRes?.body.message} closeModal={() => { }} />
+        {loading && <LoadingScreen />}
       </main>
     </>
   )

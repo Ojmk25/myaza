@@ -9,6 +9,7 @@ export const subDomain = (): string | null => {
    */
   if (typeof window !== "undefined") {
     console.log(window.location.host);
+    sessionStorage.setItem("meetingJoiner", "yes")
     const hostname = window.location.hostname;
     return hostname.split('.')[0];
   } else {

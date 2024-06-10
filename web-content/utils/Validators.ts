@@ -62,6 +62,20 @@ export const activateButton = (obj: Record<string, boolean>): boolean => {
 }
 
 
+export function isValidUUID(uuid: string): boolean {
+  const uuidRegex = /^[0-9a-z]{8}-[0-9a-z]{4}-[1-5][0-9a-z]{3}-[89ab][0-9a-z]{3}-[0-9a-z]{12}$/i;
+  // /^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/i
+  return uuidRegex.test(uuid);
+}
+
+export function extractAfterLastSlashOrFull(input: string): string {
+  const lastSlashIndex = input.lastIndexOf('/');
+  if (lastSlashIndex !== -1) {
+    return input.substring(lastSlashIndex + 1);
+  }
+  return input;
+}
+
 
 
 

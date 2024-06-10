@@ -7,10 +7,11 @@ import avatar from "@/public/assets/images/avatar.png";
 import { EmojiNormal, Send } from "iconsax-react";
 import { AppCtx, StoreContext } from '@/context/StoreContext';
 import { timeSince } from '@/utils/formatTime';
+import { getRemoteInitials } from '@/utils/meetingFunctions';
 
 
-const Chat = ({ attendeeIDProp, sideViewFunc }: { attendeeIDProp: string | null | undefined, sideViewFunc: (value: string) => void }) => {
-  const [messages, setMessages] = useState<{ sender: string; attendeeId: string; message: string, timeStamp: Date }[]>([]);
+const Chat = ({ attendeeIDProp, externalID, sideViewFunc }: { attendeeIDProp: string | null | undefined, externalID: string, sideViewFunc: (value: string) => void }) => {
+  const [messages, setMessages] = useState<{ sender: string; attendeeId: string; message: string, timeStamp: Date, externalID: string }[]>([]);
   const [inputMessage, setInputMessage] = useState<string>('');
   const audioVideo = useAudioVideo();
   const { appState, setAppState } = useContext(AppCtx);
@@ -26,7 +27,7 @@ const Chat = ({ attendeeIDProp, sideViewFunc }: { attendeeIDProp: string | null 
     audioVideo.realtimeSubscribeToReceiveDataMessage('chat', (dataMessage) => {
       const message = new TextDecoder().decode(dataMessage.data);
       const sender = dataMessage.senderAttendeeId === attendeeIDProp ? 'Local User' : 'Remote Attendee';
-      setMessages(prevMessages => [...prevMessages, { sender, attendeeId: dataMessage.senderAttendeeId, message, timeStamp: new Date }]);
+      setMessages(prevMessages => [...prevMessages, { sender, attendeeId: dataMessage.senderAttendeeId, message, timeStamp: new Date, externalID: dataMessage.senderExternalUserId }]);
 
       // setAppState(
       //   prevState => ({
@@ -50,7 +51,7 @@ const Chat = ({ attendeeIDProp, sideViewFunc }: { attendeeIDProp: string | null 
 
     audioVideo.realtimeSendDataMessage('chat', new TextEncoder().encode(inputMessage));
 
-    setMessages(prevMessages => [...prevMessages, { sender: 'Local User', attendeeId: attendeeIDProp || '', message: inputMessage, timeStamp: new Date }]);
+    setMessages(prevMessages => [...prevMessages, { sender: 'Local User', attendeeId: attendeeIDProp || '', message: inputMessage, timeStamp: new Date, externalID }]);
     setInputMessage('');
 
     // setAppState(
@@ -93,17 +94,19 @@ const Chat = ({ attendeeIDProp, sideViewFunc }: { attendeeIDProp: string | null 
               <div className=' align-bottom' key={index}>{message.sender === 'Local User' ? (
                 <div className=" py-1">
                   <div className=" flex justify-end gap-x-1 items-center">
-                    <h4 className=" text-cs-grey-dark font-medium text-xs">{message.sender}</h4>
-                    <Image src={avatar} alt="profile" className=" rounded-full w-5 h-5 object-cover" />
+                    <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">{message.externalID}</h4>
+                    {/* <Image src={avatar} alt="profile" className=" rounded-full w-5 h-5 object-cover" /> */}
+                    <div className=" bg-cs-grey-800 w-6 h-6 rounded-full flex justify-center items-center text-cs-grey-50 text-xs uppercase">{getRemoteInitials(externalID)}</div>
                   </div>
                   <h5 className=" text-xs font-normal text-cs-grey-800 text-right">{message.message}</h5>
                 </div>
               ) : (
                 <div className=" flex py-1 gap-x-1" key={index}>
-                  <Image src={avatar} alt="profile" className=" rounded-full w-5 h-5 object-cover" />
+                  {/* <Image src={avatar} alt="profile" className=" rounded-full w-5 h-5 object-cover" /> */}
+                  <div className=" bg-cs-grey-800 w-6 h-6 rounded-full flex justify-center items-center text-cs-grey-50 text-xs uppercase">{getRemoteInitials(externalID)}</div>
                   <div>
                     <div className=" flex items-center gap-x-2 mt-[3px]">
-                      <h4 className=" text-cs-grey-dark font-medium text-xs">{message.sender}</h4>
+                      <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">{message.externalID}</h4>
                       <div className=" w-[5px] h-[5px] bg-[#333333] rounded-full"></div>
                       <h6 className=" text-cs-grey-500 text-[9px] font-normal">{timeSince(message.timeStamp)}</h6>
                     </div>
