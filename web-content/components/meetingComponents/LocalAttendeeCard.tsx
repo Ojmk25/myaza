@@ -1,17 +1,20 @@
-import { LocalVideo, RemoteVideo, useAttendeeStatus, useLocalVideo } from "amazon-chime-sdk-component-library-react";
+import { LocalVideo, RemoteVideo, useAttendeeStatus, useLocalVideo, MeetingManager } from "amazon-chime-sdk-component-library-react";
 import Image from "next/image";
 import { MicrophoneSlash1, Microphone } from "iconsax-react";
 import avatar from "@/public/assets/images/avatar.png"
 import dottedLine from "@/public/assets/images/dottedLine.svg"
 import { useEffect } from "react";
 import { getNameAbbreviation } from "@/services/authService";
-import { processString } from "@/utils/meetingFunctions";
+import { getRemoteInitials, processString } from "@/utils/meetingFunctions";
+import ReactionEmoji from "./ReactionEmoji";
+import { useAppContext } from "@/context/StoreContext";
+import RaisedHand from "./RaisedHand";
 
 
 
-export const LocalAttendeeCard = ({ name, attendeeId, videoTildId, nameID, audioState, widthProp, maxWidthProp }: { name: string | undefined, attendeeId: any, videoTildId: number, nameID: string, audioState: JSX.Element, widthProp: string | number, maxWidthProp: string | number }) => {
+export const LocalAttendeeCard = ({ name, attendeeId, videoTildId, nameID, audioState, widthProp, maxWidthProp, meetingManager }: { name: string | undefined, attendeeId: any, videoTildId: number, nameID: string, audioState: JSX.Element, widthProp: string | number, maxWidthProp: string | number, meetingManager?: MeetingManager }) => {
   const { isVideoEnabled } = useLocalVideo();
-
+  const { appState, setAppState } = useAppContext();
   const { videoEnabled, sharingContent, muted } = useAttendeeStatus(attendeeId);
 
   useEffect(() => { getNameAbbreviation() }, [])
@@ -21,7 +24,12 @@ export const LocalAttendeeCard = ({ name, attendeeId, videoTildId, nameID, audio
       <div className={` ${isVideoEnabled ? "absolute right-3 z-10 top-3" : "flex justify-end"}`}>
         {audioState}
       </div>
-
+      <div className={` ${isVideoEnabled ? "left-3 top-3" : ""} z-10 absolute`}>
+        <ReactionEmoji attendeeId={attendeeId} />
+      </div>
+      <div className={` ${isVideoEnabled ? "right-8 bottom-3" : "right-8 bottom-3"} z-10 absolute`}>
+        <RaisedHand attendeeId={attendeeId} />
+      </div>
       <div className="flex-1 flex justify-center items-center">
         <div className=" w-full h-full " >
           <LocalVideo className=' rounded relative bg-slate-800 capitalize' nameplate={processString(name as string)} id={`remotevideo-${videoTildId}`} css=" relative" />
@@ -30,7 +38,9 @@ export const LocalAttendeeCard = ({ name, attendeeId, videoTildId, nameID, audio
             <div>
               {!isVideoEnabled && (
                 // <Image src={avatar} alt="" className=" max-w-[50px] @[300px]/imageWrapper:max-w-[100px] max-h-[297px] rounded-full m-auto" />
-                <div className=" bg-cs-grey-800 @[150px]/imageWrapper:w-[80px] @[150px]/imageWrapper:h-[80px] @[600px]/imageWrapper:w-[150px] @[600px]/imageWrapper:h-[150px] rounded-full flex justify-center items-center text-cs-grey-55 font-semibold text-[28px] m-auto">{getNameAbbreviation()}</div>
+                <div className=" bg-cs-grey-800 @[150px]/imageWrapper:w-[80px] @[150px]/imageWrapper:h-[80px] @[600px]/imageWrapper:w-[150px] @[600px]/imageWrapper:h-[150px] rounded-full flex justify-center items-center text-cs-grey-55 font-semibold text-[28px] m-auto">
+                  {getRemoteInitials(processString(name as string))}
+                </div>
               )}
               {/* w-[100px] h-[100px] max-w-[150px] max-h-[150px] */}
 

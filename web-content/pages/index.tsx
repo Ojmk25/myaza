@@ -18,6 +18,8 @@ import LoadingScreen from "@/components/modals/LoadingScreen";
 import { createInstantMeeting, setInstantMeeting, } from "@/services/meetingServices";
 import Header from "@/components/Header";
 import { subDomain } from "@/utils/getDomain";
+import { SuccessSlideIn } from "@/components/SuccessSlideIn";
+import { FailureSlideIn } from "@/components/FailureSlideIn";
 
 export default function Home() {
 
@@ -28,10 +30,11 @@ export default function Home() {
   const [showModal, setShowModal] = useState("");
   const [loading, setLoading] = useState(false);
   const [disableButton, setDisableButton] = useState(true)
-  const [testData, setTestData] = useState<any>()
+  const [meetingData, setMeetingData] = useState<any>()
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null)
   const [profilePic, setProfilePic] = useState(false);
   const [profileModal, setProfileModal] = useState(false)
+  const [openModal, setOpenModal] = useState(false)
 
   useEffect(() => {
     setLoggedIn(IsAuthenticated())
@@ -95,20 +98,29 @@ export default function Home() {
 
   const handleSignInstantMeeting = async () => {
     setLoading(true)
+    const clearAll = () => {
+      setLoading(false)
+      setTimeout(() => {
+        setMeetingData("")
+        setOpenModal(false)
+      }, 2000)
+    }
     try {
       const data = await createInstantMeeting({})
       sessionStorage.setItem("meetingJoiner", "no")
-      setTestData(data)
+      setMeetingData(data)
       setLoading(true)
+      setOpenModal(true)
       data?.data.body && data?.data.body.status === 'Success' && navigate.push(`/meet/${data?.data.body.data.MeetingDetails.MeetingId}`)
 
       // setInstantMeeting(data?.data.body.data.MeetingDetails.MeetingId as string, data?.data.body.data)
     } catch (error) {
       console.log(error)
       setLoading(true)
+      setOpenModal(true)
     } finally {
       console.log('Finally');
-      setLoading(false)
+      clearAll()
 
     }
   }
@@ -166,7 +178,18 @@ export default function Home() {
       </div>
 
       {showModal === "schedule" && <ScheduleMeeting onClose={handleCloseModal} />}
-      {/* {showModal === "joinMeeting" && <JoinMeeting onClose={handleCloseModal} />} */}
+      <SuccessSlideIn
+        openModal={openModal}
+        response={meetingData && meetingData?.data.statusCode === 200}
+        successActionResponse={meetingData && meetingData?.data.body.message}
+        closeModal={() => { }} />
+
+      <FailureSlideIn
+        openModal={openModal}
+        response={meetingData && meetingData?.data.statusCode !== 200}
+        errResponse={meetingData && meetingData?.data.body.message}
+        closeModal={() => { }} />
+
       {loading && <LoadingScreen />}
     </main>}
   </>);

@@ -18,3 +18,7 @@
     /* Firefox */
   }
 }
+
+.remote-video video {
+  transform: rotateY(180deg)
+}

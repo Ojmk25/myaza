@@ -1,9 +1,9 @@
 'use client'
-import { ContentShare, LocalVideo, RemoteVideo, useAttendeeStatus, useContentShareControls, useContentShareState, useLocalVideo, useMeetingManager, useRemoteVideoTileState, useRosterState, useToggleLocalMute, VideoTile, VideoTileGrid } from "amazon-chime-sdk-component-library-react";
+import { ContentShare, LocalVideo, RemoteVideo, useAttendeeStatus, useAudioVideo, useContentShareControls, useContentShareState, useLocalVideo, useMeetingManager, useRemoteVideoTileState, useRosterState, useToggleLocalMute, VideoTile, VideoTileGrid } from "amazon-chime-sdk-component-library-react";
 import { MeetingSessionConfiguration, VideoTileState } from "amazon-chime-sdk-js";
 import MeetingSection from '@/components/meetingComponents/MeetingSection';
 import MeetingControl from "@/components/meetingComponents/MeetingControl";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useContext, useEffect, useLayoutEffect, useState } from "react";
 import { ArrowLeft, Coffee, InfoCircle, Setting2 } from "iconsax-react";
 import ShareScreen from "@/components/modals/ShareScreen";
 import Settings from "@/components/modals/Settings";
@@ -17,6 +17,7 @@ import cecureStreamSmall from "@/public/assets/images/cecureStreamSmall.svg"
 import { SuccessSlideIn } from "../SuccessSlideIn";
 import { FailureSlideIn } from "../FailureSlideIn";
 import LoadingScreen from "../modals/LoadingScreen";
+import { useAppContext } from "@/context/StoreContext";
 
 
 export default function TempMeeting({ param }: { param: string | string[] | undefined }) {
@@ -29,11 +30,15 @@ export default function TempMeeting({ param }: { param: string | string[] | unde
   const { isVideoEnabled, toggleVideo } = useLocalVideo();
   const [sideView, setSideView] = useState('');
   const router = useRouter();
-  const [theRoute, setTheRoute] = useState('')
   const [meetingDetails, setMeetDetails] = useState(null)
   const [loading, setLoading] = useState(false);
   const [successRes, setSuccessRes] = useState<any>()
   const [openModal, setOpenModal] = useState(false)
+  const audioVideo = useAudioVideo()
+  const [emoji, setEmoji] = useState<any>('')
+  const [inputMessage, setInputMessage] = useState({ sender: '', emoji: '' });
+  const { appState, setAppState } = useAppContext();
+  const [raisedHand, setRaisedHand] = useState('')
 
 
   const handleShowModal = (type: string) => {
@@ -69,9 +74,9 @@ export default function TempMeeting({ param }: { param: string | string[] | unde
 
       const meetingPayload = {
         meeting_id: query.link,
-        first_name: first_name,
-        last_name: surname,
-        user_id: user_id
+        first_name: first_name || appState.sessionState.guestFirstName,
+        last_name: surname || appState.sessionState.guestLastName,
+        user_id: user_id || appState.sessionState.guestFirstName,
       }
       const handleJoinMeeting = async () => {
         const clearAll = () => {
@@ -120,10 +125,54 @@ export default function TempMeeting({ param }: { param: string | string[] | unde
     };
   }, []);
 
+
+
+  const sendReaction = (sender: string, emoji: string) => {
+    // Update local state immediately
+    setAppState((prevState) => ({
+      ...prevState,
+      sessionState: {
+        ...prevState.sessionState,
+        reaction: { message: emoji, sender: sender },
+      },
+    }));
+
+    // Check if audioVideo is available
+    if (!audioVideo) return;
+
+    // Create and send the message
+    const message = JSON.stringify({ sender: sender, emoji: emoji });
+
+    meetingManager.audioVideo?.realtimeSendDataMessage('reaction', message);
+  };
+
+
+
+  const sendRaiseHand = (timestamp: string, attendee: string) => {
+    // Update local state immediately
+    setAppState((prevState) => ({
+      ...prevState,
+      sessionState: {
+        ...prevState.sessionState,
+        raisedHand: { timestamp: timestamp, message: attendee },
+      },
+    }));
+
+    // Check if audioVideo is available
+    if (!audioVideo) return;
+    const message = JSON.stringify({ timestamp: timestamp, message: attendee });
+
+    // Send the message
+    audioVideo.realtimeSendDataMessage('raise-hand', (message));
+  };
+
+  console.log(meetingManager.meetingSessionConfiguration?.credentials?.externalUserId);
+
+
   return (
     <>
-      <main className="px-6 flex flex-col h-dvh relative">
-        <div className="md:hidden ">
+      <main className=" flex flex-col h-dvh relative">
+        <div className="md:hidden px-6">
           <div className="flex  justify-between items-center py-4 bg-[#FEFDFF] border-solid border-b border-b-[#FAFAFA]">
             <Link href={'/'} className=" md:hidden"><Image src={cecureStreamSmall} alt="logo" /></Link>
 
@@ -148,7 +197,7 @@ export default function TempMeeting({ param }: { param: string | string[] | unde
           </div>
         </div>
 
-        <div className=" hidden md:flex justify-between items-center py-4">
+        <div className=" hidden md:flex justify-between items-center py-4 px-6">
           <Link href={'/'} className="hidden md:block" ><Image src={cecureStream} alt="logo" /></Link>
 
           <div className="flex justify-between gap-x-4 items-center">
@@ -166,16 +215,25 @@ export default function TempMeeting({ param }: { param: string | string[] | unde
 
         {/* grid px-20 gap-x-16 items-center grid-cols-2 */}
         {/* <button onClick={joinMeeting}>join</button> */}
-
         <MeetingSection
           attendeIDString={meetingManager.meetingSessionConfiguration?.credentials?.attendeeId}
           externalID={meetingManager.meetingSessionConfiguration?.credentials?.externalUserId}
           sideView={sideView}
           sideViewFunc={handleSideView}
           meetingManager={meetingManager}
+          emoji={inputMessage}
+
         />
 
-        <MeetingControl bgColor onOpen={() => handleShowModal("shareScreen")} sideViewFunc={handleSideView} sideView={sideView} meetingManager={meetingManager} />
+        <MeetingControl
+          bgColor
+          onOpen={() => handleShowModal("shareScreen")}
+          sideViewFunc={handleSideView}
+          sideView={sideView}
+          meetingManager={meetingManager}
+          attendeIDString={meetingManager.meetingSessionConfiguration?.credentials?.attendeeId}
+          sendEmoji={sendReaction}
+        />
         {showModal === "shareScreen" && <ShareScreen onClose={handleCloseModal} />}
         {showModal === "settings" && <Settings onClose={handleCloseModal} />}
         {/* <SuccessSlideIn openModal={openModal} response={successRes && successRes?.statusCode === 200} successActionResponse={successRes && successRes?.message} closeModal={() => { }} /> */}

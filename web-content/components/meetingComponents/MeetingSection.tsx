@@ -1,35 +1,34 @@
 "use client"
 import Image from "next/image";
-import { Add, Copy, EmojiNormal, MicrophoneSlash1, RecordCircle, SearchNormal1, Send } from "iconsax-react";
+import { Add, Copy, SearchNormal1 } from "iconsax-react";
 
-import avatar from "@/public/assets/images/avatar.png"
-import videoImg from "@/public/assets/images/video.png"
-import activeVoice from '@/public/assets/images/activeVoice.svg'
 import closeIconPurple from "@/public/assets/images/closeIconPurple.svg"
-import raisedHand from '@/public/assets/images/raisedHand.svg'
-import { RefObject, createRef, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import dottedLine from "@/public/assets/images/dottedLine.svg"
-import { LocalVideo, VideoTileGrid, useLocalVideo, useToggleLocalMute, PreviewVideo, FeaturedRemoteVideos, VideoTile, RemoteVideo, useRemoteVideoTileState, useRosterState, useAttendeeStatus, useContentShareControls, ContentShare, useContentShareState, useAudioVideo, MeetingManager, RosterAttendeeType } from 'amazon-chime-sdk-component-library-react';
+import { useToggleLocalMute, useRemoteVideoTileState, useRosterState, useContentShareControls, ContentShare, useContentShareState, useAudioVideo, MeetingManager } from 'amazon-chime-sdk-component-library-react';
 import { RemoteAttendeeCard } from "./RemoteAttendeeCard";
 import { LocalAttendeeCard } from "./LocalAttendeeCard";
 import { AttendeeListCard } from "./AttendeeListCard";
 import { Message, DataMessage, DefaultRealtimeController, } from "amazon-chime-sdk-js";
 import Chat from "./IncallMessage";
 import copyTextToClipboard from "@/utils/clipBoard";
-import { processString } from "@/utils/meetingFunctions";
+import { getRemoteInitials, processString } from "@/utils/meetingFunctions";
 import ShowVisualizer from "./ShowVisualizer";
+import capturePurple from "@/public/assets/images/capturePurple.svg"
+import { timeSince } from "@/utils/formatTime";
+
 
 type DynamicWidth = {
   width: number | string;
   maxWidth: number | string;
 }
-export default function MeetingSection({ attendeIDString, externalID, sideView, sideViewFunc, meetingManager }: { attendeIDString: string | null | undefined, externalID: string | null | undefined, sideView?: string, sideViewFunc: (value: string) => void, meetingManager: MeetingManager }) {
+export default function MeetingSection({ attendeIDString, externalID, sideView, sideViewFunc, meetingManager, emoji }: { attendeIDString: string | null | undefined, externalID: string | null | undefined, sideView?: string, sideViewFunc: (value: string) => void, meetingManager: MeetingManager, emoji: any }) {
   const { roster } = useRosterState();
   const attendees = Object.values(roster);
   const { muted, toggleMute } = useToggleLocalMute();
   const { tiles, tileIdToAttendeeId, attendeeIdToTileId, size } = useRemoteVideoTileState();
   const { toggleContentShare } = useContentShareControls();
-  const { isLocalUserSharing, tileId } = useContentShareState();
+  const { isLocalUserSharing, tileId, sharingAttendeeId } = useContentShareState();
   const [meetingSideView, setMeetingSideView] = useState('meeting')
   const messageData = new DataMessage(Date.now(), "Test-Meeting", new Uint8Array(), "attendee", 'externalId')
   const messageChat = new Message('string', {}, 'I said')
@@ -43,6 +42,9 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
   const [dynamicWidth, setDynamicWidth] = useState<DynamicWidth>({ width: '', maxWidth: '' })
   const [screenWidth, setScreenWidth] = useState<number>(0);
   const [changingWidth, setChangingWidth] = useState<number>(0)
+  const [captionOn, setCaptionOn] = useState(true)
+  const captionScroll = useRef<HTMLDivElement>(null)
+
 
   useEffect(() => {
     // Function to update screenWidth state when the window is resized
@@ -64,7 +66,10 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
 
 
 
+  useEffect(() => {
+    captionScroll.current!.scrollTop = captionScroll.current!.scrollHeight;
 
+  }, [])
 
   const attendeeItems = attendees.map((attendee, i) => {
     const tilerId = attendeeIdToTileId[attendee.chimeAttendeeId]
@@ -72,30 +77,11 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
     const { name, externalUserId } = attendee;
 
     if (i === 0) {
-      return <LocalAttendeeCard key={attendee.chimeAttendeeId} attendeeId={attendee.chimeAttendeeId} name={externalUserId} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} audioState={<ShowVisualizer meetingManager={meetingManager} attendee={attendee} />} widthProp={dynamicWidth.width} maxWidthProp={dynamicWidth.maxWidth} />
+      return <LocalAttendeeCard key={attendee.chimeAttendeeId} attendeeId={attendee.chimeAttendeeId} name={externalUserId} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} audioState={<ShowVisualizer meetingManager={meetingManager} attendee={attendee} />} widthProp={dynamicWidth.width} maxWidthProp={dynamicWidth.maxWidth} meetingManager={meetingManager} />
     } else {
       return <RemoteAttendeeCard key={attendee.chimeAttendeeId} attendeeId={attendee.chimeAttendeeId} name={externalUserId} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} audioState={<ShowVisualizer meetingManager={meetingManager} attendee={attendee} />} widthProp={dynamicWidth.width} maxWidthProp={dynamicWidth.maxWidth} />
     }
   });
-
-
-  // const AttendeeItemsList = ({ attendees }: { attendees: RosterAttendeeType[] }) => {
-  //   return (
-  //     <>
-  //       {
-  //         attendees.map((attendee, i) => {
-  //           const tilerId = attendeeIdToTileId[attendee.chimeAttendeeId]
-  //           const { name } = attendee;
-  //           if (i === 0) {
-  //             return <LocalAttendeeCard key={attendee.chimeAttendeeId} attendeeId={attendee.chimeAttendeeId} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} audioState={<ShowVisualizer meetingManager={meetingManager} attendee={attendee} />} widthProp={dynamicWidth} />
-  //           } else {
-  //             return <RemoteAttendeeCard key={attendee.chimeAttendeeId} attendeeId={attendee.chimeAttendeeId} name={name} videoTildId={tilerId} nameID={attendee.chimeAttendeeId} audioState={<ShowVisualizer meetingManager={meetingManager} attendee={attendee} />} widthProp={dynamicWidth} />
-  //           }
-  //         })
-  //       }
-  //     </>
-  //   )
-  // };
 
 
   const handleCopyClick = (value: string) => {
@@ -110,19 +96,6 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
       }
     );
   };
-
-
-  // meetingManager.audioVideo!.realtimeSubscribeToVolumeIndicator(attendee.chimeAttendeeId,
-  //   (attendeeId, volume, muted, signalStrength) => {
-  //     if (volume !== null) {
-  //       // `volume` is a value between 0 (silence) and 1 (loudest), scale as needed
-  //       console.log(`Attendee ID: ${attendeeId}, Volume: ${volume}, muted: ${muted}, signalStrength: ${signalStrength}`);
-  //       // Here you can update your audio level analyzer visualization
-  //     }
-  //   }
-  // );
-
-
 
   useEffect(() => {
     if (containerTileRef.current && changingWidth <= 699) {
@@ -167,8 +140,11 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
     };
   }, []);
 
-  return (
-    <div className="flex flex-4 overflow-hidden">
+  let sharerAttendeeID = sharingAttendeeId?.split('#')[0];
+  let sharingExternalID = attendees.find(attendee => attendee.chimeAttendeeId === sharerAttendeeID)?.externalUserId;
+
+  return (<>
+    <div className=" flex-4 overflow-hidden px-6 hidden md:flex">
       {tileId && (
         <div className=" flex-5 bg-cs-black-200 px-10 py-5 rounded-[4px] mr-4">
           <div className=" h-full flex flex-col">
@@ -176,7 +152,7 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
               {/* <div className="p-[4px] bg-cs-grey-50 rounded-lg"><RecordCircle size="24" color="#CB3A32" variant="Bulk" /></div>
               <div className=" text-cs-grey-50 font-normal">Conference is recorded</div>
               <div className=" w-[1px] bg-cs-grey-200 min-h-6"></div> */}
-              <h3 className=" text-cs-grey-50 font-semibold "><span className=" capitalize">{processString(externalID as string)} </span>share screen</h3>
+              <h3 className=" text-cs-grey-50 font-semibold "><span className=" capitalize">{processString(sharingExternalID as string)} </span>share screen</h3>
             </div>
             <div className="flex justify-center items-center rounded-lg overflow-hidden h-full">
               <div className=" min-h-[200px] w-full h-full rounded-lg min-w-[200px]" >
@@ -192,9 +168,6 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
         <div className={`w-full @container/meetingTiles ${screenWidth < 1024 && sideView !== '' && tileId ? 'hidden' : ''}`} ref={containerTileRef}>
           <div className="w-full flex gap-4 h-full flex-4 flex-wrap justify-center" >
             {attendeeItems}
-            {/* {testArray.map((array) =>
-              <div className=" bg-black flex-4" style={{ width: dynamicWidth.width, maxWidth: dynamicWidth.maxWidth, minWidth: 200 }}></div>
-            )} */}
           </div>
         </div>
         {/* @[300px]/meetingTiles:flex-row @[300px]/meetingTiles:flex-wrap */}
@@ -248,6 +221,71 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
             }}>
             {externalID &&
               <Chat attendeeIDProp={attendeIDString} externalID={processString(externalID as string)} sideViewFunc={sideViewFunc} />}
+          </div>
+
+          <div style={sideView === 'Caption' ?
+            {
+              width: '100%',
+              height: '100%',
+              overflow: 'visible',
+            } : {
+              width: '0',
+              height: '0',
+              overflow: 'hidden',
+            }}>
+            <div className={` h-full bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-2 @[300px]/bigScreenSideCards:px-4 pt-5 overflow-y-scroll no-scrollbar`}>
+              <div className=" flex justify-between items-center">
+                <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-2xl">Caption</h3>
+                <Image src={closeIconPurple} alt="close-icon" onClick={() => sideViewFunc('')} className="cursor-pointer w-5 @[300px]/bigScreenSideCards:w-6" />
+              </div>
+
+              {!captionOn &&
+                <div className="h-full flex justify-center items-center">
+
+                  <div>
+                    <div className={`p-3 bg-[#E1C6FF4D] rounded-[15px] w-fit mx-auto bg-gradient-to-t from-[#E1C6FF33] to-[#E1C6FF4D]`}>
+                      <Image src={capturePurple} alt="hand" width={20} height={20} className="min-w-8 max-w-8" />
+                    </div>
+                    <h3 className=" font-medium text-lg text-cs-grey-dark my-3">Captions are not enabled yet</h3>
+                    <div className="mx-auto w-fit"><button className=" text-cs-purple-650 font-bold text-sm rounded-[10px] border border-cs-grey-150 p-3">Turn on caption</button></div>
+                  </div>
+                </div>
+              }
+
+              {captionOn && (
+                <div className='flex flex-col overflow-y-scroll h-full no-scrollbar' ref={captionScroll}>
+                  {/* {messages.map((message, index) => ( */}
+                  <div className=' align-bottom'>
+                    <div className=" flex py-1 gap-x-1">
+                      {/* <Image src={avatar} alt="profile" className=" rounded-full w-5 h-5 object-cover" /> */}
+                      <div className=" bg-cs-grey-800 w-6 h-6 min-w-6  rounded-full flex justify-center items-center text-cs-grey-50 text-xs uppercase">{getRemoteInitials('Emmanue Kalu')}</div>
+                      <div>
+                        <div className=" flex items-center gap-x-2 mt-[3px]">
+                          <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">{processString('Emmanuel')}</h4>
+                        </div>
+                        <p className=" text-xs font-normal text-cs-grey-800">Lorem ipsum dolor sit amet consectetur. Vulputate erat massa nunc ornare ornare orci. Tellus turpis ipsum in in. Neque amet leo odio ut tortor odio nulla tempor non. Et feugiat dictum neque nisi eget nisi at nulla feugiat. Molestie bibendum cursus leo egestas.</p>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <div className=' align-bottom'>
+                    <div className=" flex py-1 gap-x-1">
+                      {/* <Image src={avatar} alt="profile" className=" rounded-full w-5 h-5 object-cover" /> */}
+                      <div className=" bg-cs-grey-800 w-6 h-6 min-w-6  rounded-full flex justify-center items-center text-cs-grey-50 text-xs uppercase">{getRemoteInitials('Emmanue Kalu')}</div>
+                      <div>
+                        <div className=" flex items-center gap-x-2 mt-[3px]">
+                          <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">{processString('Emmanuel')}</h4>
+                        </div>
+                        <p className=" text-xs font-normal text-cs-grey-800">Lorem ipsum dolor sit amet consectetur. Vulputate erat massa nunc ornare ornare orci. Tellus turpis ipsum in in. Neque amet leo odio ut tortor odio nulla tempor non. Et feugiat dictum neque nisi eget nisi at nulla feugiat. Molestie bibendum cursus leo egestas.</p>
+                      </div>
+                    </div>
+
+                  </div>
+                  {/* ))} */}
+                </div>
+              )}
+            </div>
           </div>
 
           {sideView === 'Conference Info' && <div className=" flex-6 bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-4 pt-5">
@@ -318,7 +356,225 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
         </div> */}
       </div>
     </div>
-  )
+
+
+
+
+
+
+    <div className="flex flex-4 overflow-hidden px-6 md:hidden flex-col">
+      {tileId && (
+        <div className=" bg-cs-black-200 px-4 py-5 rounded-[4px]">
+          <div className=" h-full flex flex-col">
+            <div className="flex gap-x-3 items-center mb-2">
+              {/* <div className="p-[4px] bg-cs-grey-50 rounded-lg"><RecordCircle size="24" color="#CB3A32" variant="Bulk" /></div>
+        <div className=" text-cs-grey-50 font-normal">Conference is recorded</div>
+        <div className=" w-[1px] bg-cs-grey-200 min-h-6"></div> */}
+              <h3 className=" text-cs-grey-50 font-semibold "><span className=" capitalize">{processString(sharingExternalID as string)} </span></h3>
+            </div>
+            <div className="flex justify-center items-center rounded-lg overflow-hidden h-full">
+              <div className=" min-h-[200px] w-full h-full rounded-lg min-w-[200px]" >
+                <ContentShare nameplate={processString(externalID as string)} className=' rounded-lg relative bg-slate-800 min-h-[200px] [&>video]:object-cover capitalize' css="border: 1px solid" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      <div className="flex-6 flex">
+        <div className={`w-full  ${screenWidth < 1024 && sideView !== '' && tileId ? 'hidden' : ''}`} ref={containerTileRef}>
+          <div className={`w-full flex flex-col gap-4 h-full flex-4 justify-center ${tileId ? 'grid-cols-2' : 'grid-cols-2'}`} >
+            {attendeeItems}
+          </div>
+        </div>
+        {/* @[300px]/meetingTiles:flex-row @[300px]/meetingTiles:flex-wrap */}
+        {/* <div className="w-full @container/meetingTiles">
+    <div className="w-full flex flex-col gap-4 h-full flex-4 @[300px]/meetingTiles:flex-row flex-wrap">
+      <AttendeeItemsList attendees={attendees} />
+    </div>
+  </div> */}
+
+        <div className='w-0 overflow-hidden transition-all @container/bigScreenSideCards' ref={participantsRef} style={sideView !== '' ? {
+          width: participantsRef.current?.scrollWidth + "px",
+          // height: participantsRef.current?.scrollHeight + "px",
+          overflow: 'visible',
+          flex: '1 1 50%',
+          minWidth: screenWidth < 1025 ? 190 : 300,
+          marginLeft: 16,
+        } : {
+          width: '0px',
+          // height: '0px',
+          overflow: 'hidden',
+          flex: '1 1 0%',
+          marginLeft: 0,
+        }}>
+          {sideView === 'Participants' && <div className={` h-full bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-2 @[300px]/bigScreenSideCards:px-4 pt-5 overflow-y-scroll no-scrollbar`}>
+            <div className=" flex justify-between items-center">
+              <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-2xl">Participants <span className=" text-cs-grey-100 font-medium text-sm @[300px]/bigScreenSideCards:text-base">({attendees.length})</span></h3>
+              <Image src={closeIconPurple} alt="close-icon" onClick={() => sideViewFunc('')} className="cursor-pointer w-5 @[300px]/bigScreenSideCards:w-6" />
+            </div>
+            <div className=" relative mt-5 mb-3">
+              <input type="text" name="" id="" className=" w-full border border-cs-grey-300 h-8 @[300px]/bigScreenSideCards:h-10 rounded-[10px] outline-none pl-7 @[300px]/bigScreenSideCards:pl-10 placeholder:text-sm placeholder:font-normal" placeholder="Search for participants" />
+              <SearchNormal1 size="18" color="#898989" className=" absolute top-[7px] left-[10px] @[300px]/bigScreenSideCards:top-[12px] @[300px]/bigScreenSideCards:left-[14px] @[300px]/bigScreenSideCards:w-[18px] @[300px]/bigScreenSideCards:h-[18px]" />
+            </div>
+
+            <div className="">
+              {attendees.map((attendee) => (
+                <AttendeeListCard attendeeId={attendee.chimeAttendeeId} key={attendee.chimeAttendeeId} externalID={attendee.externalUserId} audioState={<ShowVisualizer meetingManager={meetingManager} attendee={attendee} />} />
+              ))}
+
+            </div>
+          </div>}
+
+          <div style={sideView === 'Chat' ?
+            {
+              width: '100%',
+              height: '100%',
+              overflow: 'visible',
+            } : {
+              width: '0',
+              height: '0',
+              overflow: 'hidden',
+            }}>
+            {externalID &&
+              <Chat attendeeIDProp={attendeIDString} externalID={processString(externalID as string)} sideViewFunc={sideViewFunc} />}
+          </div>
+
+          <div style={sideView === 'Caption' ?
+            {
+              width: '100%',
+              height: '100%',
+              overflow: 'visible',
+            } : {
+              width: '0',
+              height: '0',
+              overflow: 'hidden',
+            }}>
+            <div className={` h-full bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-2 @[300px]/bigScreenSideCards:px-4 pt-5 overflow-y-scroll no-scrollbar`}>
+              <div className=" flex justify-between items-center">
+                <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-2xl">Caption</h3>
+                <Image src={closeIconPurple} alt="close-icon" onClick={() => sideViewFunc('')} className="cursor-pointer w-5 @[300px]/bigScreenSideCards:w-6" />
+              </div>
+
+              {!captionOn &&
+                <div className="h-full flex justify-center items-center">
+
+                  <div>
+                    <div className={`p-3 bg-[#E1C6FF4D] rounded-[15px] w-fit mx-auto bg-gradient-to-t from-[#E1C6FF33] to-[#E1C6FF4D]`}>
+                      <Image src={capturePurple} alt="hand" width={20} height={20} className="min-w-8 max-w-8" />
+                    </div>
+                    <h3 className=" font-medium text-lg text-cs-grey-dark my-3">Captions are not enabled yet</h3>
+                    <div className="mx-auto w-fit"><button className=" text-cs-purple-650 font-bold text-sm rounded-[10px] border border-cs-grey-150 p-3">Turn on caption</button></div>
+                  </div>
+                </div>
+              }
+
+              {captionOn && (
+                <div className='flex flex-col overflow-y-scroll h-full no-scrollbar' ref={captionScroll}>
+                  {/* {messages.map((message, index) => ( */}
+                  <div className=' align-bottom'>
+                    <div className=" flex py-1 gap-x-1">
+                      {/* <Image src={avatar} alt="profile" className=" rounded-full w-5 h-5 object-cover" /> */}
+                      <div className=" bg-cs-grey-800 w-6 h-6 min-w-6  rounded-full flex justify-center items-center text-cs-grey-50 text-xs uppercase">{getRemoteInitials('Emmanue Kalu')}</div>
+                      <div>
+                        <div className=" flex items-center gap-x-2 mt-[3px]">
+                          <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">{processString('Emmanuel')}</h4>
+                        </div>
+                        <p className=" text-xs font-normal text-cs-grey-800">Lorem ipsum dolor sit amet consectetur. Vulputate erat massa nunc ornare ornare orci. Tellus turpis ipsum in in. Neque amet leo odio ut tortor odio nulla tempor non. Et feugiat dictum neque nisi eget nisi at nulla feugiat. Molestie bibendum cursus leo egestas.</p>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  <div className=' align-bottom'>
+                    <div className=" flex py-1 gap-x-1">
+                      {/* <Image src={avatar} alt="profile" className=" rounded-full w-5 h-5 object-cover" /> */}
+                      <div className=" bg-cs-grey-800 w-6 h-6 min-w-6  rounded-full flex justify-center items-center text-cs-grey-50 text-xs uppercase">{getRemoteInitials('Emmanue Kalu')}</div>
+                      <div>
+                        <div className=" flex items-center gap-x-2 mt-[3px]">
+                          <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">{processString('Emmanuel')}</h4>
+                        </div>
+                        <p className=" text-xs font-normal text-cs-grey-800">Lorem ipsum dolor sit amet consectetur. Vulputate erat massa nunc ornare ornare orci. Tellus turpis ipsum in in. Neque amet leo odio ut tortor odio nulla tempor non. Et feugiat dictum neque nisi eget nisi at nulla feugiat. Molestie bibendum cursus leo egestas.</p>
+                      </div>
+                    </div>
+
+                  </div>
+                  {/* ))} */}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {sideView === 'Conference Info' && <div className=" flex-6 bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-4 pt-5">
+            <div className=" flex justify-between items-center">
+              <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-2xl">Conference Info</h3>
+              <Image src={closeIconPurple} alt="profile" onClick={() => sideViewFunc('')} className=" cursor-pointer w-5 @[300px]/bigScreenSideCards:w-6" />
+            </div>
+            <div className=" relative mt-7 mb-5">
+              <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-xl">[Meeting Name]</h3>
+              <p className=" text-xs @[300px]/bigScreenSideCards:text-sm text-cs-black-200 font-normal mb-4 mt-6">Invite others to join by copying the meting link and sharing it: </p>
+            </div>
+            <div className=" relative mt-7 mb-5">
+              <input type="text" name="" id="" className=" w-full border border-[#F1F1F1] h-10 @[300px]/bigScreenSideCards:h-12 rounded-[10px] outline-none px-4 placeholder:text-sm placeholder:font-normal placeholder:text-cs-black-200" placeholder="xap-ert-olik" />
+              <Copy size="18" color="#5E29B7" className=" absolute top-[14px] right-[14px] cursor-pointer" onClick={async () => handleCopyClick(`https://cecurecast.com/xap-ert-olik`)} />
+              {tooltipMessage && <div className=" absolute text-xs text-cs-grey-50 p-2 bg-cs-purple-650 z-10 rounded">{tooltipMessage}</div>}
+            </div>
+
+            <button className="flex items-center text-cs-purple-650 font-bold py-2 px-3 @[300px]/bigScreenSideCards:py-3 @[300px]/bigScreenSideCards:px-4 border border-cs-purple-650 rounded-lg max-h-[52px]"><Add size="18" color="#5E29B7" /> Add participants</button>
+          </div>
+          }
+
+        </div>
+
+
+        {/* <div className=" bg-cs-black-200 flex-1 p-2 rounded flex flex-col sm:max-w-[352px]">
+    <div className=" flex justify-end">
+      <div className="p-[6px] bg-cs-grey-800 rounded-full"><MicrophoneSlash1 size="14" color="#FAFAFA" /></div>
+    </div>
+    <div className="flex-1 flex justify-center items-center">
+      <div className="p-[6px]">
+        <Image src={avatar} alt="" className=" max-w-[38px] max-h-[38px] rounded-full mx-auto" />
+        <h5 className="text-cs-grey-50 text-xs">Marie Oju</h5>
+      </div>
+    </div>
+    <div className=" flex justify-end">
+      <div className="p-[6px]"><Image src={dottedLine} alt="" className=" w-3 h-3" /></div>
+    </div>
+  </div>
+
+  <div className=" bg-cs-black-200 flex-1 p-2 rounded flex flex-col sm:max-w-[352px]">
+    <div className=" flex justify-end">
+      <div className="p-[6px] bg-cs-grey-800 rounded-full"><MicrophoneSlash1 size="14" color="#FAFAFA" /></div>
+    </div>
+    <div className="flex-1 flex justify-center items-center">
+      <div className="p-[6px]">
+        <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full mx-auto flex justify-center items-center text-cs-grey-50">MO</div>
+        <h5 className="text-cs-grey-50 text-xs">Marie Ojuerer</h5>
+      </div>
+    </div>
+    <div className=" flex justify-end">
+      <div className="p-[6px]"><Image src={dottedLine} alt="" className=" w-3 h-3" /></div>
+    </div>
+  </div>
+
+  More people in a meeting represented by numbers
+  <div className=" bg-cs-black-200 flex-1 p-2 rounded flex flex-col sm:max-w-[352px] min-h-[132px]">
+    <div className=" flex justify-end">
+      <div className="p-[6px] bg-cs-grey-800 rounded-full"><MicrophoneSlash1 size="14" color="#FAFAFA" /></div>
+    </div>
+    <div className="flex-1 flex justify-center items-center">
+      <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50">MO</div>
+      <Image src={avatar} alt="" className=" max-w-[38px] max-h-[38px] rounded-full -translate-x-3" />
+      <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 text-[10px] -translate-x-6">+4</div>
+    </div>
+    <div className=" flex justify-end">
+      <div className="p-[6px]"><Image src={dottedLine} alt="" className=" w-3 h-3" /></div>
+    </div>
+  </div> */}
+      </div>
+    </div>
+  </>)
 }
 
 
@@ -489,3 +745,5 @@ export default function MeetingSection({ attendeIDString, externalID, sideView, 
 //   <MicrophoneSlash1 size="24" color="#5E29B7" />
 // </div>
 // </div> */}
+
+

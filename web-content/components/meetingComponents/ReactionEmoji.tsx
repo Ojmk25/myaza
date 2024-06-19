@@ -1,0 +1,57 @@
+import { useAppContext } from "@/context/StoreContext";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useAudioVideo } from "amazon-chime-sdk-component-library-react";
+const ReactionEmoji = ({ attendeeId }: { attendeeId: any }) => {
+  const [emoji, setEmoji] = useState<{ sender: string, message: any }>()
+  const { appState, setAppState } = useAppContext();
+  const audioVideo = useAudioVideo()
+
+  useEffect(() => {
+    if (!audioVideo) return;
+
+    const handleDataMessage = (dataMessage: { data: AllowSharedBufferSource | undefined; }) => {
+      const message = new TextDecoder().decode(dataMessage.data);
+      const parsedMessage = JSON.parse(message);
+
+      setAppState((prevState) => ({
+        ...prevState,
+        sessionState: {
+          ...prevState.sessionState,
+          reaction: { sender: parsedMessage.sender, message: parsedMessage.emoji },
+        },
+      }));
+    };
+
+    audioVideo.realtimeSubscribeToReceiveDataMessage('reaction', handleDataMessage);
+
+    return () => {
+      audioVideo.realtimeUnsubscribeFromReceiveDataMessage('reaction');
+    };
+  }, [audioVideo]);
+
+
+  useEffect(() => {
+    const { reaction } = appState.sessionState;
+
+    if (reaction.sender && reaction.sender === attendeeId) {
+      setEmoji(reaction);
+
+      const timeout = setTimeout(() => {
+        setEmoji({ sender: '', message: '' });
+      }, 4000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [appState.sessionState.reaction]);
+
+
+
+
+  return (<>
+    {emoji?.message && <Image src={emoji?.message} alt="hand" width={18} height={18} className="min-w-6 max-w-5 cursor-pointer" />}
+
+  </>)
+}
+
+export default ReactionEmoji;

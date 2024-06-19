@@ -36,7 +36,7 @@ const config: Config = {
           "modal-100": "#404040D9",
 
           "success-bg": "#D9F9E7",
-
+          "grey-45": "#FCF6FF",
           "grey-50": "#FAFAFA",
           "grey-55": "#DFDFDF",
           "grey-60": "#E1C6FF",
@@ -74,4 +74,3 @@ const config: Config = {
   ],
 };
 export default config;
-

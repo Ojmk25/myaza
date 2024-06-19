@@ -18,7 +18,8 @@ export default function MeetingDetailsModal({ meetDetails, onClose }: { onClose:
             <div className=' p-4'>
               <h3 className=' text-left my-2'>Meeting Name: <span className='text-cs-purple-650'>{meetDetails !== undefined && meetDetails.meeting_name}</span>
               </h3>
-              <h3 className=' text-left my-2'>Meeting Link: <Link href={`https://${meetDetails !== undefined && meetDetails.meeting_link}`} className='text-cs-purple-650'>https://{meetDetails !== undefined && meetDetails.meeting_link}
+              <h3 className=' text-left my-2'>Meeting Link: <Link href={`https://${meetDetails !== undefined && meetDetails.MeetingId}`} className='text-cs-purple-650'>https://{meetDetails !== undefined && meetDetails.MeetingId}
+                {/* put id here https://dev.cecurecast.com/98159fe5 */}
               </Link>
               </h3>
               <h3 className=' text-left my-2 '>Add to Calendar: <Link href={meetDetails !== undefined ? meetDetails.add_to_google_cal : ''} className='text-cs-purple-650' target='_blank'>Link to calendar

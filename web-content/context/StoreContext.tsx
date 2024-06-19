@@ -12,23 +12,15 @@ import { ThemeProvider } from "styled-components";
 type SessionState = {
   sessionName: string;
   sessionCategory: string;
-  expectedGuest: string;
-  eventDate: string;
-  eventTime: string;
-  eventType: string;
-  camList: string[];
-  incallMessages: { sender: string; attendeeId: string; message: string }[];
+  reaction: { sender: string; message: string };
+  raisedHand: { timestamp: string; message: string };
+  guestFirstName: string;
+  guestLastName: string;
 };
 
 type AppState = {
   sessionState: SessionState;
-  verificationState: VerificationState;
 };
-
-type VerificationState = {
-  afterFirstVerification: boolean;
-  verificationTime: number;
-}
 
 type AppContextType = {
   appState: AppState;
@@ -40,16 +32,10 @@ export const AppCtx = createContext<AppContextType>({
     sessionState: {
       sessionName: "",
       sessionCategory: "",
-      expectedGuest: "",
-      eventDate: "",
-      eventTime: "",
-      eventType: "Recurring",
-      camList: [],
-      incallMessages: [],
-    },
-    verificationState: {
-      afterFirstVerification: false,
-      verificationTime: 30,
+      reaction: { sender: '', message: '' },
+      raisedHand: { timestamp: '', message: '' },
+      guestFirstName: '',
+      guestLastName: '',
     },
   },
   setAppState: () => { },
@@ -61,17 +47,12 @@ export const StoreContext: React.FC<{ children: React.ReactNode }> = ({ children
     sessionState: {
       sessionName: "",
       sessionCategory: "",
-      expectedGuest: "",
-      eventDate: "",
-      eventTime: "",
-      eventType: "Recurring",
-      camList: [],
-      incallMessages: [],
-    },
-    verificationState: {
-      afterFirstVerification: false,
-      verificationTime: 30,
-    },
+      reaction: { sender: '', message: '' },
+      raisedHand: { timestamp: '', message: '' },
+      guestFirstName: '',
+      guestLastName: '',
+
+    }
   });
 
   return (
@@ -96,6 +77,14 @@ export const MeetingProviderComponent = ({ children }: { children: React.ReactNo
   )
 }
 
+
+export const useAppContext = (): AppContextType => {
+  const context = useContext(AppCtx);
+  if (context === undefined) {
+    throw new Error('useAppContext must be used within a StoreContext');
+  }
+  return context;
+};
 // export default StoreContext;
 
 

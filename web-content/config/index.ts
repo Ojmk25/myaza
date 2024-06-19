@@ -19,7 +19,7 @@ export const envFn = (): string | null => {
     environment = 'dev'
   } else if (subdomain?.includes('test.')) {
     environment = 'test'
-  } else if (subdomain === 'cecurecast.com') {
+  } else if (subdomain === 'cecurestream.com') {
     environment = 'prod'
   } else if (subdomain?.includes('pprod.')) {
     environment = 'pprod'
@@ -37,22 +37,22 @@ export const env = envFn()
 const updateApiBase = () => {
   switch (env) {
     case 'dev':
-      apiBase = 'https://api.dev.cecurecast.com'
+      apiBase = 'https://api.dev.cecurestream.com'
       break
     case 'test':
-      apiBase = 'https://api.test.cecurecast.com'
+      apiBase = 'https://api.test.cecurestream.com'
       break
     case 'localhost':
-      apiBase = 'https://api.dev.cecurecast.com' // Adjust port if necessary
+      apiBase = 'https://api.dev.cecurestream.com' // Adjust port if necessary
       break
     case 'pprod':
-      apiBase = 'https://pprod.cecurecast.com'
+      apiBase = 'https://pprod.cecurestream.com'
       break
     case 'prod':
-      apiBase = 'https://cecurecast.com'
+      apiBase = 'https://cecurestream.com'
       break
     default:
-      apiBase = 'https://cecurecast.com' // Default to production if nothing else matches
+      apiBase = 'https://cecurestream.com' // Default to production if nothing else matches
   }
 }
 

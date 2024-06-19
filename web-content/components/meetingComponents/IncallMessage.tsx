@@ -7,7 +7,7 @@ import avatar from "@/public/assets/images/avatar.png";
 import { EmojiNormal, Send } from "iconsax-react";
 import { AppCtx, StoreContext } from '@/context/StoreContext';
 import { timeSince } from '@/utils/formatTime';
-import { getRemoteInitials } from '@/utils/meetingFunctions';
+import { getRemoteInitials, processString } from '@/utils/meetingFunctions';
 
 
 const Chat = ({ attendeeIDProp, externalID, sideViewFunc }: { attendeeIDProp: string | null | undefined, externalID: string, sideViewFunc: (value: string) => void }) => {
@@ -79,7 +79,6 @@ const Chat = ({ attendeeIDProp, externalID, sideViewFunc }: { attendeeIDProp: st
 
 
 
-
   return (
     <div className='h-full'>
       <div className=" flex-6 bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-2 @[300px]/bigScreenSideCards:px-4 pt-5 h-full">
@@ -96,17 +95,17 @@ const Chat = ({ attendeeIDProp, externalID, sideViewFunc }: { attendeeIDProp: st
                   <div className=" flex justify-end gap-x-1 items-center">
                     <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">{message.externalID}</h4>
                     {/* <Image src={avatar} alt="profile" className=" rounded-full w-5 h-5 object-cover" /> */}
-                    <div className=" bg-cs-grey-800 w-6 h-6 rounded-full flex justify-center items-center text-cs-grey-50 text-xs uppercase">{getRemoteInitials(externalID)}</div>
+                    <div className=" bg-cs-grey-800 w-6 h-6 rounded-full flex justify-center items-center text-cs-grey-50 text-xs uppercase">{getRemoteInitials(message.externalID)}</div>
                   </div>
                   <h5 className=" text-xs font-normal text-cs-grey-800 text-right">{message.message}</h5>
                 </div>
               ) : (
                 <div className=" flex py-1 gap-x-1" key={index}>
                   {/* <Image src={avatar} alt="profile" className=" rounded-full w-5 h-5 object-cover" /> */}
-                  <div className=" bg-cs-grey-800 w-6 h-6 rounded-full flex justify-center items-center text-cs-grey-50 text-xs uppercase">{getRemoteInitials(externalID)}</div>
+                  <div className=" bg-cs-grey-800 w-6 h-6 rounded-full flex justify-center items-center text-cs-grey-50 text-xs uppercase">{getRemoteInitials(message.externalID)}</div>
                   <div>
                     <div className=" flex items-center gap-x-2 mt-[3px]">
-                      <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">{message.externalID}</h4>
+                      <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">{processString(message.externalID)}</h4>
                       <div className=" w-[5px] h-[5px] bg-[#333333] rounded-full"></div>
                       <h6 className=" text-cs-grey-500 text-[9px] font-normal">{timeSince(message.timeStamp)}</h6>
                     </div>

@@ -1,12 +1,9 @@
-import Image from "next/image"
-import avatar from "@/public/assets/images/avatar.png"
-import { useAttendeeStatus } from "amazon-chime-sdk-component-library-react";
+
 import { getRemoteInitials, processString } from "@/utils/meetingFunctions";
-import { getNameAbbreviation } from "@/services/authService";
+import RaisedHand from "./RaisedHand";
 
 
 export const AttendeeListCard = ({ attendeeId, externalID, audioState }: { attendeeId: string, externalID: any, audioState: JSX.Element }) => {
-  const { videoEnabled, sharingContent, muted } = useAttendeeStatus(attendeeId);
 
   return (
     <div className=" flex justify-between items-center py-3 border-b border-solid border-b-[#EFEDED]">
@@ -15,7 +12,11 @@ export const AttendeeListCard = ({ attendeeId, externalID, audioState }: { atten
         <div className=" bg-cs-grey-800 w-[32px] h-[32px] rounded-full flex justify-center items-center text-cs-grey-50 uppercase">{getRemoteInitials(processString(externalID))}</div>
         <h4 className=" text-cs-grey-dark font-medium text-sm overflow-hidden text-ellipsis capitalize">{externalID && processString(externalID)}</h4>
       </div>
-      {audioState}
+      <div className=" flex items-center gap-x-1">
+        <RaisedHand attendeeId={attendeeId} />
+        {audioState}
+      </div>
+
     </div>
   )
 }

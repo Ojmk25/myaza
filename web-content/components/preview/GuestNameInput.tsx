@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AuthInput } from "../auth/AuthInput";
 import { ValidateText } from "@/utils/Validators";
 import { IsAuthenticated, getFullName, getNameAbbreviation } from "@/services/authService";
 import { SubmitButton } from "../auth/SubmitButton";
 import Link from "next/link";
 import { useRouter } from "next/router"
+import { useAppContext } from "@/context/StoreContext";
+
 
 
 export default function GuestNameInput() {
@@ -25,6 +27,7 @@ export default function GuestNameInput() {
   const { first_name, surname } = getFullName()
   const navigate = useRouter()
   const [url, setUrl] = useState('')
+  const { setAppState } = useAppContext()
 
   useEffect(() => {
     setLoggedIn(IsAuthenticated())
@@ -79,6 +82,14 @@ export default function GuestNameInput() {
   // }, [navigate.isReady, navigate.asPath]);
 
   const handleRoute = () => {
+    setAppState((prevState) => ({
+      ...prevState,
+      sessionState: {
+        ...prevState.sessionState,
+        guestFirstName: authData["First name"],
+        guestLastName: authData["Last name"],
+      },
+    }));
     sessionStorage.setItem("meetingJoiner", "no")
     navigate.push(`/meet/${localStorage.getItem("meetingLink")}`)
   }
