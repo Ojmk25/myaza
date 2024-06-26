@@ -1,12 +1,12 @@
-import { jwtDecode } from 'jwt-decode'
-import { getApiPath } from '../config'
-import * as http from "@/services/httpServices"
+import { jwtDecode } from "jwt-decode";
+import { getApiPath } from "../config";
+import * as http from "@/services/httpServices";
 
-const apiLogIn = getApiPath('open', 'login')
-const apiSignUp = getApiPath('open/', 'sign-up')
-const apiConfirmSignUp = getApiPath('open/', 'confirm-sign-up')
+const apiLogIn = getApiPath("open", "login");
+const apiSignUp = getApiPath("open", "sign-up");
+const apiConfirmSignUp = getApiPath("open/", "confirm-sign-up");
 
-const apiResendCode = getApiPath('open', 'resend-verify-code')
+const apiResendCode = getApiPath("open", "resend-verify-code");
 // const apiForgotPassword = getApiPath('open/user', 'forgot-password')
 // const apiConfirmForgotPassword = getApiPath(
 //   'open/user',
@@ -16,97 +16,98 @@ const apiResendCode = getApiPath('open', 'resend-verify-code')
 // const apiChangePassword = getApiPath('open/user', 'change-password')
 // const apiGetUserLocation = getApiPath('core/user', 'get-user-location')
 
-export interface ForgotPAsswordUserDetailsProps {
-
-}
-// https://api.dev.cecurecast.com/open/v1/resend-verify-code
+export interface ForgotPAsswordUserDetailsProps {}
 
 export interface RegisterPayload {
-  first_name: string
-  last_name: string
-  email: string
-  password: string
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+}
+
+export interface ConfirmPayload {
+  email: string;
 }
 export interface LoginPayload {
-  email: string
-  password: string
+  email: string;
+  password: string;
 }
 
 export interface ConfirmSignUpPayload {
-  email: string
-  code: number | string
-  newPassword?: string
+  email: string;
+  code: number | string;
+  newPassword?: string;
 }
 
 export interface ConfirmNewSignUpPayload {
-  user_name: string | null | undefined
-  code: number | string
+  user_name: string | null | undefined;
+  code: number | string;
 }
 
 export interface ChangePasssword {
-  previous_password: string
-  proposed_password: string
-  access_token: string
+  previous_password: string;
+  proposed_password: string;
+  access_token: string;
 }
 
 export interface ConfirmNewSignUpResponse {
   data: {
-    statusCode: number,
+    statusCode: number;
     body: {
-      status: string,
-      message: string,
-      data: {}
-    }
-  }
+      status: string;
+      message: string;
+      data: {};
+    };
+  };
 }
 
 export interface SigninResponse {
   data: {
-    statusCode: number,
+    statusCode: number;
     body: {
-      status: string,
-      message: string,
+      status: string;
+      message: string;
       data: {
-        id_token: string,
-        refresh_token: string,
-        access_token: string,
-        expires_in: string,
-        token_type: string,
-      }
-    }
-  }
+        id_token: string;
+        refresh_token: string;
+        access_token: string;
+        expires_in: string;
+        token_type: string;
+      };
+    };
+  };
 }
 
 // local auth set and get
 export const getCurrentClientData = () => {
-  let clientData
-  let token
-  let customer_id
-  let username
-  let brand_name
-  let first_name
-  let surname
+  let clientData;
+  let token;
+  let customer_id;
+  let username;
+  let brand_name;
+  let first_name;
+  let surname;
 
-  const authToken = sessionStorage.getItem('cecureStreamAuthToken')
+  const authToken = sessionStorage.getItem("cecureStreamAuthToken");
 
   try {
     if (authToken) {
-      const parsedAuthToken = JSON.parse(authToken)
-      clientData = parsedAuthToken?.uData
-      token = parsedAuthToken?.askBettyAcToken
+      const parsedAuthToken = JSON.parse(authToken);
+      clientData = parsedAuthToken?.uData;
+      token = parsedAuthToken?.askBettyAcToken;
 
       if (clientData) {
-        customer_id = clientData['cognito:customer_id']
-        username = clientData['cognito:username']
+        customer_id = clientData["cognito:customer_id"];
+        username = clientData["cognito:username"];
         brand_name =
-          clientData['custom:brand_name'] || clientData['custom:company_name']
-        first_name = clientData.given_name
-        surname = clientData.family_name
+          clientData["custom:brand_name"] || clientData["custom:company_name"];
+        first_name = clientData.given_name;
+        surname = clientData.family_name;
       }
     }
   } catch (error) {
     // Handle the JSON parsing error
-    console.error('Error parsing JSON:', error)
+    console.error("Error parsing JSON:", error);
   }
 
   return {
@@ -117,110 +118,114 @@ export const getCurrentClientData = () => {
     username,
     first_name,
     surname,
-  }
-}
+  };
+};
 
 // isAuth
 export const IsAuthenticated = () => {
   if (
-    localStorage.getItem('cecureStreamAuthToken') ||
-    sessionStorage.getItem('cecureStreamAuthToken')
+    localStorage.getItem("cecureStreamAuthToken") ||
+    sessionStorage.getItem("cecureStreamAuthToken")
   ) {
     try {
       const token =
-        JSON.parse(localStorage.getItem('cecureStreamAuthToken') || '')[
-        'cecureStreamAcToken'
+        JSON.parse(localStorage.getItem("cecureStreamAuthToken") || "")[
+          "cecureStreamAcToken"
         ] ||
-        JSON.parse(sessionStorage.getItem('cecureStreamAuthToken') || '')[
-        'cecureStreamAcToken'
-        ]
-      if (token) return true
-    } catch (error) {
-
-    }
+        JSON.parse(sessionStorage.getItem("cecureStreamAuthToken") || "")[
+          "cecureStreamAcToken"
+        ];
+      if (token) return true;
+    } catch (error) {}
   }
-  return false
-}
+  return false;
+};
 
 export const getNameAbbreviation = () => {
-  let clientData
-  let first_name
-  let surname
-  let initials
+  let clientData;
+  let first_name;
+  let surname;
+  let initials;
 
   if (
-    localStorage.getItem('cecureStreamAuthToken') ||
-    sessionStorage.getItem('cecureStreamAuthToken')
+    localStorage.getItem("cecureStreamAuthToken") ||
+    sessionStorage.getItem("cecureStreamAuthToken")
   ) {
     try {
       const token =
-        JSON.parse(localStorage.getItem('cecureStreamAuthToken') || '') ||
-        JSON.parse(sessionStorage.getItem('cecureStreamAuthToken') || '')
+        JSON.parse(localStorage.getItem("cecureStreamAuthToken") || "") ||
+        JSON.parse(sessionStorage.getItem("cecureStreamAuthToken") || "");
       if (token) {
-        clientData = token?.uData
-        first_name = clientData.given_name
-        surname = clientData.family_name
-        initials = first_name.charAt(0).toUpperCase() + surname.charAt(0).toUpperCase()
+        clientData = token?.uData;
+        first_name = clientData.given_name;
+        surname = clientData.family_name;
+        initials =
+          first_name.charAt(0).toUpperCase() + surname.charAt(0).toUpperCase();
       }
     } catch (error) {
-      console.error('Error parsing JSON:', error)
+      console.error("Error parsing JSON:", error);
     }
   }
 
-  return initials
-}
+  return initials;
+};
 
 export const getFullName = () => {
-  let clientData
-  let first_name
-  let surname
-  let user_id
-  let email
+  let clientData;
+  let first_name;
+  let surname;
+  let user_id;
+  let email;
 
   if (
-    localStorage.getItem('cecureStreamAuthToken') ||
-    sessionStorage.getItem('cecureStreamAuthToken')
+    localStorage.getItem("cecureStreamAuthToken") ||
+    sessionStorage.getItem("cecureStreamAuthToken")
   ) {
     try {
       const token =
-        JSON.parse(localStorage.getItem('cecureStreamAuthToken') || '') ||
-        JSON.parse(sessionStorage.getItem('cecureStreamAuthToken') || '')
+        JSON.parse(localStorage.getItem("cecureStreamAuthToken") || "") ||
+        JSON.parse(sessionStorage.getItem("cecureStreamAuthToken") || "");
       if (token) {
-        clientData = token?.uData
-        first_name = clientData.given_name.charAt(0).toUpperCase() + clientData.given_name.slice(1)
-        surname = clientData.family_name.charAt(0).toUpperCase() + clientData.family_name.slice(1)
-        user_id = clientData['cognito:username']
-        email = clientData.email
+        clientData = token?.uData;
+        first_name =
+          clientData.given_name.charAt(0).toUpperCase() +
+          clientData.given_name.slice(1);
+        surname =
+          clientData.family_name.charAt(0).toUpperCase() +
+          clientData.family_name.slice(1);
+        user_id = clientData["cognito:username"];
+        email = clientData.email;
       }
     } catch (error) {
-      console.error('Error parsing JSON:', error)
+      console.error("Error parsing JSON:", error);
     }
   }
 
-  return { first_name, surname, user_id, email }
-}
+  return { first_name, surname, user_id, email };
+};
 
 export const sessionExpired = () => {
-  sessionStorage.setItem('cecure-stream-session-expired', `${true}`)
+  sessionStorage.setItem("cecure-stream-session-expired", `${true}`);
   // window.location.reload()
-}
+};
 // registerUser
 export const registerUser = async (data: RegisterPayload): Promise<any> => {
   try {
-    return await http.apiCall.post(apiSignUp, data)
+    return await http.apiCall.post(apiSignUp, data);
   } catch (error) {
-    return error
+    return error;
   }
-}
+};
 
-
-export const confirmSignUpOpt = async (data: ConfirmNewSignUpPayload): Promise<ConfirmNewSignUpResponse> => {
+export const confirmSignUpOpt = async (
+  data: ConfirmNewSignUpPayload
+): Promise<ConfirmNewSignUpResponse> => {
   try {
-    return await http.apiCall.post(apiConfirmSignUp, data)
+    return await http.apiCall.post(apiConfirmSignUp, data);
   } catch (error: any) {
-    return error
+    return error;
   }
-}
+};
 // Forgot Password
 // export const forgotPassword = async (data: ForgotPAsswordUserDetailsProps) => {
 //   try {
@@ -247,32 +252,42 @@ export const confirmSignUpOpt = async (data: ConfirmNewSignUpPayload): Promise<C
 //   }
 // }
 // Resend Verification
-export const resendVerificationOTP = async (data: string) => {
+// Adjust the resendVerificationOTP function to accept an object with an email property
+
+export const resendVerificationOTP = async (
+  data: ConfirmPayload
+): Promise<any> => {
   try {
-    return await http.apiCall.post(apiResendCode, JSON.stringify(data))
+    return await http.apiCall.post(apiResendCode, data);
   } catch (error) {
-    return error
+    return error;
   }
-}
+};
 // loginUser
 export const loginUser = async (data: LoginPayload): Promise<any> => {
   try {
-    const { data: res } = await http.apiCall.post(apiLogIn, data)
-    let cecureStreamAuth
+    const { data: res } = await http.apiCall.post(apiLogIn, data);
+    let cecureStreamAuth;
     if (res.statusCode === 200) {
-      const cecureStreamAcToken = res.body.data.access_token
-      const cecureStreamIdToken = res.body.data.id_token
-      const cecureStreamRefToken = res.body.data.refresh_token
-      const cecureStreamTokenDuration = res.body.data.expires_in
+      const cecureStreamAcToken = res.body.data.access_token;
+      const cecureStreamIdToken = res.body.data.id_token;
+      const cecureStreamRefToken = res.body.data.refresh_token;
+      const cecureStreamTokenDuration = res.body.data.expires_in;
       cecureStreamAuth = {
         cecureStreamAcToken,
         cecureStreamIdToken,
         cecureStreamRefToken,
         cecureStreamTokenDuration,
         uData: decodeJwt(cecureStreamIdToken),
-      }
-      sessionStorage.setItem('cecureStreamAuthToken', JSON.stringify(cecureStreamAuth))
-      localStorage.setItem('cecureStreamAuthToken', JSON.stringify(cecureStreamAuth))
+      };
+      sessionStorage.setItem(
+        "cecureStreamAuthToken",
+        JSON.stringify(cecureStreamAuth)
+      );
+      localStorage.setItem(
+        "cecureStreamAuthToken",
+        JSON.stringify(cecureStreamAuth)
+      );
     }
     return {
       response: res,
@@ -280,40 +295,39 @@ export const loginUser = async (data: LoginPayload): Promise<any> => {
       // success: res.body?.message.success,
       // message: res.body?.message.message,
       data: { ...cecureStreamAuth },
-    }
+    };
   } catch (error) {
-    return error
+    return error;
   }
-}
-
+};
 
 // decodeFunc
 export const decodeJwt = (jwt: string) => {
-  return jwtDecode(jwt)
-}
+  return jwtDecode(jwt);
+};
 
 // LogOutUser
 export const logOutUser = () => {
   // sessionStorage.removeItem('askBetty-smActive')
-  sessionStorage.removeItem('cecureStreamAuthToken')
+  sessionStorage.removeItem("cecureStreamAuthToken");
   // sessionStorage.removeItem('env-askBetty')
   // sessionStorage.removeItem('abDep')
-  localStorage.removeItem('cecureStreamAuthToken')
+  localStorage.removeItem("cecureStreamAuthToken");
   // localStorage.removeItem('askBetty-smActive')
   // localStorage.removeItem('regPath')
   // localStorage.removeItem('askBetty-acUser')
   // localStorage.removeItem('auth_ab')
   // localStorage.removeItem('auth_data')
-  clearCacheData()
-}
+  clearCacheData();
+};
 
 const clearCacheData = () => {
   caches.keys().then((names) => {
     names.forEach((name) => {
-      caches.delete(name)
-    })
-  })
-}
+      caches.delete(name);
+    });
+  });
+};
 
 // export const getUserLocation = async (accessToken: string) => {
 //   try {
@@ -348,4 +362,3 @@ export const checkUsernameApi = async (data: any) => {
   }
 }
 */
-
