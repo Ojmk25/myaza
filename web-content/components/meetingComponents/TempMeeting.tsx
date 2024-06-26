@@ -114,8 +114,8 @@ export default function TempMeeting({
           //   response?.data && response?.data?.data?.statusCode !== 200 && router.push("/");
           // }, 2000)
           const meetingSessionConfiguration = new MeetingSessionConfiguration(
-            response?.data.body.meeting_info,
-            response?.data.body.attendee_info
+            response?.data.body.data.meeting_info,
+            response?.data.body.data.attendee_info
           );
           await meetingManager.join(meetingSessionConfiguration);
           await meetingManager.start();
