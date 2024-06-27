@@ -183,137 +183,145 @@ export default function TempMeeting({
   );
 
   return (
-    <>
-      <main className=" flex flex-col h-dvh relative">
-        <div className="md:hidden px-6">
-          <div className="flex  justify-between items-center py-4 bg-[#FEFDFF] border-solid border-b border-b-[#FAFAFA]">
-            <Link href={"/"} className=" md:hidden">
-              <Image src={cecureStreamSmall} alt="logo" />
-            </Link>
+    <div className="w-full flex items-center flex-col">
+      <div className="max-auto w-full max-w-[1280px]">
+        <main className=" flex flex-col h-dvh relative">
+          <div className="md:hidden px-6">
+            <div className="flex  justify-between items-center py-4 bg-[#FEFDFF] border-solid border-b border-b-[#FAFAFA]">
+              <Link href={"/"} className=" md:hidden">
+                <Image src={cecureStreamSmall} alt="logo" />
+              </Link>
 
-            <div className="flex justify-between gap-x-2 items-center">
-              <div
-                className={` ${
-                  sideView === "Conference Info"
-                    ? "bg-[#5E29B7]"
-                    : "bg-[#E1C6FF4D]"
-                } p-[10px] rounded-lg items-center cursor-pointer`}
-                onClick={() => handleConference("Conference Info")}
-              >
-                {sideView === "Conference Info" ? (
-                  <InfoCircle
-                    size="18"
-                    color="#FAFAFA"
-                    className="mx-auto max-w-5"
-                  />
-                ) : (
-                  <InfoCircle
+              <div className="flex justify-between gap-x-2 items-center">
+                <div
+                  className={` ${
+                    sideView === "Conference Info"
+                      ? "bg-[#5E29B7]"
+                      : "bg-[#E1C6FF4D]"
+                  } p-[10px] rounded-lg items-center cursor-pointer`}
+                  onClick={() => handleConference("Conference Info")}
+                >
+                  {sideView === "Conference Info" ? (
+                    <InfoCircle
+                      size="18"
+                      color="#FAFAFA"
+                      className="mx-auto max-w-5"
+                    />
+                  ) : (
+                    <InfoCircle
+                      size="18"
+                      color="#5E29B7"
+                      className="mx-auto max-w-5"
+                    />
+                  )}
+                </div>
+                <div
+                  className="bg-[#E1C6FF4D] p-[10px] rounded-lg flex justify-center items-center cursor-pointer"
+                  onClick={() => handleShowModal("settings")}
+                >
+                  <Setting2
                     size="18"
                     color="#5E29B7"
                     className="mx-auto max-w-5"
                   />
+                </div>
+
+                <div className="bg-[#E1C6FF4D] p-[10px] rounded-lg flex justify-center items-center cursor-pointer">
+                  <Coffee
+                    size="18"
+                    color="#5E29B7"
+                    className="mx-auto max-w-5"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className=" flex gap-x-2 items-center">
+              <ArrowLeft size="18" color="#080808" className="" />
+              <h2>AWS Conference</h2>
+            </div>
+          </div>
+
+          <div className=" hidden md:flex justify-between items-center py-4 px-6">
+            <Link href={"/"} className="hidden md:block">
+              <Image src={cecureStream} alt="logo" />
+            </Link>
+
+            <div className="flex justify-between gap-x-4 items-center">
+              <div
+                className={` flex ${
+                  sideView === "Conference Info"
+                    ? "bg-[#5E29B7]"
+                    : "bg-[#E1C6FF4D]"
+                } py-[10px] px-[10px] gap-x-[10px] rounded-lg items-center cursor-pointer`}
+                onClick={() => handleConference("Conference Info")}
+              >
+                {sideView === "Conference Info" ? (
+                  <InfoCircle size="20" color="#FAFAFA" className="mx-auto" />
+                ) : (
+                  <InfoCircle size="20" color="#5E29B7" className="mx-auto" />
                 )}
+                <div
+                  className={`${
+                    sideView === "Conference Info"
+                      ? "text-cs-grey-50"
+                      : "text-cs-purple-650"
+                  } font-semibold`}
+                >
+                  Conference Info
+                </div>
               </div>
               <div
                 className="bg-[#E1C6FF4D] p-[10px] rounded-lg flex justify-center items-center cursor-pointer"
                 onClick={() => handleShowModal("settings")}
               >
-                <Setting2
-                  size="18"
-                  color="#5E29B7"
-                  className="mx-auto max-w-5"
-                />
-              </div>
-
-              <div className="bg-[#E1C6FF4D] p-[10px] rounded-lg flex justify-center items-center cursor-pointer">
-                <Coffee size="18" color="#5E29B7" className="mx-auto max-w-5" />
+                <Setting2 size="20" color="#5E29B7" />
               </div>
             </div>
           </div>
-          <div className=" flex gap-x-2 items-center">
-            <ArrowLeft size="18" color="#080808" className="" />
-            <h2>AWS Conference</h2>
-          </div>
-        </div>
 
-        <div className=" hidden md:flex justify-between items-center py-4 px-6">
-          <Link href={"/"} className="hidden md:block">
-            <Image src={cecureStream} alt="logo" />
-          </Link>
+          {/* grid px-20 gap-x-16 items-center grid-cols-2 */}
+          {/* <button onClick={joinMeeting}>join</button> */}
+          <MeetingSection
+            attendeIDString={
+              meetingManager.meetingSessionConfiguration?.credentials
+                ?.attendeeId
+            }
+            externalID={
+              meetingManager.meetingSessionConfiguration?.credentials
+                ?.externalUserId
+            }
+            sideView={sideView}
+            sideViewFunc={handleSideView}
+            meetingManager={meetingManager}
+            emoji={inputMessage}
+          />
 
-          <div className="flex justify-between gap-x-4 items-center">
-            <div
-              className={` flex ${
-                sideView === "Conference Info"
-                  ? "bg-[#5E29B7]"
-                  : "bg-[#E1C6FF4D]"
-              } py-[10px] px-[10px] gap-x-[10px] rounded-lg items-center cursor-pointer`}
-              onClick={() => handleConference("Conference Info")}
-            >
-              {sideView === "Conference Info" ? (
-                <InfoCircle size="20" color="#FAFAFA" className="mx-auto" />
-              ) : (
-                <InfoCircle size="20" color="#5E29B7" className="mx-auto" />
-              )}
-              <div
-                className={`${
-                  sideView === "Conference Info"
-                    ? "text-cs-grey-50"
-                    : "text-cs-purple-650"
-                } font-semibold`}
-              >
-                Conference Info
-              </div>
-            </div>
-            <div
-              className="bg-[#E1C6FF4D] p-[10px] rounded-lg flex justify-center items-center cursor-pointer"
-              onClick={() => handleShowModal("settings")}
-            >
-              <Setting2 size="20" color="#5E29B7" />
-            </div>
-          </div>
-        </div>
-
-        {/* grid px-20 gap-x-16 items-center grid-cols-2 */}
-        {/* <button onClick={joinMeeting}>join</button> */}
-        <MeetingSection
-          attendeIDString={
-            meetingManager.meetingSessionConfiguration?.credentials?.attendeeId
-          }
-          externalID={
-            meetingManager.meetingSessionConfiguration?.credentials
-              ?.externalUserId
-          }
-          sideView={sideView}
-          sideViewFunc={handleSideView}
-          meetingManager={meetingManager}
-          emoji={inputMessage}
-        />
-
-        <MeetingControl
-          bgColor
-          onOpen={() => handleShowModal("shareScreen")}
-          sideViewFunc={handleSideView}
-          sideView={sideView}
-          meetingManager={meetingManager}
-          attendeIDString={
-            meetingManager.meetingSessionConfiguration?.credentials?.attendeeId
-          }
-          sendEmoji={sendReaction}
-        />
-        {showModal === "shareScreen" && (
-          <ShareScreen onClose={handleCloseModal} />
-        )}
-        {showModal === "settings" && <Settings onClose={handleCloseModal} />}
-        {/* <SuccessSlideIn openModal={openModal} response={successRes && successRes?.statusCode === 200} successActionResponse={successRes && successRes?.message} closeModal={() => { }} /> */}
-        <FailureSlideIn
-          openModal={openModal}
-          response={successRes && successRes?.statusCode !== 200}
-          errResponse={successRes && successRes?.body.message}
-          closeModal={() => {}}
-        />
-        {loading && <LoadingScreen />}
-      </main>
-    </>
+          <MeetingControl
+            bgColor
+            onOpen={() => handleShowModal("shareScreen")}
+            sideViewFunc={handleSideView}
+            sideView={sideView}
+            meetingManager={meetingManager}
+            attendeIDString={
+              meetingManager.meetingSessionConfiguration?.credentials
+                ?.attendeeId
+            }
+            sendEmoji={sendReaction}
+          />
+          {showModal === "shareScreen" && (
+            <ShareScreen onClose={handleCloseModal} />
+          )}
+          {showModal === "settings" && <Settings onClose={handleCloseModal} />}
+          {/* <SuccessSlideIn openModal={openModal} response={successRes && successRes?.statusCode === 200} successActionResponse={successRes && successRes?.message} closeModal={() => { }} /> */}
+          <FailureSlideIn
+            openModal={openModal}
+            response={successRes && successRes?.statusCode !== 200}
+            errResponse={successRes && successRes?.body.message}
+            closeModal={() => {}}
+          />
+          {loading && <LoadingScreen />}
+        </main>
+      </div>
+    </div>
   );
 }

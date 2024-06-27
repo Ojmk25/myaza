@@ -150,20 +150,6 @@ export default function MeetingSection({
     }
   });
 
-  const handleCopyClick = (value: string) => {
-    copyTextToClipboard(
-      value,
-      () => {
-        setTooltipMessage("copied");
-        setTimeout(() => setTooltipMessage(""), 2000);
-      },
-      () => {
-        setTooltipMessage("Failed to copy!");
-        setTimeout(() => setTooltipMessage(""), 2000);
-      }
-    );
-  };
-
   useEffect(() => {
     if (containerTileRef.current && changingWidth <= 699) {
       if (attendees.length < 3) {
@@ -188,6 +174,28 @@ export default function MeetingSection({
       }
     }
   }, [containerTileRef.current?.offsetWidth, changingWidth]);
+
+  const [uuid, setUuid] = useState("");
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const pathnameParts = url.pathname.split("/");
+    const extractedUuid = pathnameParts[pathnameParts.length - 1];
+    setUuid(extractedUuid);
+  }, []);
+
+  const handleCopyClick = async () => {
+    try {
+      const url = window.location.href;
+      await navigator.clipboard.writeText(url);
+      setTooltipMessage("copied");
+      setTimeout(() => setTooltipMessage(""), 2000);
+    } catch (err) {
+      console.log(err);
+      setTooltipMessage("Failed to copy!");
+      setTimeout(() => setTooltipMessage(""), 2000);
+    }
+  };
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver((entries) => {
@@ -502,15 +510,13 @@ export default function MeetingSection({
                     name=""
                     id=""
                     className=" w-full border border-[#F1F1F1] h-10 @[300px]/bigScreenSideCards:h-12 rounded-[10px] outline-none px-4 placeholder:text-sm placeholder:font-normal placeholder:text-cs-black-200"
-                    placeholder="xap-ert-olik"
+                    placeholder={uuid}
                   />
                   <Copy
                     size="18"
                     color="#5E29B7"
                     className=" absolute top-[14px] right-[14px] cursor-pointer"
-                    onClick={async () =>
-                      handleCopyClick(`https://cecurecast.com/xap-ert-olik`)
-                    }
+                    onClick={handleCopyClick}
                   />
                   {tooltipMessage && (
                     <div className=" absolute text-xs text-cs-grey-50 p-2 bg-cs-purple-650 z-10 rounded">
@@ -868,9 +874,7 @@ export default function MeetingSection({
                     size="18"
                     color="#5E29B7"
                     className=" absolute top-[14px] right-[14px] cursor-pointer"
-                    onClick={async () =>
-                      handleCopyClick(`https://cecurecast.com/xap-ert-olik`)
-                    }
+                    onClick={handleCopyClick}
                   />
                   {tooltipMessage && (
                     <div className=" absolute text-xs text-cs-grey-50 p-2 bg-cs-purple-650 z-10 rounded">
