@@ -184,9 +184,9 @@ export default function TempMeeting({
 
   return (
     <div className="w-full flex items-center flex-col">
-      <div className="max-auto w-full max-w-[1280px]">
-        <main className=" flex flex-col h-dvh relative">
-          <div className="md:hidden px-6">
+      <div className="max-auto w-full ">
+        <main className=" flex flex-col px-6 h-dvh w-full relative">
+          <div className="md:hidden ">
             <div className="flex  justify-between items-center py-4 bg-[#FEFDFF] border-solid border-b border-b-[#FAFAFA]">
               <Link href={"/"} className=" md:hidden">
                 <Image src={cecureStreamSmall} alt="logo" />
@@ -241,7 +241,7 @@ export default function TempMeeting({
             </div>
           </div>
 
-          <div className=" hidden md:flex justify-between items-center py-4 px-6">
+          <div className=" hidden md:flex justify-between items-center py-4 ">
             <Link href={"/"} className="hidden md:block">
               <Image src={cecureStream} alt="logo" />
             </Link>

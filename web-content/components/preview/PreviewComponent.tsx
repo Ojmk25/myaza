@@ -105,7 +105,7 @@ export default function PreviewComponent() {
         <main className="lg:pb-20 pt-6 lg:pt-10 w-full flex items-center flex-col ">
           <Header />
 
-          <div className="md:grid px-6 gap-x-16 items-center grid-cols-2 mt-2 bg-cs-bg py-4 max-auto w-full max-w-[1280px]">
+          <div className="md:grid px-6 gap-x-16 items-center grid-cols-2 mt-2 bg-cs-bg py-4 max-auto w-full max-w-[1392px]">
             <div className="basis-full col-start-2 col-span-3">
               <h3 className=" text-2xl font-medium text-cs-grey-dark mb-1 text-center py-2 md:hidden">
                 Join Meeting

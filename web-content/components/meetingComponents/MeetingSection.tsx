@@ -124,8 +124,6 @@ export default function MeetingSection({
               attendee={attendee}
             />
           }
-          widthProp={dynamicWidth.width}
-          maxWidthProp={dynamicWidth.maxWidth}
           meetingManager={meetingManager}
         />
       );
@@ -143,8 +141,6 @@ export default function MeetingSection({
               attendee={attendee}
             />
           }
-          widthProp={dynamicWidth.width}
-          maxWidthProp={dynamicWidth.maxWidth}
         />
       );
     }
@@ -191,7 +187,6 @@ export default function MeetingSection({
       setTooltipMessage("copied");
       setTimeout(() => setTooltipMessage(""), 2000);
     } catch (err) {
-      console.log(err);
       setTooltipMessage("Failed to copy!");
       setTimeout(() => setTooltipMessage(""), 2000);
     }
@@ -224,7 +219,7 @@ export default function MeetingSection({
 
   return (
     <>
-      <div className=" flex-4 overflow-hidden px-6 hidden md:flex">
+      <div className=" flex-4 overflow-hidden hidden md:flex">
         {tileId && (
           <div className=" flex-5 bg-cs-black-200 px-10 py-5 rounded-[4px] mr-4">
             <div className=" h-full flex flex-col">
@@ -254,13 +249,37 @@ export default function MeetingSection({
 
         <div className="flex-6 flex">
           <div
-            className={`w-full @container/meetingTiles ${
+            className={`w-full @container/meetingTiles  ${
               screenWidth < 1024 && sideView !== "" && tileId ? "hidden" : ""
             }`}
             ref={containerTileRef}
           >
-            <div className="w-full flex gap-4 h-full flex-4 flex-wrap justify-center">
+            {/* <div className="w-full flex gap-4 h-full flex-4 flex-wrap justify-center">
               {attendeeItems}
+            </div> */}
+
+            <div className="flex flex-wrap justify-center overflow-y-auto items-center w-full h-full">
+              {attendeeItems.length < 2 ? (
+                <div className="w-full h-full p-2">
+                  {attendeeItems}
+
+                  {/* check this line for when its more than 6 */}
+                  {/* {index === 5 ? attendeeItems.length : item} */}
+                </div>
+              ) : (
+                <>
+                  {attendeeItems.slice(0, 9).map((item, index) => (
+                    <div
+                      key={index}
+                      className={`w-${
+                        attendeeItems.length === 2 ? "1/2" : "1/3"
+                      } p-2 h-full`}
+                    >
+                      {item}
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           </div>
           {/* @[300px]/meetingTiles:flex-row @[300px]/meetingTiles:flex-wrap */}
@@ -579,7 +598,7 @@ export default function MeetingSection({
         </div>
       </div>
 
-      <div className="flex flex-4 overflow-hidden px-6 md:hidden flex-col">
+      <div className="flex flex-4 overflow-hidden md:hidden flex-col">
         {tileId && (
           <div className=" bg-cs-black-200 px-4 py-5 rounded-[4px]">
             <div className=" h-full flex flex-col">
@@ -608,17 +627,31 @@ export default function MeetingSection({
 
         <div className="flex-6 flex">
           <div
-            className={`w-full  ${
+            className={`w-full flex justify-center items-center  ${
               screenWidth < 1024 && sideView !== "" && tileId ? "hidden" : ""
             }`}
             ref={containerTileRef}
           >
-            <div
-              className={`w-full flex flex-col gap-4 h-full flex-4 justify-center ${
-                tileId ? "grid-cols-2" : "grid-cols-2"
-              }`}
-            >
-              {attendeeItems}
+            <div className="flex flex-wrap justify-center w-full h-full">
+              {attendeeItems.length < 2 ? (
+                <div className="w-full p-2">
+                  {attendeeItems}
+
+                  {/* check this line for when its more than 6 */}
+                  {/* {index === 5 ? attendeeItems.length : item} */}
+                </div>
+              ) : (
+                <>
+                  {attendeeItems.slice(0, 6).map((item, index) => (
+                    <div key={index} className="w-1/2 p-2">
+                      {item}
+
+                      {/* check this line for when its more than 6 */}
+                      {/* {index === 5 ? attendeeItems.length : item} */}
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           </div>
           {/* @[300px]/meetingTiles:flex-row @[300px]/meetingTiles:flex-wrap */}
@@ -867,8 +900,10 @@ export default function MeetingSection({
                     type="text"
                     name=""
                     id=""
-                    className=" w-full border border-[#F1F1F1] h-10 @[300px]/bigScreenSideCards:h-12 rounded-[10px] outline-none px-4 placeholder:text-sm placeholder:font-normal placeholder:text-cs-black-200"
-                    placeholder="xap-ert-olik"
+                    className=" w-full border border-[#F1F1F1] h-10 @[300px]/bigScreenSideCards:h-12 rounded-[10px] outline-none px-4 placeholder:text-sm placeholder:font-normal placeholder:text-cs-black-200 placeholder:truncate"
+                    placeholder={
+                      uuid.length > 4 ? uuid.slice(0, 10) + "..." : uuid
+                    }
                   />
                   <Copy
                     size="18"

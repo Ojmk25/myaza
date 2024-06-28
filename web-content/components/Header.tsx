@@ -103,7 +103,7 @@ export default function Header() {
   return (
     <>
       {loggedIn !== null && (
-        <div className="flex justify-between items-center max-auto w-full max-w-[1280px] px-6  pb-6 md:pb-7 shadow-1xl">
+        <div className="flex justify-between items-center w-full  px-6 pb-6 md:pb-7 shadow-1xl">
           <Link href={"/"} className=" md:hidden">
             <Image src={cecureStreamSmall} alt="logo" />
           </Link>
@@ -143,7 +143,7 @@ export default function Header() {
                 </div>
               )}
               {profileModal && (
-                <div className=" bg-white border border-solid border-cs-grey-50 rounded-[10px] overflow-hidden absolute hidden md:block z-50">
+                <div className=" bg-white border border-solid border-cs-grey-50 rounded-[10px] overflow-hidden absolute right-[50px] hidden md:block z-50">
                   <div
                     className=" text-cs-grey-dark flex gap-x-2 items-center hover:bg-cs-grey-55 p-2 font-normal"
                     onClick={() => {
