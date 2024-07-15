@@ -10,7 +10,7 @@ phases:
   build:
     commands:
       - chmod +x deploy.sh
-      - bash ./deploy.sh $DEPLOY_ROLE $BUCKET_NAME
+      - bash ./deploy.sh $DEPLOY_ROLE $BUCKET_NAME 
  
   post_build: 
     commands: 
