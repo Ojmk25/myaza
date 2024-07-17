@@ -3,13 +3,14 @@ import { AuthInput } from "../auth/AuthInput";
 import { ValidateText } from "@/utils/Validators";
 import {
   IsAuthenticated,
-  getFullName,
+  getClientInfo,
   getNameAbbreviation,
 } from "@/services/authService";
 import { SubmitButton } from "../auth/SubmitButton";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAppContext } from "@/context/StoreContext";
+import { useSessionStorage } from "@/hooks/useStorage";
 
 export default function GuestNameInput() {
   const [errMessage, setErrMessage] = useState({
@@ -26,10 +27,14 @@ export default function GuestNameInput() {
   const [activateButton, setActivateButton] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const [profilePic, setProfilePic] = useState(false);
-  const { first_name, surname } = getFullName();
+  const { first_name, surname } = getClientInfo();
   const navigate = useRouter();
   const [url, setUrl] = useState("");
   const { setAppState } = useAppContext();
+  const [expressJoin, setExpressJoin] = useSessionStorage(
+    "meetingJoiner",
+    "yes"
+  );
 
   useEffect(() => {
     setLoggedIn(IsAuthenticated());
@@ -50,6 +55,7 @@ export default function GuestNameInput() {
         [name]: "",
       }));
     };
+
     if (!ValidateText(value)) {
       addError();
     } else {
@@ -62,22 +68,19 @@ export default function GuestNameInput() {
         [name]: `Enter your ${name}`,
       }));
     }
-    setAuthData((prevState) => {
-      if (
-        prevState["First name"].length > 2 &&
-        prevState["Last name"].length > 2
-      ) {
-        setActivateButton(true);
-      } else {
-        setActivateButton(false);
-      }
-      return {
-        ...prevState,
-        [name]: value,
-      };
-    });
-  };
 
+    setAuthData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+  useEffect(() => {
+    if (authData["First name"].length > 2 && authData["Last name"].length > 2) {
+      setActivateButton(true);
+    } else {
+      setActivateButton(false);
+    }
+  }, [authData]);
   // useEffect(() => {
   //   if (navigate.isReady) {
   //     const { query } = navigate;
@@ -94,7 +97,8 @@ export default function GuestNameInput() {
         guestLastName: authData["Last name"],
       },
     }));
-    sessionStorage.setItem("meetingJoiner", "no");
+    // sessionStorage.setItem("meetingJoiner", "no");
+    setExpressJoin("yes");
     navigate.push(`/meet/${localStorage.getItem("meetingLink")}`);
   };
 

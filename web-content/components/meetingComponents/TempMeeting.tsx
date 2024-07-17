@@ -1,19 +1,12 @@
 "use client";
 import {
-  ContentShare,
-  LocalVideo,
-  RemoteVideo,
-  useAttendeeStatus,
   useAudioVideo,
-  useContentShareControls,
-  useContentShareState,
   useLocalVideo,
   useMeetingManager,
   useRemoteVideoTileState,
   useRosterState,
   useToggleLocalMute,
-  VideoTile,
-  VideoTileGrid,
+  DeviceLabels,
 } from "amazon-chime-sdk-component-library-react";
 import {
   MeetingSessionConfiguration,
@@ -27,7 +20,11 @@ import ShareScreen from "@/components/modals/ShareScreen";
 import Settings from "@/components/modals/Settings";
 import { useRouter } from "next/router";
 import { joinMeetingFnc } from "@/services/meetingServices";
-import { decodeJwt, getFullName } from "@/services/authService";
+import {
+  decodeJwt,
+  getClientInfo,
+  IsAuthenticated,
+} from "@/services/authService";
 import Link from "next/link";
 import Image from "next/image";
 import cecureStream from "@/public/assets/images/cecurestream.svg";
@@ -36,6 +33,7 @@ import { SuccessSlideIn } from "../SuccessSlideIn";
 import { FailureSlideIn } from "../FailureSlideIn";
 import LoadingScreen from "../modals/LoadingScreen";
 import { useAppContext } from "@/context/StoreContext";
+import { useSessionStorage } from "@/hooks/useStorage";
 
 export default function TempMeeting({
   param,
@@ -61,6 +59,10 @@ export default function TempMeeting({
   const [inputMessage, setInputMessage] = useState({ sender: "", emoji: "" });
   const { appState, setAppState } = useAppContext();
   const [raisedHand, setRaisedHand] = useState("");
+  const [expressJoin, setExpressJoin] = useSessionStorage(
+    "meetingJoiner",
+    "yes"
+  );
 
   const handleShowModal = (type: string) => {
     setShowModal(type);
@@ -88,14 +90,20 @@ export default function TempMeeting({
     if (router.isReady) {
       const { query } = router;
 
-      const { first_name, surname, user_id } = getFullName();
+      const { first_name, surname, user_id } = getClientInfo();
+      const meetingPayload = IsAuthenticated()
+        ? {
+            meeting_id: query.link,
+            first_name: first_name || appState.sessionState.guestFirstName,
+            last_name: surname || appState.sessionState.guestLastName,
+            user_id: user_id || appState.sessionState.guestFirstName,
+          }
+        : {
+            meeting_id: query.link,
+            first_name: first_name || appState.sessionState.guestFirstName,
+            last_name: surname || appState.sessionState.guestLastName,
+          };
 
-      const meetingPayload = {
-        meeting_id: query.link,
-        first_name: first_name || appState.sessionState.guestFirstName,
-        last_name: surname || appState.sessionState.guestLastName,
-        user_id: user_id || appState.sessionState.guestFirstName,
-      };
       const handleJoinMeeting = async () => {
         const clearAll = () => {
           setLoading(false);
@@ -108,11 +116,21 @@ export default function TempMeeting({
         try {
           const response = await joinMeetingFnc(meetingPayload);
 
+          console.log(response);
+
           setSuccessRes(response?.data);
           setMeetDetails(response?.data.body.meeting_info);
           // setTimeout(() => {
           //   response?.data && response?.data?.data?.statusCode !== 200 && router.push("/");
           // }, 2000)
+          setAppState((prevState) => ({
+            ...prevState,
+            sessionState: {
+              ...prevState.sessionState,
+              sessionLink: window.location.href,
+            },
+          }));
+
           const meetingSessionConfiguration = new MeetingSessionConfiguration(
             response?.data.body.data.meeting_info,
             response?.data.body.data.attendee_info
@@ -137,6 +155,7 @@ export default function TempMeeting({
       // if (meetingManager !== null) {
       // sessionStorage.setItem("meetingJoiner", "yes")
       meetingManager.audioVideo?.stop();
+      meetingManager.leave();
       // }
     };
   }, []);
@@ -178,15 +197,11 @@ export default function TempMeeting({
     audioVideo.realtimeSendDataMessage("raise-hand", message);
   };
 
-  console.log(
-    meetingManager.meetingSessionConfiguration?.credentials?.externalUserId
-  );
-
   return (
     <div className="w-full flex items-center flex-col">
       <div className="max-auto w-full ">
         <main className=" flex flex-col px-6 h-dvh w-full relative">
-          <div className="md:hidden ">
+          <div className="md:hidden px-4">
             <div className="flex  justify-between items-center py-4 bg-[#FEFDFF] border-solid border-b border-b-[#FAFAFA]">
               <Link href={"/"} className=" md:hidden">
                 <Image src={cecureStreamSmall} alt="logo" />

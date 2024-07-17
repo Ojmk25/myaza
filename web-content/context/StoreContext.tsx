@@ -1,12 +1,10 @@
-"use client"
-import React, { createContext, useContext, useState } from "react";
+"use client";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import {
   MeetingProvider,
   lightTheme,
   GlobalStyles,
-
-}
-  from 'amazon-chime-sdk-component-library-react';
+} from "amazon-chime-sdk-component-library-react";
 import { ThemeProvider } from "styled-components";
 
 type SessionState = {
@@ -32,64 +30,60 @@ export const AppCtx = createContext<AppContextType>({
     sessionState: {
       sessionName: "",
       sessionCategory: "",
-      reaction: { sender: '', message: '' },
-      raisedHand: { timestamp: '', message: '' },
-      guestFirstName: '',
-      guestLastName: '',
+      reaction: { sender: "", message: "" },
+      raisedHand: { timestamp: "", message: "" },
+      guestFirstName: "",
+      guestLastName: "",
     },
   },
-  setAppState: () => { },
+  setAppState: () => {},
 });
 
-// React.FC<{ children: React.ReactNode }> 
-export const StoreContext: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+// React.FC<{ children: React.ReactNode }>
+export const StoreContext: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [appState, setAppState] = useState<AppState>({
     sessionState: {
       sessionName: "",
       sessionCategory: "",
-      reaction: { sender: '', message: '' },
-      raisedHand: { timestamp: '', message: '' },
-      guestFirstName: '',
-      guestLastName: '',
-
-    }
+      reaction: { sender: "", message: "" },
+      raisedHand: { timestamp: "", message: "" },
+      guestFirstName: "",
+      guestLastName: "",
+    },
   });
 
   return (
-    <AppCtx.Provider value={{ appState, setAppState }
-    }>
+    <AppCtx.Provider value={{ appState, setAppState }}>
       {children}
     </AppCtx.Provider>
   );
 };
 
-
-export const MeetingProviderComponent = ({ children }: { children: React.ReactNode }) => {
+export const MeetingProviderComponent = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   return (
     <ThemeProvider theme={lightTheme}>
       <GlobalStyles />
       <MeetingProvider>
-        <StoreContext>
-          {children}
-        </StoreContext>
+        <StoreContext>{children}</StoreContext>
       </MeetingProvider>
     </ThemeProvider>
-  )
-}
-
+  );
+};
 
 export const useAppContext = (): AppContextType => {
   const context = useContext(AppCtx);
   if (context === undefined) {
-    throw new Error('useAppContext must be used within a StoreContext');
+    throw new Error("useAppContext must be used within a StoreContext");
   }
   return context;
 };
 // export default StoreContext;
-
-
-
-
 
 // import React, {
 //   createContext,

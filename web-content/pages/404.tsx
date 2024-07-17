@@ -12,9 +12,7 @@ async function pageExists(location: string) {
   return (
     sortedPages.includes(pathname) ||
     sortedPages.some((page) => {
-      return (
-        isDynamicRoute(page) && getRouteRegex(page).re.test(pathname)
-      );
+      return isDynamicRoute(page) && getRouteRegex(page).re.test(pathname);
     })
   );
 }
@@ -38,7 +36,7 @@ const Custom404 = () => {
     return <div>loading</div>;
   }
 
-  return <div>Custom404</div>;
+  return <div>Custom404 page</div>;
 };
 
 export default Custom404;

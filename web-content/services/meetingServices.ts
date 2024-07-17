@@ -1,52 +1,75 @@
-import { getApiPath } from "@/config"
-import * as http from "@/services/httpServices"
+import { getApiPath } from "@/config";
+import * as http from "@/services/httpServices";
 
-const apiInstantMeeting = getApiPath('meeting/', 'instant-meeting')
-const apiScheduleMeeting = getApiPath('meeting/', 'schedule-meeting')
-const apiJoinMeeting = getApiPath('meeting/', 'join-meeting')
+const apiInstantMeeting = getApiPath("meeting/", "instant-meeting");
+const apiScheduleMeeting = getApiPath("meeting/", "schedule-meeting");
+const apiJoinMeeting = getApiPath("meeting/", "join-meeting");
+const apiStartTranscription = getApiPath("meeting/", "start-transcription");
 
-export const setInstantMeeting = (meetingID: string, meetingData: any) => {
-  sessionStorage.setItem(meetingID, JSON.stringify(meetingData))
+export interface TranscriptionPayload {
+  meeting_id: string;
+  attendee_id: string;
 }
 
-export const createInstantMeeting = async (data: any) => {
-  const authToken = localStorage.getItem('cecureStreamAuthToken')
-  try {
+export const setInstantMeeting = (meetingID: string, meetingData: any) => {
+  sessionStorage.setItem(meetingID, JSON.stringify(meetingData));
+};
 
+// export const createInstantMeeting = async (data: any) => {
+//   const authToken = localStorage.getItem("cecureStreamAuthToken");
+//   try {
+//     if (true) {
+//       const parsedAuthToken = JSON.parse(authToken as string);
+//       const accessToken = parsedAuthToken?.cecureStreamAcToken;
+//       return await http.apiCall.api.post(apiInstantMeeting, data, {
+//         headers: {
+//           Authorization: accessToken,
+//         },
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error fetching data:", error);
+//   }
+// };
+
+export const createInstantMeeting = async (data: any) => {
+  const authToken = localStorage.getItem("cecureStreamAuthToken");
+  try {
     if (true) {
-      const parsedAuthToken = JSON.parse(authToken as string)
-      const accessToken = parsedAuthToken?.cecureStreamAcToken
-      return await http.apiCall.post(apiInstantMeeting, data,
+      const parsedAuthToken = JSON.parse(authToken as string);
+      const accessToken = parsedAuthToken?.cecureStreamAcToken;
+      return await http.apiCall.api.post(
+        apiInstantMeeting,
+        data,
+
         {
           headers: {
             Authorization: accessToken,
           },
         }
-      )
-
+      );
     }
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
+};
 
 export const createScheduleMeeting = async (data: any) => {
-  const authToken = sessionStorage.getItem('cecureStreamAuthToken')
+  const authToken = sessionStorage.getItem("cecureStreamAuthToken");
   try {
     if (authToken) {
-      const parsedAuthToken = JSON.parse(authToken)
-      const accessToken = parsedAuthToken?.cecureStreamAcToken
+      const parsedAuthToken = JSON.parse(authToken);
+      const accessToken = parsedAuthToken?.cecureStreamAcToken;
       return await http.apiCall.post(apiScheduleMeeting, data, {
         headers: {
           Authorization: accessToken,
         },
-      })
+      });
     }
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
-
+};
 
 export const joinMeetingFnc = async (data: any) => {
   // const authToken = sessionStorage.getItem('cecureStreamAuthToken')
@@ -59,11 +82,19 @@ export const joinMeetingFnc = async (data: any) => {
     //     Authorization: accessToken,
     //   },
     // })
-    const meetingData = await http.apiCall.post(apiJoinMeeting, data)
+    const meetingData = await http.apiCall.post(apiJoinMeeting, data);
 
-    return meetingData
+    return meetingData;
     // }
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
+};
+
+export const startTranscription = async (data: TranscriptionPayload) => {
+  try {
+    return await http.apiCall.post(apiStartTranscription, data);
+  } catch (error) {
+    console.log(error);
+  }
+};

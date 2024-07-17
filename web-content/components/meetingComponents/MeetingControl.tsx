@@ -39,8 +39,10 @@ import horrorSvg from "@/public/assets/images/Horror-stricken face.svg";
 import captureWhite from "@/public/assets/images/captureWhite.svg";
 import capturePurple from "@/public/assets/images/capturePurple.svg";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import { useAppContext } from "@/context/StoreContext";
+import { useSessionStorage } from "@/hooks/useStorage";
+import { useMeetingManager } from "amazon-chime-sdk-component-library-react";
 // import image from require(`../../public/assets/images/Joy.svg`)
 
 const image = require(`../../public/assets/images/Joy.svg`);
@@ -114,7 +116,12 @@ export default function MeetingControl({
   const meetingSessionRef = useRef(null);
   const audioVideo = useAudioVideo();
   const [raiseHandAdded, setRaiseHandAdded] = useState(false);
+  const [videoStatus] = useSessionStorage("videoStatus", "no");
+  const [audioStatus] = useSessionStorage("audioStatus", "no");
+  const [isParticipantJoined, setIsParticipantJoined] = useState(false);
+  const [setupDone, setSetupDone] = useState(false);
 
+  const meetingManagerImport = useMeetingManager();
   const { setAppState } = useAppContext();
 
   useEffect(() => {
@@ -158,6 +165,62 @@ export default function MeetingControl({
     };
   }, []);
 
+  // useEffect(() => {
+  //   // Subscribe to attendee presence events
+
+  //   const handleAttendeePresence = (attendeeId: string, present: boolean) => {
+  //     if (present) {
+  //       setIsParticipantJoined(true);
+  //       console.log(present, attendeeId);
+  //     }
+  //   };
+
+  //   meetingManagerImport.audioVideo?.realtimeSubscribeToAttendeeIdPresence(
+  //     handleAttendeePresence
+  //   );
+  //   console.log(isParticipantJoined);
+  //   // Cleanup subscription on unmount
+  //   return () => {
+  //     meetingManagerImport.audioVideo?.realtimeUnsubscribeToAttendeeIdPresence(
+  //       handleAttendeePresence
+  //     );
+  //   };
+  // }, [meetingManagerImport]);
+
+  // useEffect(() => {
+  //   if (isParticipantJoined) {
+  //     if (videoStatus === "yes") {
+  //       toggleVideo();
+  //     }
+  //     if (audioStatus === "no") {
+  //       toggleMute();
+  //     }
+  //   }
+  // }, [isParticipantJoined]);
+
+  useEffect(() => {
+    if (!setupDone) {
+      const setupDevices = () => {
+        const cameraOn = videoStatus === "yes";
+        const microphoneOn = audioStatus === "yes";
+        if (cameraOn && !isVideoEnabled) {
+          toggleVideo();
+        }
+
+        if (microphoneOn && muted) {
+          toggleMute();
+        }
+
+        setSetupDone(true);
+      };
+
+      const timeoutId = setTimeout(setupDevices, 5000); // Delay of 2 seconds
+
+      // Cleanup function to clear timeout
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isVideoEnabled, muted, setupDone, toggleVideo, toggleMute]);
+
   const handleLocalSideView = (value: string) => {
     if (value === sideView) {
       sideViewFunc("");
@@ -195,9 +258,25 @@ export default function MeetingControl({
     audioVideo.realtimeSendDataMessage("raise-hand", message);
   };
 
-  const handleEndMeeting = () => {
-    meetingManager.audioVideo?.stop();
-    navigate.push("/");
+  const handleEndMeeting = async () => {
+    // await meetingManager.stopVideoInputDevice();
+    // meetingManager.audioVideo?.stopLocalVideoTile();
+    // meetingManager.audioVideo?.stopVideoInput();
+    // meetingManager.audioVideo?.stop();
+
+    // meetingManager.audioVideo?.stopVideoPreviewForVideoInput
+    // meetingManager.audioVideo?.stopLocalVideoTile()
+    // meetingManager.audioVideo?.stopVideoPreviewForVideoInput()
+    // meetingManager.audioVideo?.stop();
+    // navigate.push("/");
+    if (meetingManager) {
+      await meetingManager.leave().then(() => {
+        // router.reload();
+        meetingManager.audioVideo?.stop();
+        navigate.push("/");
+        // .then(() => window.location.reload());
+      });
+    }
   };
 
   return (
@@ -476,8 +555,9 @@ export default function MeetingControl({
         </div>
       </div>
 
-      <div className=" md:hidden py-4">
-        <div className=" sm:px-24">
+      {/* Small screen controls */}
+      <div className=" md:hidden py-4 relative bg-cs-grey-45 border-t border-solid border-t-cs-grey-55">
+        <div className="px-4 sm:px-24">
           <div className=" flex justify-between ">
             <div className="text-center cursor-pointer" onClick={toggleMute}>
               <div
@@ -519,16 +599,66 @@ export default function MeetingControl({
               </div>
             </div>
 
-            <div className="text-center cursor-pointer">
-              <div className="p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto">
-                <EmojiHappy size="18" color="#5E29B7" className="mx-auto" />
+            <div className="text-center cursor-pointer relative">
+              <div
+                className={`p-3 ${
+                  otherViews.includes("React")
+                    ? "bg-[#5E29B7]"
+                    : "bg-[#E1C6FF4D]"
+                } rounded-md max-w-12 mx-auto`}
+                onClick={() => handleOtherViews("React")}
+              >
+                {otherViews.includes("React") ? (
+                  <EmojiHappy size="18" color="#FAFAFA" className="mx-auto" />
+                ) : (
+                  <EmojiHappy size="18" color="#5E29B7" className="mx-auto" />
+                )}
               </div>
             </div>
+            {otherViews.includes("React") && (
+              <div className="absolute left-0 right-0 top-[-56px] flex justify-center overflow-x-hidden px-6">
+                <div className="  bg-[#A3A3A3CC] shadow-xl shadow-[#0000001C] rounded-[10px] relative w-fit overflow-x-scroll no-scrollbar">
+                  <div className=" relative py-2 px-4 flex gap-x-4">
+                    {emojis.map((emoji) => (
+                      <Image
+                        src={emoji.emoji}
+                        alt={emoji.alt}
+                        width={18}
+                        height={18}
+                        className="min-w-6 max-w-5 cursor-pointer"
+                        onClick={() =>
+                          sendEmoji(attendeIDString as string, emoji.emoji)
+                        }
+                        key={emoji.alt}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
-            <div className="text-center cursor-pointer">
-              <div className="p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto">
+            <div
+              className="text-center cursor-pointer"
+              onClick={() =>
+                sendRaiseHand(
+                  new Date().toLocaleString(),
+                  attendeIDString as string
+                )
+              }
+            >
+              <div
+                className={`p-3 rounded-md max-w-12 mx-auto ${
+                  otherViews.includes("Raise-Hand")
+                    ? "bg-[#5E29B7]"
+                    : "bg-[#E1C6FF4D]"
+                }`}
+              >
                 <Image
-                  src={raisedHand}
+                  src={
+                    otherViews.includes("Raise-Hand")
+                      ? raisedHandWhite
+                      : raisedHand
+                  }
                   alt="hand"
                   width={18}
                   height={18}
@@ -537,8 +667,11 @@ export default function MeetingControl({
               </div>
             </div>
 
-            <div className="text-center cursor-pointer">
-              <div className="p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto">
+            <div
+              className="text-center cursor-pointer"
+              onClick={() => handleOtherViews("mobile-drawer")}
+            >
+              <div className={`p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto`}>
                 <More
                   size="18"
                   color="#5E29B7"
@@ -548,7 +681,166 @@ export default function MeetingControl({
               </div>
             </div>
 
-            <div className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer">
+            {otherViews.includes("mobile-drawer") && (
+              <div className="fixed inset-0 z-10 overflow-y-auto modal no-scrollbar">
+                <div className="flex items-end min-h-screen">
+                  <div
+                    className="fixed inset-0 transition-opacity bg-cs-modal-100 cursor-pointer"
+                    onClick={() =>
+                      setOtherViews((prevOtherViews) =>
+                        prevOtherViews.filter(
+                          (item) => item !== "mobile-drawer"
+                        )
+                      )
+                    }
+                  ></div>
+                  <div className=" transition-all transform w-full">
+                    <div className=" bg-white rounded-t-2xl px-6 py-6">
+                      <div className="grid grid-cols-2 gap-x-12 justify-between gap-y-6">
+                        <div
+                          className="text-center cursor-pointer max-w-[215px]"
+                          onClick={() => toggleContentShare()}
+                        >
+                          <div
+                            className={`p-3 ${
+                              isLocalUserSharing ? "bg-cs-purple-650" : ""
+                            }  rounded flex items-center gap-x-3 border border-solid border-cs-grey-55 justify-center`}
+                          >
+                            <Monitor
+                              size="24"
+                              color={isLocalUserSharing ? "#FAFAFA" : "#333333"}
+                              className="max-w-5"
+                            />
+                            <h6
+                              className={` font-medium text-xs ${
+                                isLocalUserSharing
+                                  ? "text-cs-grey-50"
+                                  : "text-cs-grey-dark"
+                              }`}
+                            >
+                              Share screen
+                            </h6>
+                          </div>
+                        </div>
+
+                        <div
+                          className="text-center cursor-pointer max-w-[215px]"
+                          onClick={() => toggleContentShare()}
+                        >
+                          <div
+                            className={`p-3 ${
+                              isLocalUserSharing ? "bg-cs-purple-650" : ""
+                            }  rounded flex items-center gap-x-3 border border-solid border-cs-grey-55 justify-center`}
+                          >
+                            <RecordCircle
+                              size="24"
+                              color={isLocalUserSharing ? "#FAFAFA" : "#333333"}
+                              className="max-w-5"
+                            />
+                            <h6 className=" text-cs-grey-dark font-medium text-xs">
+                              {isLocalUserSharing ? "Stop recording" : "Record"}
+                            </h6>
+                          </div>
+                        </div>
+
+                        <div
+                          className="text-center cursor-pointer max-w-[215px]"
+                          onClick={() => handleLocalSideView("Chat")}
+                        >
+                          <div
+                            className={`p-3 ${
+                              sideView === "Chat" ? "bg-cs-purple-650" : ""
+                            }  rounded flex items-center gap-x-3 border border-solid border-cs-grey-55 justify-center`}
+                          >
+                            <Messages1
+                              size="24"
+                              color={
+                                sideView === "Chat" ? "#FAFAFA" : "#333333"
+                              }
+                              className="max-w-5"
+                            />
+                            <h6
+                              className={`font-medium text-xs ${
+                                sideView === "Chat"
+                                  ? "text-cs-grey-50"
+                                  : "text-cs-grey-dark"
+                              }`}
+                            >
+                              Chat
+                            </h6>
+                          </div>
+                        </div>
+
+                        <div
+                          className="text-center cursor-pointer max-w-[215px]"
+                          onClick={() => handleLocalSideView("Participants")}
+                        >
+                          <div
+                            className={`p-3 ${
+                              sideView === "Participants"
+                                ? "bg-cs-purple-650"
+                                : ""
+                            }  rounded flex items-center gap-x-3 border border-solid border-cs-grey-55 justify-center`}
+                          >
+                            <ProfileAdd
+                              size="24"
+                              color={
+                                sideView === "Participants"
+                                  ? "#FAFAFA"
+                                  : "#333333"
+                              }
+                              className="max-w-5"
+                            />
+                            <h6
+                              className={` ${
+                                sideView === "Participants"
+                                  ? "text-cs-grey-50"
+                                  : "text-cs-grey-dark"
+                              }  font-medium text-xs `}
+                            >
+                              Participants
+                            </h6>
+                          </div>
+                        </div>
+
+                        <div
+                          className="text-center cursor-pointer max-w-[215px]"
+                          onClick={() => handleLocalSideView("Caption")}
+                        >
+                          <div
+                            className={`p-3 ${
+                              sideView === "Caption" ? "bg-cs-purple-650" : ""
+                            }  rounded flex items-center gap-x-3 border border-solid border-cs-grey-55 justify-center`}
+                          >
+                            <ProfileAdd
+                              size="24"
+                              color={
+                                sideView === "Caption" ? "#FAFAFA" : "#333333"
+                              }
+                              className="max-w-5"
+                            />
+                            <h6
+                              className={` ${
+                                sideView === "Caption"
+                                  ? "text-cs-grey-50"
+                                  : "text-cs-grey-dark"
+                              }  font-medium text-xs `}
+                            >
+                              Caption
+                            </h6>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div
+              className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer"
+              onClick={handleEndMeeting}
+            >
               <span>End</span>
             </div>
           </div>

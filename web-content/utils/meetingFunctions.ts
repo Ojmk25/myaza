@@ -1,6 +1,6 @@
 export function processString(input: string): string {
   // Find the last comma
-  const lastCommaIndex = input.lastIndexOf(',');
+  const lastCommaIndex = input.lastIndexOf(",");
   if (lastCommaIndex === -1) {
     // If there's no comma, return the original string
     return input;
@@ -10,20 +10,19 @@ export function processString(input: string): string {
   const stringWithoutLastPart = input.substring(0, lastCommaIndex);
 
   // Replace remaining commas with spaces
-  const resultString = stringWithoutLastPart.replace(/,/g, ' ');
+  const resultString = stringWithoutLastPart.replace(/,/g, " ");
 
   return resultString;
 }
 
-
 export const getRemoteInitials = (input: string): string => {
-  const words = input.split(' ');
+  const words = input.split(" ");
 
   // Get the first letter of each word and join them into a single string
-  const initials = words.map(word => word.charAt(0)).join('');
+  const initials = words.map((word) => word.charAt(0)).join("");
 
   return initials;
-}
+};
 
 export function timeToUnixTimestamp(time: string): number {
   // Create a regex to parse the 24-hour time string
@@ -31,7 +30,7 @@ export function timeToUnixTimestamp(time: string): number {
   const match = time.match(timeRegex);
 
   if (!match) {
-    throw new Error('Invalid time format');
+    throw new Error("Invalid time format");
   }
 
   // Extract hours and minutes
@@ -45,3 +44,8 @@ export function timeToUnixTimestamp(time: string): number {
   // Return Unix timestamp
   return Math.floor(now.getTime() / 1000);
 }
+
+export const validateMeetingIdString = (str: string) => {
+  const hexPattern = /^[0-9a-fA-F]{8}$/;
+  return hexPattern.test(str);
+};

@@ -9,12 +9,12 @@ export const subDomain = (): string | null => {
    */
   if (typeof window !== "undefined") {
     console.log(window.location.host);
-    sessionStorage.setItem("meetingJoiner", "yes")
+    sessionStorage.setItem("cecurestream_meetingJoiner", "no");
+
     const hostname = window.location.hostname;
-    return hostname.split('.')[0];
+    return hostname.split(".")[0];
   } else {
-    console.log('window still undefined');
+    console.log("window still undefined");
   }
   return null;
-}
-
+};

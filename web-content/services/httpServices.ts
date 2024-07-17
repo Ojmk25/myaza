@@ -1,4 +1,7 @@
+import { apiBase, getApiPath } from "@/config";
 import axios from "axios";
+
+const refreshTokenUrl = getApiPath("core", "refresh-token");
 
 axios.interceptors.response.use(null, (err) => {
   const expectedError = err.response && err.response.status >= 400;
@@ -9,51 +12,64 @@ axios.interceptors.response.use(null, (err) => {
   return Promise.reject(err);
 });
 
-const apiAxios = (url: string) => {
-  axios.create({
-    baseURL: url,
-    headers: {
-      "Content-Type": "application/json",
-      crossDomain: true,
-    },
-  });
-};
+const apiAxios = axios.create({
+  baseURL: apiBase,
+  headers: {
+    "Content-Type": "application/json",
+    // crossDomain: true,
+  },
+});
 
+apiAxios.interceptors.request.use(
+  (request) => {
+    const accessToken = localStorage.getItem("cecureStreamAcToken");
+    if (accessToken) {
+      const parsedAccessToken = JSON.parse(accessToken);
+      request.headers["Authorization"] = parsedAccessToken;
+    }
+    return request;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
-// const accessToken = () => {
-//   const authToken = localStorage.getItem('cecureStreamAuthToken')
-//   if (authToken) {
-//     const parsedAuthToken = JSON.parse(authToken)
-//     return parsedAuthToken?.cecureStreamAcToken
-//   }
-
-// }
-
-
-
-// const axiosInstance = axios.create({
-//   baseURL: 'https://api.dev.cecurecast.com',
-//   headers: {
-//     "Content-Type": "application/json",
-//     Authorization: accessToken(),
-//   },
-//   // other configurations
-// })
-
-// axiosInstance.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     if (error.response && error.response.status === 401) {
-//       console.log('call the refresh token api here')
-//       console.log(error)
-//       // Handle 401 error, e.g., redirect to login or refresh token
-//     }
-//     return Promise.reject(error)
-//   },
-// )
-
-// export default axiosInstance
-
+apiAxios.interceptors.response.use(
+  (response) => response, // Directly return successful responses.
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true; // Mark the request as retried to avoid infinite loops.
+      try {
+        const refreshToken = localStorage.getItem("cecureStreamRefToken"); // Retrieve the stored refresh token.
+        // Make a request to your auth server to refresh the token.
+        const response = await axios.post(refreshTokenUrl, {
+          refreshToken,
+        });
+        // const { access_token, refreshToken: newRefreshToken } = response.data;
+        const { access_token } = response.data;
+        // Store the new access and refresh tokens.
+        localStorage.setItem("cecureStreamAcToken", access_token);
+        // localStorage.setItem('refreshToken', newRefreshToken);
+        // Update the authorization header with the new access token.
+        apiAxios.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${access_token}`;
+        return apiAxios(originalRequest); // Retry the original request with the new access token.
+      } catch (refreshError) {
+        // Handle refresh token errors by clearing stored tokens and redirecting to the login page.
+        console.error("Token refresh failed:", refreshError);
+        localStorage.removeItem("cecureStreamAuthToken");
+        localStorage.removeItem("cecureStreamAcToken");
+        localStorage.removeItem("cecureStreamRefToken");
+        // localStorage.removeItem('refreshToken');
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
+      }
+    }
+    return Promise.reject(error); // For all other errors, return the error as is.
+  }
+);
 
 export const apiCall = {
   get: axios.get,
@@ -62,14 +78,3 @@ export const apiCall = {
   delete: axios.delete,
   api: apiAxios,
 };
-
-
-// export async function fetchUserData() {
-//   try {
-//     const response = await axiosInstance.post("/meeting/v1/instant-meeting", {});
-//     console.log('User Data:', response.data);
-//   } catch (error) {
-//     console.error('An error occurred:', error.message);
-//     // Here, you might handle errors coming from the backend
-//   }
-// }

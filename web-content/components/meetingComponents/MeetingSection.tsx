@@ -1,10 +1,7 @@
 "use client";
 import Image from "next/image";
-import { Add, Copy, SearchNormal1 } from "iconsax-react";
-
 import closeIconPurple from "@/public/assets/images/closeIconPurple.svg";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import dottedLine from "@/public/assets/images/dottedLine.svg";
 import {
   useToggleLocalMute,
   useRemoteVideoTileState,
@@ -17,18 +14,23 @@ import {
 } from "amazon-chime-sdk-component-library-react";
 import { RemoteAttendeeCard } from "./RemoteAttendeeCard";
 import { LocalAttendeeCard } from "./LocalAttendeeCard";
-import { AttendeeListCard } from "./AttendeeListCard";
 import {
   Message,
   DataMessage,
   DefaultRealtimeController,
+  TranscriptEvent,
+  TranscriptionStatus,
+  Transcript,
 } from "amazon-chime-sdk-js";
 import Chat from "./IncallMessage";
-import copyTextToClipboard from "@/utils/clipBoard";
 import { getRemoteInitials, processString } from "@/utils/meetingFunctions";
 import ShowVisualizer from "./ShowVisualizer";
 import capturePurple from "@/public/assets/images/capturePurple.svg";
-import { timeSince } from "@/utils/formatTime";
+import Participants from "./Participants";
+import Conference from "./Conference";
+import { startTranscription } from "@/services/meetingServices";
+
+const testMeetingParticipants = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 type DynamicWidth = {
   width: number | string;
@@ -73,6 +75,12 @@ export default function MeetingSection({
   const participantsRef = useRef<HTMLDivElement>(null);
   // const [sideView, setSideView] = useState('');
   const [tooltipMessage, setTooltipMessage] = useState("");
+  const bigContainerTileRef = useRef<HTMLDivElement>(null);
+  const smallContainerTileRef = useRef<HTMLDivElement>(null);
+  const [inviewSmallContainer, setInviewSmallContainer] = useState<
+    number | null
+  >(null);
+  const [bigContainerWidth, setBigContainerWidth] = useState(0);
   const containerTileRef = useRef<HTMLDivElement>(null);
   const [dynamicWidth, setDynamicWidth] = useState<DynamicWidth>({
     width: "",
@@ -80,8 +88,9 @@ export default function MeetingSection({
   });
   const [screenWidth, setScreenWidth] = useState<number>(0);
   const [changingWidth, setChangingWidth] = useState<number>(0);
-  const [captionOn, setCaptionOn] = useState(true);
+  const [captionOn, setCaptionOn] = useState(false);
   const captionScroll = useRef<HTMLDivElement>(null);
+  const [displayCards, setDisplayCards] = useState<number>();
 
   useEffect(() => {
     // Function to update screenWidth state when the window is resized
@@ -101,22 +110,94 @@ export default function MeetingSection({
     };
   }, []);
 
+  // useEffect(() => {
+  //   captionScroll.current!.scrollTop = captionScroll.current!.scrollHeight;
+  // }, []);
+
+  const transcriptionPayload = {
+    meeting_id: meetingManager.meetingId as string,
+    attendee_id: attendeIDString as string,
+  };
+
+  const handleSignUpSubmit = async () => {
+    // setLoading(true)
+    // const clearAll = () => {
+    //   setLoading(false)
+    //   setTimeout(() => {
+    //     setSuccessRes("")
+    //     setOpenModal(false)
+    //   }, 2000)
+    // }
+    try {
+      const data = await startTranscription(transcriptionPayload);
+      // setCaptionOn(true);
+      // setLoading(true)
+      // setSuccessRes(data.data.body)
+      // setOpenModal(true)
+      // setTimeout(() => {
+      //   updateSignUpUser(registerPayload.email)
+      //   data.data.body.status === 'Success' && navigate.push("/auth/verify");
+      // }, 3000)
+      console.log(data);
+    } catch (error) {
+      // setLoading(true)
+      console.log(error);
+    } finally {
+      // clearAll()
+    }
+  };
+
+  const chunkArray = (array: any, size: number) => {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, size + i));
+    }
+    return chunks.slice(0, 3);
+  };
+
+  const chunkRefs = useRef<(HTMLDivElement | null)[]>([]);
+
   useEffect(() => {
-    captionScroll.current!.scrollTop = captionScroll.current!.scrollHeight;
-  }, []);
+    const options = {
+      root: null,
+      rootMargin: "0px",
+      threshold: 0.5, // Adjust this based on when you want the callback to be triggered
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const chunkIndex = chunkRefs.current.indexOf(
+            entry.target as HTMLDivElement
+          );
+          setInviewSmallContainer(chunkIndex);
+        }
+      });
+    }, options);
+
+    chunkRefs.current.forEach((ref) => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => {
+      chunkRefs.current.forEach((ref) => {
+        if (ref) observer.unobserve(ref);
+      });
+    };
+  }, [inviewSmallContainer]);
 
   const attendeeItems = attendees.map((attendee, i) => {
     const tilerId = attendeeIdToTileId[attendee.chimeAttendeeId];
 
-    const { name, externalUserId } = attendee;
+    const { externalUserId } = attendee;
 
     if (i === 0) {
       return (
         <LocalAttendeeCard
-          key={attendee.chimeAttendeeId}
+          key={i}
           attendeeId={attendee.chimeAttendeeId}
           name={externalUserId}
-          videoTildId={tilerId}
+          videoTildId={1}
           nameID={attendee.chimeAttendeeId}
           audioState={
             <ShowVisualizer
@@ -145,6 +226,8 @@ export default function MeetingSection({
       );
     }
   });
+
+  const smallScreenTiles = chunkArray(attendeeItems, tileId ? 2 : 6);
 
   useEffect(() => {
     if (containerTileRef.current && changingWidth <= 699) {
@@ -210,12 +293,97 @@ export default function MeetingSection({
         resizeObserver.unobserve(containerTileRef.current);
       }
     };
-  }, []);
+  }, [sideView]);
+
+  useEffect(() => {
+    setBigContainerWidth(bigContainerTileRef?.current?.clientWidth as number);
+
+    const audioVideo = meetingManager.audioVideo;
+    if (audioVideo?.transcriptionController) {
+      audioVideo.transcriptionController.subscribeToTranscriptEvent(
+        (transcriptEvent: Transcript | TranscriptionStatus) => {
+          console.log(transcriptEvent);
+        }
+      );
+    }
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        if (entry.target === bigContainerTileRef.current) {
+          // setChangingWidth(entry.contentRect.width);
+          // console.log(entry.contentRect.width);
+          setBigContainerWidth(entry.contentRect.width);
+          if (entry.contentRect.width < 300) {
+            setDisplayCards(3);
+          } else if (
+            entry.contentRect.width > 300 &&
+            entry.contentRect.width < 645
+          ) {
+            setDisplayCards(4);
+          } else {
+            setDisplayCards(8);
+          }
+        }
+      }
+    });
+
+    if (bigContainerTileRef.current) {
+      resizeObserver.observe(bigContainerTileRef.current);
+    }
+
+    return () => {
+      if (bigContainerTileRef.current) {
+        resizeObserver.unobserve(bigContainerTileRef.current);
+      }
+    };
+  }, [sideView]);
 
   let sharerAttendeeID = sharingAttendeeId?.split("#")[0];
   let sharingExternalID = attendees.find(
     (attendee) => attendee.chimeAttendeeId === sharerAttendeeID
   )?.externalUserId;
+
+  const getClassNames = (length: number) => {
+    if (length < 2) {
+      if (bigContainerWidth < 300) {
+        return "w-full h-1/2 p-2";
+      }
+      return "w-full h-full p-2";
+    }
+    if (length === 2) {
+      if (bigContainerWidth < 300) {
+        return "w-full h-1/2 p-2";
+      }
+      return "w-1/2 h-full p-2";
+    }
+    if (length === 3) {
+      if (bigContainerWidth < 300) {
+        return "w-full h-1/3 p-2";
+      }
+      if (bigContainerWidth < 645) {
+        return "w-1/2 h-1/2 p-2";
+      }
+      return "w-1/3 h-full p-2";
+    }
+    if (length === 4) {
+      if (bigContainerWidth < 300) {
+        return "w-full h-1/3 p-2";
+      }
+      if (bigContainerWidth < 645) {
+        return "w-1/2 h-1/2 p-2";
+      }
+      return "w-1/4 h-full p-2";
+    }
+    if (length > 4) {
+      if (bigContainerWidth < 300) {
+        return "w-full h-1/3 p-2";
+      }
+      if (bigContainerWidth < 645) {
+        return "w-1/2 h-1/2 p-2";
+      }
+      return "w-1/4 h-1/2 p-2";
+    }
+  };
 
   return (
     <>
@@ -252,33 +420,82 @@ export default function MeetingSection({
             className={`w-full @container/meetingTiles  ${
               screenWidth < 1024 && sideView !== "" && tileId ? "hidden" : ""
             }`}
-            ref={containerTileRef}
+            ref={bigContainerTileRef}
           >
             {/* <div className="w-full flex gap-4 h-full flex-4 flex-wrap justify-center">
               {attendeeItems}
             </div> */}
 
             <div className="flex flex-wrap justify-center overflow-y-auto items-center w-full h-full">
-              {attendeeItems.length < 2 ? (
-                <div className="w-full h-full p-2">
-                  {attendeeItems}
+              {attendeeItems
+                .slice(
+                  0,
+                  displayCards &&
+                    (attendeeItems.length > displayCards
+                      ? displayCards - 1
+                      : displayCards)
+                )
+                .map((item, index) => (
+                  <div
+                    key={index}
+                    className={`${getClassNames(
+                      attendeeItems.length
+                    )} @container/meetingCard `}
+                  >
+                    {item}
+                  </div>
+                ))}
+              {displayCards && attendeeItems.length > displayCards && (
+                <div className={` ${getClassNames(attendeeItems.length)}`}>
+                  <div
+                    className={` bg-cs-black-200 flex-1 rounded flex h-full justify-center`}
+                  >
+                    {attendeeItems.length - (displayCards - 1) <= 2 ? (
+                      <div className="flex-1 flex justify-center items-center mx-auto">
+                        {attendeeItems
+                          .slice(displayCards - 2, attendeeItems.length)
+                          .map((item, index) => (
+                            <div
+                              className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 border-solid border-[0.5px] border-white -ml-2"
+                              key={index}
+                            >
+                              {item}
+                            </div>
+                          ))}
 
-                  {/* check this line for when its more than 6 */}
-                  {/* {index === 5 ? attendeeItems.length : item} */}
+                        {/* <Image
+                          src={avatar}
+                          alt=""
+                          className=" max-w-[38px] max-h-[38px] rounded-full -ml-2"
+                        /> */}
+                      </div>
+                    ) : (
+                      <div className="flex-1 flex justify-center items-center mx-auto">
+                        {/* <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 border-solid border-[0.5px] border-white">
+                          MO
+                        </div>
+                        <Image
+                          src={avatar}
+                          alt=""
+                          className=" max-w-[38px] max-h-[38px] rounded-full -ml-2"
+                        /> */}
+                        {attendeeItems
+                          .slice(displayCards - 2, displayCards)
+                          .map((item, index) => (
+                            <div
+                              className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 border-solid border-[0.5px] border-white -ml-2"
+                              key={index}
+                            >
+                              {item}
+                            </div>
+                          ))}
+                        <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 text-[10px] -ml-2 border-solid border-[0.5px] border-white">
+                          +{attendeeItems.length - (displayCards - 1)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              ) : (
-                <>
-                  {attendeeItems.slice(0, 9).map((item, index) => (
-                    <div
-                      key={index}
-                      className={`w-${
-                        attendeeItems.length === 2 ? "1/2" : "1/3"
-                      } p-2 h-full`}
-                    >
-                      {item}
-                    </div>
-                  ))}
-                </>
               )}
             </div>
           </div>
@@ -312,54 +529,11 @@ export default function MeetingSection({
             }
           >
             {sideView === "Participants" && (
-              <div
-                className={` h-full bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-2 @[300px]/bigScreenSideCards:px-4 pt-5 overflow-y-scroll no-scrollbar`}
-              >
-                <div className=" flex justify-between items-center">
-                  <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-2xl">
-                    Participants{" "}
-                    <span className=" text-cs-grey-100 font-medium text-sm @[300px]/bigScreenSideCards:text-base">
-                      ({attendees.length})
-                    </span>
-                  </h3>
-                  <Image
-                    src={closeIconPurple}
-                    alt="close-icon"
-                    onClick={() => sideViewFunc("")}
-                    className="cursor-pointer w-5 @[300px]/bigScreenSideCards:w-6"
-                  />
-                </div>
-                <div className=" relative mt-5 mb-3">
-                  <input
-                    type="text"
-                    name=""
-                    id=""
-                    className=" w-full border border-cs-grey-300 h-8 @[300px]/bigScreenSideCards:h-10 rounded-[10px] outline-none pl-7 @[300px]/bigScreenSideCards:pl-10 placeholder:text-sm placeholder:font-normal"
-                    placeholder="Search for participants"
-                  />
-                  <SearchNormal1
-                    size="18"
-                    color="#898989"
-                    className=" absolute top-[7px] left-[10px] @[300px]/bigScreenSideCards:top-[12px] @[300px]/bigScreenSideCards:left-[14px] @[300px]/bigScreenSideCards:w-[18px] @[300px]/bigScreenSideCards:h-[18px]"
-                  />
-                </div>
-
-                <div className="">
-                  {attendees.map((attendee) => (
-                    <AttendeeListCard
-                      attendeeId={attendee.chimeAttendeeId}
-                      key={attendee.chimeAttendeeId}
-                      externalID={attendee.externalUserId}
-                      audioState={
-                        <ShowVisualizer
-                          meetingManager={meetingManager}
-                          attendee={attendee}
-                        />
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
+              <Participants
+                attendees={attendees}
+                sideViewFunc={sideViewFunc}
+                meetingManager={meetingManager}
+              />
             )}
 
             <div
@@ -434,7 +608,10 @@ export default function MeetingSection({
                         Captions are not enabled yet
                       </h3>
                       <div className="mx-auto w-fit">
-                        <button className=" text-cs-purple-650 font-bold text-sm rounded-[10px] border border-cs-grey-150 p-3">
+                        <button
+                          className=" text-cs-purple-650 font-bold text-sm rounded-[10px] border border-cs-grey-150 p-3"
+                          onClick={handleSignUpSubmit}
+                        >
                           Turn on caption
                         </button>
                       </div>
@@ -502,634 +679,340 @@ export default function MeetingSection({
             </div>
 
             {sideView === "Conference Info" && (
-              <div className=" flex-6 bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-4 pt-5">
-                <div className=" flex justify-between items-center">
-                  <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-2xl">
-                    Conference Info
-                  </h3>
-                  <Image
-                    src={closeIconPurple}
-                    alt="profile"
-                    onClick={() => sideViewFunc("")}
-                    className=" cursor-pointer w-5 @[300px]/bigScreenSideCards:w-6"
-                  />
-                </div>
-                <div className=" relative mt-7 mb-5">
-                  <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-xl">
-                    [Meeting Name]
-                  </h3>
-                  <p className=" text-xs @[300px]/bigScreenSideCards:text-sm text-cs-black-200 font-normal mb-4 mt-6">
-                    Invite others to join by copying the meting link and sharing
-                    it:{" "}
-                  </p>
-                </div>
-                <div className=" relative mt-7 mb-5">
-                  <input
-                    type="text"
-                    name=""
-                    id=""
-                    className=" w-full border border-[#F1F1F1] h-10 @[300px]/bigScreenSideCards:h-12 rounded-[10px] outline-none px-4 placeholder:text-sm placeholder:font-normal placeholder:text-cs-black-200"
-                    placeholder={uuid}
-                  />
-                  <Copy
-                    size="18"
-                    color="#5E29B7"
-                    className=" absolute top-[14px] right-[14px] cursor-pointer"
-                    onClick={handleCopyClick}
-                  />
-                  {tooltipMessage && (
-                    <div className=" absolute text-xs text-cs-grey-50 p-2 bg-cs-purple-650 z-10 rounded">
-                      {tooltipMessage}
-                    </div>
-                  )}
-                </div>
-
-                <button className="flex items-center text-cs-purple-650 font-bold py-2 px-3 @[300px]/bigScreenSideCards:py-3 @[300px]/bigScreenSideCards:px-4 border border-cs-purple-650 rounded-lg max-h-[52px]">
-                  <Add size="18" color="#5E29B7" /> Add participants
-                </button>
-              </div>
+              <Conference
+                sideViewFunc={sideViewFunc}
+                uuid={uuid}
+                handleCopyClick={handleCopyClick}
+                tooltipMessage={tooltipMessage}
+              />
             )}
           </div>
-
-          {/* <div className=" bg-cs-black-200 flex-1 p-2 rounded flex flex-col sm:max-w-[352px]">
-          <div className=" flex justify-end">
-            <div className="p-[6px] bg-cs-grey-800 rounded-full"><MicrophoneSlash1 size="14" color="#FAFAFA" /></div>
-          </div>
-          <div className="flex-1 flex justify-center items-center">
-            <div className="p-[6px]">
-              <Image src={avatar} alt="" className=" max-w-[38px] max-h-[38px] rounded-full mx-auto" />
-              <h5 className="text-cs-grey-50 text-xs">Marie Oju</h5>
-            </div>
-          </div>
-          <div className=" flex justify-end">
-            <div className="p-[6px]"><Image src={dottedLine} alt="" className=" w-3 h-3" /></div>
-          </div>
-        </div>
-
-        <div className=" bg-cs-black-200 flex-1 p-2 rounded flex flex-col sm:max-w-[352px]">
-          <div className=" flex justify-end">
-            <div className="p-[6px] bg-cs-grey-800 rounded-full"><MicrophoneSlash1 size="14" color="#FAFAFA" /></div>
-          </div>
-          <div className="flex-1 flex justify-center items-center">
-            <div className="p-[6px]">
-              <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full mx-auto flex justify-center items-center text-cs-grey-50">MO</div>
-              <h5 className="text-cs-grey-50 text-xs">Marie Ojuerer</h5>
-            </div>
-          </div>
-          <div className=" flex justify-end">
-            <div className="p-[6px]"><Image src={dottedLine} alt="" className=" w-3 h-3" /></div>
-          </div>
-        </div>
-
-        More people in a meeting represented by numbers
-        <div className=" bg-cs-black-200 flex-1 p-2 rounded flex flex-col sm:max-w-[352px] min-h-[132px]">
-          <div className=" flex justify-end">
-            <div className="p-[6px] bg-cs-grey-800 rounded-full"><MicrophoneSlash1 size="14" color="#FAFAFA" /></div>
-          </div>
-          <div className="flex-1 flex justify-center items-center">
-            <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50">MO</div>
-            <Image src={avatar} alt="" className=" max-w-[38px] max-h-[38px] rounded-full -translate-x-3" />
-            <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 text-[10px] -translate-x-6">+4</div>
-          </div>
-          <div className=" flex justify-end">
-            <div className="p-[6px]"><Image src={dottedLine} alt="" className=" w-3 h-3" /></div>
-          </div>
-        </div> */}
         </div>
       </div>
 
-      <div className="flex flex-4 overflow-hidden md:hidden flex-col">
-        {tileId && (
-          <div className=" bg-cs-black-200 px-4 py-5 rounded-[4px]">
-            <div className=" h-full flex flex-col">
-              <div className="flex gap-x-3 items-center mb-2">
-                {/* <div className="p-[4px] bg-cs-grey-50 rounded-lg"><RecordCircle size="24" color="#CB3A32" variant="Bulk" /></div>
-        <div className=" text-cs-grey-50 font-normal">Conference is recorded</div>
-        <div className=" w-[1px] bg-cs-grey-200 min-h-6"></div> */}
+      {/* small screen */}
+      <div className=" md:hidden h-full">
+        {tileId &&
+          sideView === "" && ( //screen share
+            <div className=" bg-cs-black-200 px-4 py-5 rounded-[4px]">
+              <div className=" h-full flex flex-col">
+                {/* <div className="flex gap-x-3 items-center mb-2">
+                <div className="p-[4px] bg-cs-grey-50 rounded-lg">
+                <RecordCircle size="24" color="#CB3A32" variant="Bulk" />
+                </div>
+                <div className=" text-cs-grey-50 font-normal">
+                  Conference is recorded
+                </div>
+                <div className=" w-[1px] bg-cs-grey-200 min-h-6"></div>
                 <h3 className=" text-cs-grey-50 font-semibold ">
                   <span className=" capitalize">
                     {processString(sharingExternalID as string)}{" "}
                   </span>
                 </h3>
-              </div>
-              <div className="flex justify-center items-center rounded-lg overflow-hidden h-full">
-                <div className=" min-h-[200px] w-full h-full rounded-lg min-w-[200px]">
-                  <ContentShare
-                    nameplate={processString(externalID as string)}
-                    className=" rounded-lg relative bg-slate-800 min-h-[200px] [&>video]:object-cover capitalize"
-                    css="border: 1px solid"
-                  />
+              </div> */}
+                <div className="flex justify-center items-center rounded-lg overflow-hidden h-full">
+                  <div className=" min-h-[200px] w-full h-full rounded-lg min-w-[200px]">
+                    <ContentShare
+                      nameplate={processString(externalID as string)}
+                      className=" rounded-lg relative bg-slate-800 min-h-[200px] [&>video]:object-cover capitalize"
+                      css="border: 1px solid"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
+          )}
+
+        {attendeeItems.length < 3 ? ( //meeting tiles
+          <div
+            className={`${sideView === "" ? "flex" : "hidden"} ${
+              tileId ? "flex-row" : "flex-col h-full"
+            }`}
+          >
+            {attendeeItems.map((chunk, index) => (
+              <div
+                className={` flex ${
+                  tileId ? "w-1/2" : "h-full"
+                } items-center justify-center @container/meetingCard p-2`}
+                key={index}
+              >
+                {chunk}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div
+            className={`${
+              sideView === "" ? "flex" : "hidden"
+            } overflow-auto snap-x no-scrollbar gap-x-4 ${
+              tileId ? "h-1/2" : "h-full"
+            }`}
+            style={{ scrollSnapType: "x mandatory" }}
+          >
+            {smallScreenTiles.slice(0, 2).map((chunk, index) => (
+              <div
+                key={index}
+                className={`min-w-full flex flex-wrap snap-start ${
+                  tileId ? "h-1/2" : "h-full"
+                }`}
+                //@ts-ignore
+                ref={(el) => (chunkRefs.current[index] = el)}
+                id={`${index}`}
+              >
+                {chunk.map((item: any) => (
+                  <div
+                    key={item.id}
+                    className={` ${
+                      chunk.length < 2 ? "w-full" : "w-1/2"
+                    } flex items-center justify-center @container/meetingCard p-2`}
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            ))}
+            {smallScreenTiles[2] && (
+              <div
+                //@ts-ignore
+                ref={(el: HTMLDivElement | null) => (chunkRefs.current[2] = el)}
+                id="2"
+                className={`min-w-full flex flex-wrap snap-start ${
+                  tileId ? "h-1/2" : "h-full"
+                }`}
+              >
+                {smallScreenTiles[2].length === 6
+                  ? smallScreenTiles[2].slice(0, 5).map((item: any) => (
+                      <div
+                        key={item.id}
+                        className={` ${
+                          smallScreenTiles[2].length < 2 ? "w-full" : "w-1/2"
+                        } flex items-center justify-center @container/meetingCard p-2`}
+                      >
+                        {item}
+                      </div>
+                    ))
+                  : smallScreenTiles[2].map((item: any) => (
+                      <div
+                        key={item.id}
+                        className={` ${
+                          smallScreenTiles[2].length < 2 ? "w-full" : "w-1/2"
+                        } flex items-center justify-center @container/meetingCard p-2`}
+                      >
+                        {item}
+                      </div>
+                    ))}
+                {!tileId && attendeeItems.length >= 18 && (
+                  <div className="flex-1 mx-auto p-2 ">
+                    <div className=" flex justify-center items-center bg-cs-black-200 rounded h-full">
+                      {/* <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 border-solid border-[0.5px] border-white">
+                          MO
+                        </div>
+                        <Image
+                          src={avatar}
+                          alt=""
+                          className=" max-w-[38px] max-h-[38px] rounded-full -ml-2"
+                        /> */}
+
+                      <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 text-[10px] border-solid border-[0.5px] border-white">
+                        +{attendeeItems.length - 17}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
-        <div className="flex-6 flex">
-          <div
-            className={`w-full flex justify-center items-center  ${
-              screenWidth < 1024 && sideView !== "" && tileId ? "hidden" : ""
-            }`}
-            ref={containerTileRef}
-          >
-            <div className="flex flex-wrap justify-center w-full h-full">
-              {attendeeItems.length < 2 ? (
-                <div className="w-full p-2">
-                  {attendeeItems}
-
-                  {/* check this line for when its more than 6 */}
-                  {/* {index === 5 ? attendeeItems.length : item} */}
-                </div>
-              ) : (
-                <>
-                  {attendeeItems.slice(0, 6).map((item, index) => (
-                    <div key={index} className="w-1/2 p-2">
-                      {item}
-
-                      {/* check this line for when its more than 6 */}
-                      {/* {index === 5 ? attendeeItems.length : item} */}
-                    </div>
-                  ))}
-                </>
-              )}
-            </div>
-          </div>
-          {/* @[300px]/meetingTiles:flex-row @[300px]/meetingTiles:flex-wrap */}
-          {/* <div className="w-full @container/meetingTiles">
-    <div className="w-full flex flex-col gap-4 h-full flex-4 @[300px]/meetingTiles:flex-row flex-wrap">
-      <AttendeeItemsList attendees={attendees} />
-    </div>
-  </div> */}
+        <div
+          className="w-0 overflow-hidden transition-all @container/bigScreenSideCards p-2"
+          style={
+            sideView !== ""
+              ? {
+                  width: "100%",
+                  overflow: "visible",
+                  height: "100%",
+                }
+              : {
+                  width: "0px",
+                  overflow: "hidden",
+                  height: "0",
+                }
+          }
+        >
+          {sideView === "Participants" && (
+            <Participants
+              attendees={attendees}
+              sideViewFunc={sideViewFunc}
+              meetingManager={meetingManager}
+            />
+          )}
 
           <div
-            className="w-0 overflow-hidden transition-all @container/bigScreenSideCards"
-            ref={participantsRef}
             style={
-              sideView !== ""
+              sideView === "Chat"
                 ? {
-                    width: participantsRef.current?.scrollWidth + "px",
-                    // height: participantsRef.current?.scrollHeight + "px",
+                    width: "100%",
+                    height: "100%",
                     overflow: "visible",
-                    flex: "1 1 50%",
-                    minWidth: screenWidth < 1025 ? 190 : 300,
-                    marginLeft: 16,
                   }
                 : {
-                    width: "0px",
-                    // height: '0px',
+                    width: "0",
+                    height: "0",
                     overflow: "hidden",
-                    flex: "1 1 0%",
-                    marginLeft: 0,
                   }
             }
           >
-            {sideView === "Participants" && (
-              <div
-                className={` h-full bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-2 @[300px]/bigScreenSideCards:px-4 pt-5 overflow-y-scroll no-scrollbar`}
-              >
-                <div className=" flex justify-between items-center">
-                  <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-2xl">
-                    Participants{" "}
-                    <span className=" text-cs-grey-100 font-medium text-sm @[300px]/bigScreenSideCards:text-base">
-                      ({attendees.length})
-                    </span>
-                  </h3>
-                  <Image
-                    src={closeIconPurple}
-                    alt="close-icon"
-                    onClick={() => sideViewFunc("")}
-                    className="cursor-pointer w-5 @[300px]/bigScreenSideCards:w-6"
-                  />
-                </div>
-                <div className=" relative mt-5 mb-3">
-                  <input
-                    type="text"
-                    name=""
-                    id=""
-                    className=" w-full border border-cs-grey-300 h-8 @[300px]/bigScreenSideCards:h-10 rounded-[10px] outline-none pl-7 @[300px]/bigScreenSideCards:pl-10 placeholder:text-sm placeholder:font-normal"
-                    placeholder="Search for participants"
-                  />
-                  <SearchNormal1
-                    size="18"
-                    color="#898989"
-                    className=" absolute top-[7px] left-[10px] @[300px]/bigScreenSideCards:top-[12px] @[300px]/bigScreenSideCards:left-[14px] @[300px]/bigScreenSideCards:w-[18px] @[300px]/bigScreenSideCards:h-[18px]"
-                  />
-                </div>
-
-                <div className="">
-                  {attendees.map((attendee) => (
-                    <AttendeeListCard
-                      attendeeId={attendee.chimeAttendeeId}
-                      key={attendee.chimeAttendeeId}
-                      externalID={attendee.externalUserId}
-                      audioState={
-                        <ShowVisualizer
-                          meetingManager={meetingManager}
-                          attendee={attendee}
-                        />
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div
-              style={
-                sideView === "Chat"
-                  ? {
-                      width: "100%",
-                      height: "100%",
-                      overflow: "visible",
-                    }
-                  : {
-                      width: "0",
-                      height: "0",
-                      overflow: "hidden",
-                    }
-              }
-            >
-              {externalID && (
-                <Chat
-                  attendeeIDProp={attendeIDString}
-                  externalID={processString(externalID as string)}
-                  sideViewFunc={sideViewFunc}
-                />
-              )}
-            </div>
-
-            <div
-              style={
-                sideView === "Caption"
-                  ? {
-                      width: "100%",
-                      height: "100%",
-                      overflow: "visible",
-                    }
-                  : {
-                      width: "0",
-                      height: "0",
-                      overflow: "hidden",
-                    }
-              }
-            >
-              <div
-                className={` h-full bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-2 @[300px]/bigScreenSideCards:px-4 pt-5 overflow-y-scroll no-scrollbar`}
-              >
-                <div className=" flex justify-between items-center">
-                  <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-2xl">
-                    Caption
-                  </h3>
-                  <Image
-                    src={closeIconPurple}
-                    alt="close-icon"
-                    onClick={() => sideViewFunc("")}
-                    className="cursor-pointer w-5 @[300px]/bigScreenSideCards:w-6"
-                  />
-                </div>
-
-                {!captionOn && (
-                  <div className="h-full flex justify-center items-center">
-                    <div>
-                      <div
-                        className={`p-3 bg-[#E1C6FF4D] rounded-[15px] w-fit mx-auto bg-gradient-to-t from-[#E1C6FF33] to-[#E1C6FF4D]`}
-                      >
-                        <Image
-                          src={capturePurple}
-                          alt="hand"
-                          width={20}
-                          height={20}
-                          className="min-w-8 max-w-8"
-                        />
-                      </div>
-                      <h3 className=" font-medium text-lg text-cs-grey-dark my-3">
-                        Captions are not enabled yet
-                      </h3>
-                      <div className="mx-auto w-fit">
-                        <button className=" text-cs-purple-650 font-bold text-sm rounded-[10px] border border-cs-grey-150 p-3">
-                          Turn on caption
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {captionOn && (
-                  <div
-                    className="flex flex-col overflow-y-scroll h-full no-scrollbar"
-                    ref={captionScroll}
-                  >
-                    {/* {messages.map((message, index) => ( */}
-                    <div className=" align-bottom">
-                      <div className=" flex py-1 gap-x-1">
-                        {/* <Image src={avatar} alt="profile" className=" rounded-full w-5 h-5 object-cover" /> */}
-                        <div className=" bg-cs-grey-800 w-6 h-6 min-w-6  rounded-full flex justify-center items-center text-cs-grey-50 text-xs uppercase">
-                          {getRemoteInitials("Emmanue Kalu")}
-                        </div>
-                        <div>
-                          <div className=" flex items-center gap-x-2 mt-[3px]">
-                            <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">
-                              {processString("Emmanuel")}
-                            </h4>
-                          </div>
-                          <p className=" text-xs font-normal text-cs-grey-800">
-                            Lorem ipsum dolor sit amet consectetur. Vulputate
-                            erat massa nunc ornare ornare orci. Tellus turpis
-                            ipsum in in. Neque amet leo odio ut tortor odio
-                            nulla tempor non. Et feugiat dictum neque nisi eget
-                            nisi at nulla feugiat. Molestie bibendum cursus leo
-                            egestas.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className=" align-bottom">
-                      <div className=" flex py-1 gap-x-1">
-                        {/* <Image src={avatar} alt="profile" className=" rounded-full w-5 h-5 object-cover" /> */}
-                        <div className=" bg-cs-grey-800 w-6 h-6 min-w-6  rounded-full flex justify-center items-center text-cs-grey-50 text-xs uppercase">
-                          {getRemoteInitials("Emmanue Kalu")}
-                        </div>
-                        <div>
-                          <div className=" flex items-center gap-x-2 mt-[3px]">
-                            <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">
-                              {processString("Emmanuel")}
-                            </h4>
-                          </div>
-                          <p className=" text-xs font-normal text-cs-grey-800">
-                            Lorem ipsum dolor sit amet consectetur. Vulputate
-                            erat massa nunc ornare ornare orci. Tellus turpis
-                            ipsum in in. Neque amet leo odio ut tortor odio
-                            nulla tempor non. Et feugiat dictum neque nisi eget
-                            nisi at nulla feugiat. Molestie bibendum cursus leo
-                            egestas.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    {/* ))} */}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {sideView === "Conference Info" && (
-              <div className=" flex-6 bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-4 pt-5">
-                <div className=" flex justify-between items-center">
-                  <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-2xl">
-                    Conference Info
-                  </h3>
-                  <Image
-                    src={closeIconPurple}
-                    alt="profile"
-                    onClick={() => sideViewFunc("")}
-                    className=" cursor-pointer w-5 @[300px]/bigScreenSideCards:w-6"
-                  />
-                </div>
-                <div className=" relative mt-7 mb-5">
-                  <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-xl">
-                    [Meeting Name]
-                  </h3>
-                  <p className=" text-xs @[300px]/bigScreenSideCards:text-sm text-cs-black-200 font-normal mb-4 mt-6">
-                    Invite others to join by copying the meting link and sharing
-                    it:{" "}
-                  </p>
-                </div>
-                <div className=" relative mt-7 mb-5">
-                  <input
-                    type="text"
-                    name=""
-                    id=""
-                    className=" w-full border border-[#F1F1F1] h-10 @[300px]/bigScreenSideCards:h-12 rounded-[10px] outline-none px-4 placeholder:text-sm placeholder:font-normal placeholder:text-cs-black-200 placeholder:truncate"
-                    placeholder={
-                      uuid.length > 4 ? uuid.slice(0, 10) + "..." : uuid
-                    }
-                  />
-                  <Copy
-                    size="18"
-                    color="#5E29B7"
-                    className=" absolute top-[14px] right-[14px] cursor-pointer"
-                    onClick={handleCopyClick}
-                  />
-                  {tooltipMessage && (
-                    <div className=" absolute text-xs text-cs-grey-50 p-2 bg-cs-purple-650 z-10 rounded">
-                      {tooltipMessage}
-                    </div>
-                  )}
-                </div>
-
-                <button className="flex items-center text-cs-purple-650 font-bold py-2 px-3 @[300px]/bigScreenSideCards:py-3 @[300px]/bigScreenSideCards:px-4 border border-cs-purple-650 rounded-lg max-h-[52px]">
-                  <Add size="18" color="#5E29B7" /> Add participants
-                </button>
-              </div>
+            {externalID && (
+              <Chat
+                attendeeIDProp={attendeIDString}
+                externalID={processString(externalID as string)}
+                sideViewFunc={sideViewFunc}
+              />
             )}
           </div>
 
-          {/* <div className=" bg-cs-black-200 flex-1 p-2 rounded flex flex-col sm:max-w-[352px]">
-    <div className=" flex justify-end">
-      <div className="p-[6px] bg-cs-grey-800 rounded-full"><MicrophoneSlash1 size="14" color="#FAFAFA" /></div>
-    </div>
-    <div className="flex-1 flex justify-center items-center">
-      <div className="p-[6px]">
-        <Image src={avatar} alt="" className=" max-w-[38px] max-h-[38px] rounded-full mx-auto" />
-        <h5 className="text-cs-grey-50 text-xs">Marie Oju</h5>
-      </div>
-    </div>
-    <div className=" flex justify-end">
-      <div className="p-[6px]"><Image src={dottedLine} alt="" className=" w-3 h-3" /></div>
-    </div>
-  </div>
+          <div
+            style={
+              sideView === "Caption"
+                ? {
+                    width: "100%",
+                    height: "100%",
+                    overflow: "visible",
+                  }
+                : {
+                    width: "0",
+                    height: "0",
+                    overflow: "hidden",
+                  }
+            }
+          >
+            <div
+              className={` h-full bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-2 @[300px]/bigScreenSideCards:px-4 pt-5 overflow-y-scroll no-scrollbar`}
+            >
+              <div className=" flex justify-between items-center">
+                <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-2xl">
+                  Caption
+                </h3>
+                <Image
+                  src={closeIconPurple}
+                  alt="close-icon"
+                  onClick={() => sideViewFunc("")}
+                  className="cursor-pointer w-5 @[300px]/bigScreenSideCards:w-6"
+                />
+              </div>
 
-  <div className=" bg-cs-black-200 flex-1 p-2 rounded flex flex-col sm:max-w-[352px]">
-    <div className=" flex justify-end">
-      <div className="p-[6px] bg-cs-grey-800 rounded-full"><MicrophoneSlash1 size="14" color="#FAFAFA" /></div>
-    </div>
-    <div className="flex-1 flex justify-center items-center">
-      <div className="p-[6px]">
-        <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full mx-auto flex justify-center items-center text-cs-grey-50">MO</div>
-        <h5 className="text-cs-grey-50 text-xs">Marie Ojuerer</h5>
-      </div>
-    </div>
-    <div className=" flex justify-end">
-      <div className="p-[6px]"><Image src={dottedLine} alt="" className=" w-3 h-3" /></div>
-    </div>
-  </div>
+              {!captionOn && (
+                <div className="h-full flex justify-center items-center">
+                  <div>
+                    <div
+                      className={`p-3 bg-[#E1C6FF4D] rounded-[15px] w-fit mx-auto bg-gradient-to-t from-[#E1C6FF33] to-[#E1C6FF4D]`}
+                    >
+                      <Image
+                        src={capturePurple}
+                        alt="hand"
+                        width={20}
+                        height={20}
+                        className="min-w-8 max-w-8"
+                      />
+                    </div>
+                    <h3 className=" font-medium text-lg text-cs-grey-dark my-3">
+                      Captions are not enabled yet
+                    </h3>
+                    <div className="mx-auto w-fit">
+                      <button className=" text-cs-purple-650 font-bold text-sm rounded-[10px] border border-cs-grey-150 p-3">
+                        Turn on caption
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-  More people in a meeting represented by numbers
-  <div className=" bg-cs-black-200 flex-1 p-2 rounded flex flex-col sm:max-w-[352px] min-h-[132px]">
-    <div className=" flex justify-end">
-      <div className="p-[6px] bg-cs-grey-800 rounded-full"><MicrophoneSlash1 size="14" color="#FAFAFA" /></div>
-    </div>
-    <div className="flex-1 flex justify-center items-center">
-      <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50">MO</div>
-      <Image src={avatar} alt="" className=" max-w-[38px] max-h-[38px] rounded-full -translate-x-3" />
-      <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 text-[10px] -translate-x-6">+4</div>
-    </div>
-    <div className=" flex justify-end">
-      <div className="p-[6px]"><Image src={dottedLine} alt="" className=" w-3 h-3" /></div>
-    </div>
-  </div> */}
+              {captionOn && (
+                <div
+                  className="flex flex-col overflow-y-scroll h-full no-scrollbar"
+                  ref={captionScroll}
+                >
+                  {/* {messages.map((message, index) => ( */}
+                  <div className=" align-bottom">
+                    <div className=" flex py-1 gap-x-1">
+                      {/* <Image src={avatar} alt="profile" className=" rounded-full w-5 h-5 object-cover" /> */}
+                      <div className=" bg-cs-grey-800 w-6 h-6 min-w-6  rounded-full flex justify-center items-center text-cs-grey-50 text-xs uppercase">
+                        {getRemoteInitials("Emmanue Kalu")}
+                      </div>
+                      <div>
+                        <div className=" flex items-center gap-x-2 mt-[3px]">
+                          <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">
+                            {processString("Emmanuel")}
+                          </h4>
+                        </div>
+                        <p className=" text-xs font-normal text-cs-grey-800">
+                          Lorem ipsum dolor sit amet consectetur. Vulputate erat
+                          massa nunc ornare ornare orci. Tellus turpis ipsum in
+                          in. Neque amet leo odio ut tortor odio nulla tempor
+                          non. Et feugiat dictum neque nisi eget nisi at nulla
+                          feugiat. Molestie bibendum cursus leo egestas.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className=" align-bottom">
+                    <div className=" flex py-1 gap-x-1">
+                      {/* <Image src={avatar} alt="profile" className=" rounded-full w-5 h-5 object-cover" /> */}
+                      <div className=" bg-cs-grey-800 w-6 h-6 min-w-6  rounded-full flex justify-center items-center text-cs-grey-50 text-xs uppercase">
+                        {getRemoteInitials("Emmanue Kalu")}
+                      </div>
+                      <div>
+                        <div className=" flex items-center gap-x-2 mt-[3px]">
+                          <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">
+                            {processString("Emmanuel")}
+                          </h4>
+                        </div>
+                        <p className=" text-xs font-normal text-cs-grey-800">
+                          Lorem ipsum dolor sit amet consectetur. Vulputate erat
+                          massa nunc ornare ornare orci. Tellus turpis ipsum in
+                          in. Neque amet leo odio ut tortor odio nulla tempor
+                          non. Et feugiat dictum neque nisi eget nisi at nulla
+                          feugiat. Molestie bibendum cursus leo egestas.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  {/* ))} */}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {sideView === "Conference Info" && (
+            <Conference
+              sideViewFunc={sideViewFunc}
+              uuid={uuid}
+              handleCopyClick={handleCopyClick}
+              tooltipMessage={tooltipMessage}
+            />
+          )}
         </div>
+      </div>
+      <div className="md:hidden flex justify-center gap-x-1 items-center my-1">
+        {sideView === "" &&
+          smallScreenTiles.map(
+            (
+              paginator,
+              index //paginator
+            ) => (
+              <div
+                key={index}
+                className={`${
+                  `${index}` === `${inviewSmallContainer}`
+                    ? "bg-cs-purple-650"
+                    : "bg-cs-grey-60"
+                } h-[5px] w-[5px] rounded-full transition-all`}
+              ></div>
+            )
+          )}
       </div>
     </>
   );
 }
-
-// <div className=" flex flex-4">
-
-// {/* participants
-// <div className=" flex-6 ml-6 bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-4 pt-5">
-//   <div className=" flex justify-between items-center">
-//     <h3 className=" text-cs-grey-dark font-medium text-2xl">Participants <span className=" text-cs-grey-100 font-medium text-base">(12)</span></h3>
-//     <Image src={closeIconPurple} alt="profile" />
-//   </div>
-//   <div className=" relative mt-7 mb-5">
-//     <input type="text" name="" id="" className=" w-full border border-cs-grey-300 h-12 rounded-[10px] outline-none pl-12 placeholder:text-sm placeholder:font-normal" placeholder="Search for participants" />
-//     <SearchNormal1 size="20" color="#898989" className=" absolute top-[14px] left-[14px]" />
-//   </div>
-//   <div>
-//     <div className=" flex justify-between items-center py-3 border-b border-solid border-b-[#EFEDED]">
-//       <div className=" flex items-center gap-x-2">
-//         <Image src={avatar} alt="profile" className=" rounded-full w-6 h-6 object-cover" />
-//         <h4 className=" text-cs-grey-dark font-medium text-sm">Olami Anula</h4>
-//       </div>
-//       <div>
-//         <Image src={activeVoice} alt="profile" />
-//       </div>
-//     </div>
-
-//     <div className=" flex justify-between items-center py-3 border-b border-solid border-b-[#EFEDED]">
-//       <div className=" flex items-center gap-x-2">
-//         <Image src={avatar} alt="profile" className=" rounded-full w-6 h-6 object-cover" />
-//         <h4 className=" text-cs-grey-dark font-medium text-sm">Olami Anula</h4>
-//       </div>
-//       <div>
-//         <MicrophoneSlash1 size="24" color="#5E29B7" />
-//       </div>
-//     </div>
-
-//     <div className=" flex justify-between items-center py-3 border-b border-solid border-b-[#EFEDED]">
-//       <div className=" flex items-center gap-x-2">
-//         <Image src={avatar} alt="profile" className=" rounded-full w-6 h-6 object-cover" />
-//         <h4 className=" text-cs-grey-dark font-medium text-sm">Olami Anula</h4>
-//       </div>
-//       <div className=" flex gap-x-2">
-//         <Image src={raisedHand} alt="raisedHand" />
-//         <MicrophoneSlash1 size="24" color="#5E29B7" />
-//       </div>
-//     </div>
-//   </div>
-// </div> */}
-
-// {/* chats
-// <div className=" flex-6 ml-6 bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-4 pt-5">
-
-//   <div className=" flex flex-col justify-between h-full">
-
-//     <div>
-//       <div className=" flex justify-between items-center">
-//         <h3 className=" text-cs-grey-dark font-medium text-2xl">Chat</h3>
-//         <Image src={closeIconPurple} alt="profile" />
-//       </div>
-
-//       <div className=" flex py-3 gap-x-1">
-//         <Image src={avatar} alt="profile" className=" rounded-full w-6 h-6 object-cover" />
-//         <div>
-//           <div className=" flex items-center gap-x-2 mt-[3px]">
-//             <h4 className=" text-cs-grey-dark font-medium text-sm">Olami Anula</h4>
-//             <div className=" w-[4px] h-[5px] bg-[#333333] rounded-full"></div>
-//             <h6 className=" text-cs-grey-500 text-[9px] font-normal">57min ago</h6>
-//           </div>
-//           <h5 className=" text-xs font-normal text-cs-grey-800">Can I get a certification?</h5>
-//         </div>
-//       </div>
-
-//       <div className=" flex py-3 gap-x-1">
-//         <Image src={avatar} alt="profile" className=" rounded-full w-6 h-6 object-cover" />
-//         <div>
-//           <div className=" flex items-center gap-x-2 mt-[3px]">
-//             <h4 className=" text-cs-grey-dark font-medium text-sm">Olami Anula</h4>
-//             <div className=" w-[4px] h-[5px] bg-[#333333] rounded-full"></div>
-//             <h6 className=" text-cs-grey-500 text-[9px] font-normal">57min ago</h6>
-//           </div>
-//           <h5 className=" text-xs font-normal text-cs-grey-800">Can I get a certification?</h5>
-//         </div>
-//       </div>
-
-//       <div className=" flex py-3 gap-x-1">
-//         <Image src={avatar} alt="profile" className=" rounded-full w-6 h-6 object-cover" />
-//         <div>
-//           <div className=" flex items-center gap-x-2 mt-[3px]">
-//             <h4 className=" text-cs-grey-dark font-medium text-sm">Olami Anula</h4>
-//             <div className=" w-[4px] h-[5px] bg-[#333333] rounded-full"></div>
-//             <h6 className=" text-cs-grey-500 text-[9px] font-normal">57min ago</h6>
-//           </div>
-//           <h5 className=" text-xs font-normal text-cs-grey-800">Can I get a certification?</h5>
-//         </div>
-//       </div>
-
-//       <div className=" py-3">
-//         <div className=" flex justify-end gap-x-1 items-center">
-//           <h4 className=" text-cs-grey-dark font-medium text-sm">Olami Anula</h4>
-//           <Image src={avatar} alt="profile" className=" rounded-full w-6 h-6 object-cover" />
-//         </div>
-//         <h5 className=" text-xs font-normal text-cs-grey-800 text-right">Can I get a certification?</h5>
-//       </div>
-//     </div>
-
-//     <div className=" flex gap-x-2 border-solid border-t-[1px] border-cs-grey-55 py-4">
-//       <input type="text" name="" id="" className=" w-full border border-cs-grey-55 h-12 rounded-[10px] outline-none px-4 placeholder:text-sm placeholder:font-normal placeholder:text-cs-grey-dark" placeholder="Hello Everyone 👋" />
-//       <div className="text-center cursor-pointer">
-//         <div className="p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto">
-//           <EmojiNormal size="24" color="#5E29B7" className="mx-auto" />
-//         </div>
-//       </div>
-//       <div className="text-center cursor-pointer">
-//         <div className="p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto">
-//           <Send size="24" color="#5E29B7" className="mx-auto" />
-//         </div>
-//       </div>
-//     </div>
-//   </div>
-// </div> */}
-
-// {/* <div className=" flex-6 ml-6 bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-4 pt-5">
-//   <div className=" flex justify-between items-center">
-//     <h3 className=" text-cs-grey-dark font-medium text-2xl">Conference Info</h3>
-//     <Image src={closeIconPurple} alt="profile" />
-//   </div>
-//   <div className=" relative mt-7 mb-5">
-//     <h3 className=" text-cs-grey-dark font-medium text-xl">[Meeting Name]</h3>
-//     <p className=" text-sm text-cs-black-200 font-normal mb-4 mt-6">Invite others to join by copying the meting link and sharing it: </p>
-//   </div>
-//   <div className=" relative mt-7 mb-5">
-//     <input type="text" name="" id="" className=" w-full border border-[#F1F1F1] h-12 rounded-[10px] outline-none px-4 placeholder:text-sm placeholder:font-normal placeholder:text-cs-black-200" placeholder="xap-ert-olik" />
-//     <Copy size="20" color="#5E29B7" className=" absolute top-[14px] right-[14px]" />
-//   </div>
-//   <button className="flex items-center text-cs-purple-650 font-bold py-5 px-4 border border-cs-purple-650 rounded-lg max-h-[52px]"><Add size="22" color="#5E29B7" /> Add participants</button>
-
-// </div> */}
-
-// </div>
-
-// others on the list of participants
-// {/* <div className=" flex justify-between items-center py-3 border-b border-solid border-b-[#EFEDED]">
-// <div className=" flex items-center gap-x-2">
-//   <Image src={avatar} alt="profile" className=" rounded-full w-6 h-6 object-cover" />
-//   <h4 className=" text-cs-grey-dark font-medium text-sm">Olami Anula</h4>
-// </div>
-// <div>
-//   <MicrophoneSlash1 size="24" color="#5E29B7" />
-// </div>
-// </div>
-
-// <div className=" flex justify-between items-center py-3 border-b border-solid border-b-[#EFEDED]">
-// <div className=" flex items-center gap-x-2">
-//   <Image src={avatar} alt="profile" className=" rounded-full w-6 h-6 object-cover" />
-//   <h4 className=" text-cs-grey-dark font-medium text-sm">Olami Anula</h4>
-// </div>
-// <div className=" flex gap-x-2">
-//   <Image src={raisedHand} alt="raisedHand" />
-//   <MicrophoneSlash1 size="24" color="#5E29B7" />
-// </div>
-// </div> */}

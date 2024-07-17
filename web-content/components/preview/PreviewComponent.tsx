@@ -66,7 +66,12 @@ export default function PreviewComponent() {
       const videoElement = videoRef.current as HTMLVideoElement;
 
       //Start video/audio preview
-      deviceController?.startVideoPreviewForVideoInput(videoElement);
+      if (videoElement) {
+        deviceController?.startVideoPreviewForVideoInput(videoElement);
+      } else {
+        console.log("element unmounted");
+      }
+
       deviceController.chooseAudioOutput(audioList[0].deviceId);
     };
 

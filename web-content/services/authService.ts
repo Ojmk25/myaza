@@ -5,6 +5,8 @@ import * as http from "@/services/httpServices";
 const apiLogIn = getApiPath("open", "login");
 const apiSignUp = getApiPath("open", "sign-up");
 const apiConfirmSignUp = getApiPath("open/", "confirm-sign-up");
+const uploadMedia = getApiPath("core", "upload-media");
+const updateUser = getApiPath("core", "update-user");
 
 const apiResendCode = getApiPath("open", "resend-verify-code");
 // const apiForgotPassword = getApiPath('open/user', 'forgot-password')
@@ -16,7 +18,13 @@ const apiResendCode = getApiPath("open", "resend-verify-code");
 // const apiChangePassword = getApiPath('open/user', 'change-password')
 // const apiGetUserLocation = getApiPath('core/user', 'get-user-location')
 
-export interface ForgotPAsswordUserDetailsProps {}
+// export interface UploadMediaPayload {
+//   media_type: File & { type: "image/jpeg" | "image/png" | "image/jpg" };
+// }
+
+export interface UploadMediaPayload {
+  media_type: string | undefined;
+}
 
 export interface RegisterPayload {
   first_name: string;
@@ -25,6 +33,12 @@ export interface RegisterPayload {
   password: string;
 }
 
+export interface UpdateUserPayload {
+  given_name?: string;
+  family_name?: string;
+  email?: string;
+  picture?: string;
+}
 export interface ConfirmPayload {
   email: string;
 }
@@ -170,12 +184,13 @@ export const getNameAbbreviation = () => {
   return initials;
 };
 
-export const getFullName = () => {
+export const getClientInfo = () => {
   let clientData;
   let first_name;
   let surname;
   let user_id;
   let email;
+  let picture;
 
   if (
     localStorage.getItem("cecureStreamAuthToken") ||
@@ -187,21 +202,21 @@ export const getFullName = () => {
         JSON.parse(sessionStorage.getItem("cecureStreamAuthToken") || "");
       if (token) {
         clientData = token?.uData;
-        first_name =
-          clientData.given_name.charAt(0).toUpperCase() +
-          clientData.given_name.slice(1);
-        surname =
-          clientData.family_name.charAt(0).toUpperCase() +
-          clientData.family_name.slice(1);
+        first_name = (clientData.given_name.charAt(0).toUpperCase() +
+          clientData.given_name.slice(1)) as string;
+        surname = (clientData.family_name.charAt(0).toUpperCase() +
+          clientData.family_name.slice(1)) as string;
         user_id = clientData["cognito:username"];
-        email = clientData.email;
+        email = clientData.email as string;
+        picture =
+          (clientData.picture as string) && (clientData.picture as string);
       }
     } catch (error) {
       console.error("Error parsing JSON:", error);
     }
   }
 
-  return { first_name, surname, user_id, email };
+  return { first_name, surname, user_id, email, picture };
 };
 
 export const sessionExpired = () => {
@@ -263,6 +278,51 @@ export const resendVerificationOTP = async (
     return error;
   }
 };
+
+export const uploadMediaFnc = async (
+  data: UploadMediaPayload
+): Promise<any> => {
+  try {
+    return await http.apiCall.api.post(uploadMedia, data);
+  } catch (error) {
+    return error;
+  }
+};
+
+export const uploadImageFile = async (url: string, data: any): Promise<any> => {
+  const accessToken = localStorage.getItem("cecureStreamAcToken");
+  try {
+    return http.apiCall.put(url, data);
+  } catch (error) {
+    return error;
+  }
+};
+
+export const updateUserFnc = async (data: UpdateUserPayload): Promise<any> => {
+  try {
+    const user = await http.apiCall.api.post(updateUser, data);
+    if (user && localStorage.getItem("cecureStreamAuthToken")) {
+      const clientData = JSON.parse(
+        localStorage.getItem("cecureStreamAuthToken") || ""
+      );
+      const updatedClientData = {
+        ...clientData,
+        uData: {
+          ...clientData.uData,
+          ...data,
+        },
+      };
+      localStorage.setItem(
+        "cecureStreamAuthToken",
+        JSON.stringify(updatedClientData)
+      );
+    }
+    return user;
+  } catch (error) {
+    return error;
+  }
+};
+
 // loginUser
 export const loginUser = async (data: LoginPayload): Promise<any> => {
   try {
@@ -287,6 +347,14 @@ export const loginUser = async (data: LoginPayload): Promise<any> => {
       localStorage.setItem(
         "cecureStreamAuthToken",
         JSON.stringify(cecureStreamAuth)
+      );
+      localStorage.setItem(
+        "cecureStreamAcToken",
+        JSON.stringify(cecureStreamAcToken)
+      );
+      localStorage.setItem(
+        "cecureStreamRefToken",
+        JSON.stringify(cecureStreamRefToken)
       );
     }
     return {

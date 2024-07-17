@@ -1,54 +1,78 @@
-import { Microphone, MicrophoneSlash1, MoreCircle } from "iconsax-react"
-import { useEffect, useState } from "react"
+import { Microphone, MicrophoneSlash1, MoreCircle } from "iconsax-react";
+import { useEffect, useState } from "react";
 import { DefaultDeviceController, ConsoleLogger } from "amazon-chime-sdk-js";
 import ReactDOM from "react-dom";
+import { useAppContext } from "@/context/StoreContext";
+import { useSessionStorage } from "@/hooks/useStorage";
 
-export const ToggleAudio = ({ toggleAudi, audioLevelDisplayRef }: { toggleAudi?: () => {}, audioLevelDisplayRef: any }) => {
+export const ToggleAudio = ({
+  toggleAudi,
+  audioLevelDisplayRef,
+}: {
+  toggleAudi?: () => {};
+  audioLevelDisplayRef: any;
+}) => {
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
-  const [audio, setVideo] = useState(true)
+  const [audio, setVideo] = useState(true);
   const [audioEnabled, setAudioEnabled] = useState<boolean>(false);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [audioLevel, setAudioLevel] = useState<number>(0);
+  const { setAppState } = useAppContext();
+  const [audioStatus, setAudioStatus] = useSessionStorage("audioStatus", "yes");
 
   const logger = new ConsoleLogger("MyLogger");
-  const deviceController = new DefaultDeviceController(logger, { enableWebAudio: true });
-
+  const deviceController = new DefaultDeviceController(logger, {
+    enableWebAudio: true,
+  });
 
   const handleClick = () => {
-    setVideo(!audio)
-    toggleAudio()
-  }
+    setVideo(!audio);
+    toggleAudio();
+  };
+
+  // useEffect(() => {
+  //   setAppState((prevState) => ({
+  //     ...prevState,
+  //     sessionState: {
+  //       ...prevState.sessionState,
+  //       previewAudio: audioEnabled,
+  //     },
+  //   }));
+  // }, [audioEnabled]);
 
   const toggleAudio = async () => {
     if (audioEnabled && audioStream) {
-      await deviceController.stopAudioInput()
+      await deviceController
+        .stopAudioInput()
         .then(() => {
-          console.log('Audio input stopped successfully');
-          audioStream.getTracks().forEach(track => track.stop());
+          console.log("Audio input stopped successfully");
+          audioStream.getTracks().forEach((track) => track.stop());
           audioContext?.close();
           setAudioStream(null);
           setAudioContext(null);
           setAudioEnabled(false);
+          setAudioStatus("no");
         })
-        .catch(error => {
-          console.error('Error stopping audio input:', error);
+        .catch((error) => {
+          console.error("Error stopping audio input:", error);
         });
     } else {
       const audioList = await deviceController.listAudioInputDevices();
-      navigator.mediaDevices.getUserMedia({ audio: { deviceId: audioList[0].deviceId } })
-        .then(stream => {
+      navigator.mediaDevices
+        .getUserMedia({ audio: { deviceId: audioList[0].deviceId } })
+        .then((stream) => {
           setAudioStream(stream);
           const newAudioContext = new AudioContext();
           setAudioContext(newAudioContext);
           setAudioEnabled(true);
-          console.log('Audio input started successfully');
+          setAudioStatus("yes");
+          console.log("Audio input started successfully");
         })
-        .catch(error => {
-          console.error('Error starting audio input:', error);
+        .catch((error) => {
+          console.error("Error starting audio input:", error);
         });
     }
   };
-
 
   useEffect(() => {
     if (!audioStream || !audioContext) {
@@ -87,44 +111,69 @@ export const ToggleAudio = ({ toggleAudi, audioLevelDisplayRef }: { toggleAudi?:
 
   const visualizerStyle = (factor: number) => ({
     height: `${Math.max(3, audioLevel * factor)}px`,
-    width: '4px',
+    width: "4px",
   });
 
   const audioVisualizer = (
     <>
-      {
-        audio ? (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'end' }} className="p-[6px] bg-[#333333] rounded-full absolute top-[10px] right-[10px] w-[30px] h-[30px]">
-            <MicrophoneSlash1 size="18" color="#FAFAFA" />
-          </div>
-        ) : (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }} className="p-[6px] bg-[#6c3ec2] rounded-full absolute top-[10px] right-[10px] w-[30px] h-[30px] gap-x-[2px]">
-            <div style={visualizerStyle(0.6)} className="bg-white"></div>
-            <div style={visualizerStyle(1.4)} className="bg-white"></div>
-            <div style={visualizerStyle(2)} className="bg-white"></div>
-            <div style={visualizerStyle(1.4)} className="bg-white"></div>
-            <div style={visualizerStyle(0.6)} className="bg-white"></div>
-          </div>
-        )}
+      {audio ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "end",
+          }}
+          className="p-[6px] bg-[#333333] rounded-full absolute top-[10px] right-[10px] w-[30px] h-[30px]"
+        >
+          <MicrophoneSlash1 size="18" color="#FAFAFA" />
+        </div>
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          className="p-[6px] bg-[#6c3ec2] rounded-full absolute top-[10px] right-[10px] w-[30px] h-[30px] gap-x-[2px]"
+        >
+          <div style={visualizerStyle(0.6)} className="bg-white"></div>
+          <div style={visualizerStyle(1.4)} className="bg-white"></div>
+          <div style={visualizerStyle(2)} className="bg-white"></div>
+          <div style={visualizerStyle(1.4)} className="bg-white"></div>
+          <div style={visualizerStyle(0.6)} className="bg-white"></div>
+        </div>
+      )}
     </>
-
   );
 
-  return <>
-    <div className="text-center cursor-pointer" onClick={handleClick}>
-      <div className={`p-2 md:p-3 ${audio ? "bg-[#E1C6FF4D]" : "bg-cs-purple-650"} rounded-md max-w-12 relative`}>
-        {audio ? (
-          <MicrophoneSlash1 size="24" color="#5E29B7" className="mx-auto" />
-        ) : (
-          <Microphone size="24" color="#FAFAFA" className="mx-auto" />
-        )}
-        {!audio && <MoreCircle size="24" color="#5E29B7" className="mx-auto rounded-full absolute -top-[5px] -right-[10px]" style={{ fill: "#ffffff" }} />}
+  return (
+    <>
+      <div className="text-center cursor-pointer" onClick={handleClick}>
+        <div
+          className={`p-2 md:p-3 ${
+            audio ? "bg-[#E1C6FF4D]" : "bg-cs-purple-650"
+          } rounded-md max-w-12 relative`}
+        >
+          {audio ? (
+            <MicrophoneSlash1 size="24" color="#5E29B7" className="mx-auto" />
+          ) : (
+            <Microphone size="24" color="#FAFAFA" className="mx-auto" />
+          )}
+          {!audio && (
+            <MoreCircle
+              size="24"
+              color="#5E29B7"
+              className="mx-auto rounded-full absolute -top-[5px] -right-[10px]"
+              style={{ fill: "#ffffff" }}
+            />
+          )}
+        </div>
+        <h6 className=" text-cs-grey-100 font-medium text-xs">
+          {audio ? "Unmute" : "Mute"}
+        </h6>
       </div>
-      <h6 className=" text-cs-grey-100 font-medium text-xs">{audio ? "Unmute" : "Mute"}</h6>
-    </div>
-    {audioLevelDisplayRef.current && ReactDOM.createPortal(
-      audioVisualizer,
-      audioLevelDisplayRef.current
-    )}
-  </>
-}
+      {audioLevelDisplayRef.current &&
+        ReactDOM.createPortal(audioVisualizer, audioLevelDisplayRef.current)}
+    </>
+  );
+};

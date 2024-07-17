@@ -6,7 +6,7 @@ import {
   extractAfterLastSlashOrFull,
   isValidUUID,
 } from "../utils/Validators";
-import heroImage from "@/public/assets/images/heroImage.svg";
+import heroImage from "@/public/assets/images/hero_shrink_one.svg";
 import { Add, Calendar } from "iconsax-react";
 import ScheduleMeeting from "../components/modals/ScheduleMeeting";
 
@@ -29,6 +29,8 @@ import Header from "@/components/Header";
 import { subDomain } from "@/utils/getDomain";
 import { SuccessSlideIn } from "@/components/SuccessSlideIn";
 import { FailureSlideIn } from "@/components/FailureSlideIn";
+import { validateMeetingIdString } from "@/utils/meetingFunctions";
+import { useSessionStorage } from "@/hooks/useStorage";
 
 export default function Home() {
   const navigate = useRouter();
@@ -43,6 +45,10 @@ export default function Home() {
   const [profilePic, setProfilePic] = useState(false);
   const [profileModal, setProfileModal] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [expressJoin, setExpressJoin] = useSessionStorage(
+    "meetingJoiner",
+    "yes"
+  );
 
   useEffect(() => {
     setLoggedIn(IsAuthenticated());
@@ -78,7 +84,7 @@ export default function Home() {
       setErrorColour(true);
       setDisableButton(true);
       setErrMessage("Enter your link");
-    } else if (!isValidUUID(extractedLink)) {
+    } else if (!validateMeetingIdString(extractedLink)) {
       setErrorColour(true);
       setDisableButton(true);
       setErrMessage("Invalid meeting link");
@@ -111,15 +117,21 @@ export default function Home() {
     };
     try {
       const data = await createInstantMeeting({});
-      sessionStorage.setItem("meetingJoiner", "no");
+      console.log(data);
+
+      // sessionStorage.setItem("meetingJoiner", "no");
+      setExpressJoin("yes");
+      const extractedLink = extractAfterLastSlashOrFull(
+        data?.data.body.data.MeetingDetails.MeetingLink
+      );
       setMeetingData(data);
       setLoading(true);
       setOpenModal(true);
       data?.data.body &&
         data?.data.body.status === "Success" &&
-        navigate.push(`/meet/${data?.data.body.data.MeetingDetails.MeetingId}`);
+        navigate.push(`/meet/${extractedLink}`);
 
-      // `/meet/${data?.data.body.data.MeetingDetails.ExternalMeetingId}`
+      `/meet/${data?.data.body.data.MeetingDetails.ExternalMeetingId}`;
 
       // setInstantMeeting(data?.data.body.data.MeetingDetails.MeetingId as string, data?.data.body.data)
     } catch (error) {
@@ -140,11 +152,11 @@ export default function Home() {
   return (
     <div className=" ">
       {loggedIn !== null && (
-        <main className=" pt-6 lg:pt-10 w-full flex items-center justify-center flex-col mx-auto ">
+        <main className=" pt-6 lg:pt-7 w-full flex items-center justify-center flex-col mx-auto ">
           <Header />
 
-          <div className="h-screen flex justify-center items-center ">
-            <div className="block lg:grid px-6 gap-x-16 items-center grid-cols-2  bg-cs-bg max-auto w-full h-screen max-w-[1392px]">
+          <div className="flex justify-center items-center ">
+            <div className="block lg:grid px-6 gap-x-16 items-center grid-cols-2  bg-cs-bg max-auto w-full max-w-[1392px]">
               <div className="basis-full">
                 <h3 className=" text-[40px] md:text-[64px] text-cs-black-100 leading-[44px] md:leading-[70px] text-center lg:text-left">
                   Connect a team <br /> from{" "}
@@ -241,12 +253,16 @@ export default function Home() {
                 </div>
               </div>
               <div className="basis-full my-4 md:my-0 px-6 lg:px-0">
-                <Image src={heroImage} alt="hero" className="w-full h-full" />
+                <Image
+                  src={heroImage}
+                  alt="hero"
+                  className="w-full h-full max-h-[480px] aspect-auto"
+                />
               </div>
             </div>
           </div>
 
-          {/* {showModal === "schedule" && (
+          {showModal === "schedule" && (
             <ScheduleMeeting onClose={handleCloseModal} />
           )}
           <SuccessSlideIn
@@ -265,7 +281,7 @@ export default function Home() {
             closeModal={() => {}}
           />
 
-          {loading && <LoadingScreen />} */}
+          {loading && <LoadingScreen />}
         </main>
       )}
     </div>
