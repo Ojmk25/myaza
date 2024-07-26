@@ -140,7 +140,7 @@ const Settings = ({ onClose }: { onClose: () => void }) => {
                 Cancel
               </button>
               <button className="bg-cs-purple-650  text-cs-grey-50 py-4 px-4 rounded-[10px] w-36 hover:bg-cs-purple-650/80">
-                Create
+                Update
               </button>
             </div>
           </div>

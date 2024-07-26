@@ -122,7 +122,7 @@ export default function Home() {
       // sessionStorage.setItem("meetingJoiner", "no");
       setExpressJoin("yes");
       const extractedLink = extractAfterLastSlashOrFull(
-        data?.data.body.data.MeetingDetails.MeetingLink
+        data?.data.body.data.meeting_link
       );
       setMeetingData(data);
       setLoading(true);
@@ -158,7 +158,7 @@ export default function Home() {
           <div className="flex justify-center items-center ">
             <div className="block lg:grid px-6 gap-x-16 items-center grid-cols-2  bg-cs-bg max-auto w-full max-w-[1392px]">
               <div className="basis-full">
-                <h3 className=" text-[40px] md:text-[64px] text-cs-black-100 leading-[44px] md:leading-[70px] text-center lg:text-left">
+                <h3 className=" text-[40px] md:text-[64px] text-cs-black-100 leading-[44px] md:leading-[70px] text-center lg:text-left font-medium metro-medium">
                   Connect a team <br /> from{" "}
                   <span className="text-cs-purple-650">anywhere!</span>
                 </h3>

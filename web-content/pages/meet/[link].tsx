@@ -6,23 +6,19 @@ import { useEffect, useState } from "react";
 
 const Meet = () => {
   const router = useRouter();
-  const [update, setUpdate] = useState("");
+  const [updateRoute, setUpdateRoute] = useState("");
   const [expressJoin, setExpressJoin] = useSessionStorage("meetingJoiner", "");
 
   let joinStatus;
   useEffect(() => {
     if (router.isReady) {
-      // joinStatus = sessionStorage.getItem("meetingJoiner");
-      // joinStatus === "yes" && router.push("/preview");
       localStorage.setItem("meetingLink", router.query.link as string);
-      // // setUpdate(joinStatus as string)
-      // setUpdate("no");
-
+      setUpdateRoute(expressJoin);
       expressJoin === "no" && router.push("/preview");
     }
   }, [router.isReady, router.asPath]);
 
-  if (expressJoin === "yes") {
+  if (updateRoute !== "" && updateRoute === "yes") {
     return <TempMeeting param={router.query.link} />;
   } else {
     return (

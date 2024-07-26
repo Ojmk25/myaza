@@ -1,12 +1,12 @@
-"use client"
+"use client";
 import Link from "next/link";
 import AuthLayout from "@/components/auth/AuthLayout";
 
 import { AuthInput } from "@/components/auth/AuthInput";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 
-import appleIcon from "@/public/assets/images/appleIcon.svg"
-import googleIcon from "@/public/assets/images/googleIcon.svg"
+import appleIcon from "@/public/assets/images/appleIcon.svg";
+import googleIcon from "@/public/assets/images/googleIcon.svg";
 import { useContext, useEffect, useRef, useState } from "react";
 import PinInput from "react-pin-input";
 import { ValidateEmail, ValidatePassword } from "@/utils/Validators";
@@ -16,86 +16,110 @@ import { SuccessSlideIn } from "@/components/SuccessSlideIn";
 import { FailureSlideIn } from "@/components/FailureSlideIn";
 
 export default function NewPassword() {
-  const context = useContext(AppCtx)
+  const context = useContext(AppCtx);
 
-  const [allowSubmit, setAllowSubmit] = useState(false)
+  const [allowSubmit, setAllowSubmit] = useState(false);
 
   const [authData, setAuthData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
   const [errMessage, setErrMessage] = useState({
-    email: '',
-    password: '',
-  })
-  const [openModal, setOpenModal] = useState(true)
-  const [successRes, setSuccessRes] = useState("")
-  const [errorColour, setErrorColour] = useState(false)
-  const [extendTimer, setExtendTimer] = useState(false)
+    email: "",
+    password: "",
+  });
+  const [openModal, setOpenModal] = useState(true);
+  const [successRes, setSuccessRes] = useState("");
+  const [errorColour, setErrorColour] = useState(false);
+  const [extendTimer, setExtendTimer] = useState(false);
 
   const handleInput = (input: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = input.target;
     const addColour = (elem: React.ChangeEvent<HTMLInputElement>) => {
-      elem.target.classList.add('border-cs-error-500');
-      elem.target.classList.add('placeholder:text-cs-error-500')
-      elem.target.classList.remove('bg-cs-grey-55')
-      setErrMessage(prevState => ({
+      elem.target.classList.add("border-cs-error-500");
+      elem.target.classList.add("placeholder:text-cs-error-500");
+      elem.target.classList.remove("bg-cs-grey-55");
+      setErrMessage((prevState) => ({
         ...prevState,
-        [name]: `Invalid ${name}`
+        [name]: `Invalid ${name}`,
       }));
-    }
+    };
     const removeColour = (elem: React.ChangeEvent<HTMLInputElement>) => {
-      elem.target.classList.remove('border-cs-error-500');
-      elem.target.classList.remove('placeholder:text-cs-error-500')
-      elem.target.classList.add('bg-cs-grey-55')
-      setErrMessage(prevState => ({
+      elem.target.classList.remove("border-cs-error-500");
+      elem.target.classList.remove("placeholder:text-cs-error-500");
+      elem.target.classList.add("bg-cs-grey-55");
+      setErrMessage((prevState) => ({
         ...prevState,
-        [name]: ''
+        [name]: "",
       }));
-    }
+    };
     if (name === "email") {
-      if ((!ValidateEmail(value))) {
-        addColour(input)
+      if (!ValidateEmail(value)) {
+        addColour(input);
       } else {
-        removeColour(input)
-
+        removeColour(input);
       }
     }
 
     if (input.target.value.length === 0) {
-      setErrMessage(prevState => ({
+      setErrMessage((prevState) => ({
         ...prevState,
-        [name]: `Enter your ${name}`
+        [name]: `Enter your ${name}`,
       }));
-      setAllowSubmit(false)
+      setAllowSubmit(false);
     } else {
-      setAuthData(prevState => ({
+      setAuthData((prevState) => ({
         ...prevState,
-        [name]: value
+        [name]: value,
       }));
-      setAllowSubmit(true)
+      setAllowSubmit(true);
     }
-  }
+  };
 
   const closeSlider = () => {
     setSuccessRes("");
-    setOpenModal(false)
-  }
+    setOpenModal(false);
+  };
 
   return (
     <AuthLayout>
-      <h3 className=" text-2xl font-semibold text-cs-grey-dark mb-1">New password</h3>
+      <h3 className=" text-2xl font-semibold text-cs-grey-dark mb-1 metro-medium">
+        New password
+      </h3>
       <p className=" text-cs-grey-100 text-sm">Set up your new password</p>
       <form>
-        <AuthInput label="Password" action={handleInput} errorMessage={errMessage.password} inputName="password" inputType="password" placeHolder="password" />
-        <AuthInput label="Confirm password" action={handleInput} errorMessage={errMessage.password} inputName="Confirm" inputType="password" placeHolder="password" />
-        <SubmitButton text="Set password" action={() => { }} activate={allowSubmit} />
+        <AuthInput
+          label="Password"
+          action={handleInput}
+          errorMessage={errMessage.password}
+          inputName="password"
+          inputType="password"
+          placeHolder="password"
+        />
+        <AuthInput
+          label="Confirm password"
+          action={handleInput}
+          errorMessage={errMessage.password}
+          inputName="Confirm"
+          inputType="password"
+          placeHolder="password"
+        />
+        <SubmitButton
+          text="Set password"
+          action={() => {}}
+          activate={allowSubmit}
+        />
         <div className="text-center  mt-8">
-          <Link href={"/auth/login"} className=" text-cs-purple-650 text-sm font-medium">Back to sign in</Link>
+          <Link
+            href={"/auth/login"}
+            className=" text-cs-purple-650 text-sm font-medium"
+          >
+            Back to sign in
+          </Link>
         </div>
       </form>
       {/* <SuccessSlideIn openModal={openModal} successRes={successRes} closeModal={closeSlider} />
       <FailureSlideIn openModal={openModal} successRes={successRes} closeModal={closeSlider} /> */}
     </AuthLayout>
-  )
+  );
 }

@@ -7,13 +7,21 @@ import {
 } from "amazon-chime-sdk-component-library-react";
 import { ThemeProvider } from "styled-components";
 
+type AtteendeeDetailsProp = {
+  full_name: string;
+  picture?: string;
+  user_id?: string;
+};
+
 type SessionState = {
   sessionName: string;
   sessionCategory: string;
+  sessionId: string;
   reaction: { sender: string; message: string };
   raisedHand: { timestamp: string; message: string };
   guestFirstName: string;
   guestLastName: string;
+  meetingAttendees: AtteendeeDetailsProp[];
 };
 
 type AppState = {
@@ -30,10 +38,12 @@ export const AppCtx = createContext<AppContextType>({
     sessionState: {
       sessionName: "",
       sessionCategory: "",
+      sessionId: "",
       reaction: { sender: "", message: "" },
       raisedHand: { timestamp: "", message: "" },
       guestFirstName: "",
       guestLastName: "",
+      meetingAttendees: [],
     },
   },
   setAppState: () => {},
@@ -47,10 +57,12 @@ export const StoreContext: React.FC<{ children: React.ReactNode }> = ({
     sessionState: {
       sessionName: "",
       sessionCategory: "",
+      sessionId: "",
       reaction: { sender: "", message: "" },
       raisedHand: { timestamp: "", message: "" },
       guestFirstName: "",
       guestLastName: "",
+      meetingAttendees: [],
     },
   });
 

@@ -11,6 +11,7 @@ import {
   useContentShareState,
   useAudioVideo,
   MeetingManager,
+  useMeetingManager,
 } from "amazon-chime-sdk-component-library-react";
 import { RemoteAttendeeCard } from "./RemoteAttendeeCard";
 import { LocalAttendeeCard } from "./LocalAttendeeCard";
@@ -28,13 +29,20 @@ import ShowVisualizer from "./ShowVisualizer";
 import capturePurple from "@/public/assets/images/capturePurple.svg";
 import Participants from "./Participants";
 import Conference from "./Conference";
-import { startTranscription } from "@/services/meetingServices";
+import { listAttendees, startTranscription } from "@/services/meetingServices";
+import { useAppContext } from "@/context/StoreContext";
 
 const testMeetingParticipants = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 type DynamicWidth = {
   width: number | string;
   maxWidth: number | string;
+};
+
+type AtteendeeDetailsProp = {
+  full_name: string;
+  picture?: string;
+  user_id?: string;
 };
 export default function MeetingSection({
   attendeIDString,
@@ -43,6 +51,8 @@ export default function MeetingSection({
   sideViewFunc,
   meetingManager,
   emoji,
+  meetingId,
+  attendeeDetailPass,
 }: {
   attendeIDString: string | null | undefined;
   externalID: string | null | undefined;
@@ -50,6 +60,8 @@ export default function MeetingSection({
   sideViewFunc: (value: string) => void;
   meetingManager: MeetingManager;
   emoji: any;
+  meetingId: string | null;
+  attendeeDetailPass: AtteendeeDetailsProp[];
 }) {
   const { roster } = useRosterState();
   const attendees = Object.values(roster);
@@ -91,6 +103,43 @@ export default function MeetingSection({
   const [captionOn, setCaptionOn] = useState(false);
   const captionScroll = useRef<HTMLDivElement>(null);
   const [displayCards, setDisplayCards] = useState<number>();
+  const [attendeeDetails, setAttendeeDetails] =
+    useState<AtteendeeDetailsProp[]>(attendeeDetailPass);
+  const meetingM = useMeetingManager();
+  const { appState, setAppState } = useAppContext();
+
+  useEffect(() => {
+    const audioVideo = meetingM?.audioVideo;
+
+    if (audioVideo) {
+      // const handleAttendeePresence = (attendeeId: string, present: boolean) => {
+      //   // if (present) {
+      //   //   const presentEntry = presents.find(
+      //   //     (present) => present.user_id === attendeeId
+      //   //   );
+      //   //   if (presentEntry) {
+      //   //     const fullName = getAttendeeFullName(attendeeId);
+      //   //     console.log(`Attendee ${fullName} has joined the meeting`);
+      //   //     // Perform additional actions (e.g., make API calls, update UI)
+      //   //   }
+      //   // } else {
+      //   //   console.log(`Attendee with id ${attendeeId} has left the meeting`);
+      //   //   // Handle attendee leaving the meeting
+      //   // }
+      //   console.log("There is a presence");
+      // };
+
+      audioVideo.realtimeSubscribeToAttendeeIdPresence(
+        (handleAttendeePresence) => {}
+      );
+
+      return () => {
+        audioVideo.realtimeUnsubscribeToAttendeeIdPresence(
+          (handleAttendeePresence) => {}
+        );
+      };
+    }
+  }, [meetingM]);
 
   useEffect(() => {
     // Function to update screenWidth state when the window is resized
@@ -188,8 +237,8 @@ export default function MeetingSection({
 
   const attendeeItems = attendees.map((attendee, i) => {
     const tilerId = attendeeIdToTileId[attendee.chimeAttendeeId];
-
     const { externalUserId } = attendee;
+    console.log(attendee.chimeAttendeeId);
 
     if (i === 0) {
       return (
@@ -198,13 +247,14 @@ export default function MeetingSection({
           attendeeId={attendee.chimeAttendeeId}
           name={externalUserId}
           videoTildId={1}
-          nameID={attendee.chimeAttendeeId}
+          nameID={attendee.externalUserId as string}
           audioState={
             <ShowVisualizer
               meetingManager={meetingManager}
               attendee={attendee}
             />
           }
+          // attendeeDetails={attendeeDetailItems}
           meetingManager={meetingManager}
         />
       );
@@ -215,13 +265,14 @@ export default function MeetingSection({
           attendeeId={attendee.chimeAttendeeId}
           name={externalUserId}
           videoTildId={tilerId}
-          nameID={attendee.chimeAttendeeId}
+          nameID={attendee.externalUserId as string}
           audioState={
             <ShowVisualizer
               meetingManager={meetingManager}
               attendee={attendee}
             />
           }
+          // attendeeDetails={attendeeDetailItems}
         />
       );
     }
@@ -385,9 +436,16 @@ export default function MeetingSection({
     }
   };
 
+  const returName = (string: any) => {
+    const details = appState.sessionState.meetingAttendees.find(
+      (att) => att.user_id === string
+    );
+    return getRemoteInitials(details?.full_name as string);
+  };
+
   return (
     <>
-      <div className=" flex-4 overflow-hidden hidden md:flex">
+      <div className=" flex-4 overflow-hidden hidden md:flex metro-medium">
         {tileId && (
           <div className=" flex-5 bg-cs-black-200 px-10 py-5 rounded-[4px] mr-4">
             <div className=" h-full flex flex-col">
@@ -452,14 +510,14 @@ export default function MeetingSection({
                   >
                     {attendeeItems.length - (displayCards - 1) <= 2 ? (
                       <div className="flex-1 flex justify-center items-center mx-auto">
-                        {attendeeItems
+                        {attendees
                           .slice(displayCards - 2, attendeeItems.length)
                           .map((item, index) => (
                             <div
                               className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 border-solid border-[0.5px] border-white -ml-2"
                               key={index}
                             >
-                              {item}
+                              {returName(item.externalUserId)}
                             </div>
                           ))}
 
@@ -479,14 +537,15 @@ export default function MeetingSection({
                           alt=""
                           className=" max-w-[38px] max-h-[38px] rounded-full -ml-2"
                         /> */}
-                        {attendeeItems
+                        {attendees
                           .slice(displayCards - 2, displayCards)
                           .map((item, index) => (
                             <div
                               className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 border-solid border-[0.5px] border-white -ml-2"
                               key={index}
                             >
-                              {item}
+                              {/* {item.externalUserId} */}
+                              {returName(item.externalUserId)}
                             </div>
                           ))}
                         <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 text-[10px] -ml-2 border-solid border-[0.5px] border-white">
@@ -691,7 +750,7 @@ export default function MeetingSection({
       </div>
 
       {/* small screen */}
-      <div className=" md:hidden h-full">
+      <div className=" md:hidden h-full metro-medium">
         {tileId &&
           sideView === "" && ( //screen share
             <div className=" bg-cs-black-200 px-4 py-5 rounded-[4px]">

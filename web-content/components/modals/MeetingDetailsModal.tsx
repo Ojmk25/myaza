@@ -10,7 +10,8 @@ export default function MeetingDetailsModal({
   onClose: () => void;
   meetDetails: any;
 }) {
-  const meetingLink = extractAfterLastSlashOrFull(meetDetails.MeetingId);
+  const meetingLink = extractAfterLastSlashOrFull(meetDetails.meeting_link);
+
   return (
     <>
       <div className="fixed inset-0 z-10 overflow-y-auto modal no-scrollbar">
@@ -40,11 +41,12 @@ export default function MeetingDetailsModal({
               <h3 className=" text-left my-2">
                 Meeting Link:{" "}
                 <Link
-                  href={`https://${meetDetails !== undefined && meetingLink}`}
+                  href={`${
+                    meetDetails !== undefined && meetDetails.meeting_link
+                  }`}
                   className="text-cs-purple-650"
                 >
-                  https://{meetDetails !== undefined && meetingLink}
-                  {/* put id here https://dev.cecurecast.com/98159fe5 */}
+                  {meetDetails !== undefined && meetDetails.meeting_link}
                 </Link>
               </h3>
               <h3 className=" text-left my-2 ">

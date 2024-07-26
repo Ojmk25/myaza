@@ -20,8 +20,52 @@
     color: transparent;
     cursor: pointer;
   }
+
+  @font-face {
+    font-family: Metropolis-Medium;
+    src: url("../public/fonts/Metropolis_Font_family/Metropolis-Medium.otf")
+        format("woff2"),
+      url("../public/fonts/Metropolis_Font_family/Metropolis-Medium.otf")
+        format("woff"),
+      url("../public/fonts/Metropolis_Font_family/Metropolis-Medium.otf")
+        format("truetype");
+    font-weight: 400;
+    font-display: swap;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: Metropolis-Light;
+    src: url("../public/fonts/Metropolis_Font_family/Metropolis-Light.otf")
+        format("woff2"),
+      url("../public/fonts/Metropolis_Font_family/Metropolis-Light.otf")
+        format("woff"),
+      url("../public/fonts/Metropolis_Font_family/Metropolis-Light.otf")
+        format("truetype");
+    font-weight: 400;
+    font-display: swap;
+    font-style: normal;
+  }
+
+  .metro-medium {
+    font-family: Metropolis-Medium;
+  }
+
+  .metro-light {
+    font-family: Metropolis-Light;
+  }
 }
 
 .remote-video video {
   transform: rotateY(180deg);
 }
+
+/* @font-face {
+  font-family: Metropolis;
+  font-weight: 400;
+  font-style: normal;
+  src: url("../../../public/fonts/metropolis/Metropolis-Regular.woff2")
+      format("woff2"),
+    url("../../../public/fonts/metropolis/Metropolis-Regular.woff")
+      format("woff");
+} */

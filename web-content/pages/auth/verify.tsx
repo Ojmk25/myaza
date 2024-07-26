@@ -16,6 +16,7 @@ import { useRouter } from "next/router";
 import { SuccessSlideIn } from "@/components/SuccessSlideIn";
 import { FailureSlideIn } from "@/components/FailureSlideIn";
 import LoadingScreen from "@/components/modals/LoadingScreen";
+import Link from "next/link";
 
 export default function Verify() {
   const context = useContext(AppCtx);
@@ -171,8 +172,8 @@ export default function Verify() {
 
   return (
     <AuthLayout>
-      <h3 className=" text-2xl font-semibold text-cs-grey-dark mb-1">
-        Verify you account
+      <h3 className=" text-2xl font-semibold text-cs-grey-dark mb-1 metro-medium">
+        Verify your account
       </h3>
       <p className=" text-cs-grey-100 text-sm">
         We sent a verification code to your email.
@@ -213,7 +214,7 @@ export default function Verify() {
           activate={allowSubmit}
         />
 
-        <p className=" text-cs-grey-100 font-medium text-sm text-center mt-8">
+        <p className=" text-cs-grey-100 font-medium text-sm text-center mt-8 metro-medium">
           Didn’t see code?{" "}
           {minutes === 0 && seconds === 0 ? (
             <span
@@ -226,6 +227,11 @@ export default function Verify() {
             `Resend in ${padZero(minutes)}:${padZero(seconds)}`
           )}
         </p>
+        <div className="text-center  mt-8">
+          <Link href={"/"} className=" text-cs-purple-650 text-sm font-medium">
+            Back to Home
+          </Link>
+        </div>
       </form>
 
       <SuccessSlideIn

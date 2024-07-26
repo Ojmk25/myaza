@@ -2,7 +2,6 @@
 import {
   Coffee,
   EmojiHappy,
-  InfoCircle,
   Messages1,
   Microphone,
   MicrophoneSlash1,
@@ -11,7 +10,6 @@ import {
   MoreCircle,
   ProfileAdd,
   RecordCircle,
-  Setting2,
   Video,
   VideoSlash,
 } from "iconsax-react";
@@ -38,6 +36,7 @@ import thumbsDownSvg from "@/public/assets/images/Thumbs Down.svg";
 import horrorSvg from "@/public/assets/images/Horror-stricken face.svg";
 import captureWhite from "@/public/assets/images/captureWhite.svg";
 import capturePurple from "@/public/assets/images/capturePurple.svg";
+import captureGray from "@/public/assets/images/captureGray.svg";
 
 import { useRouter } from "next/router";
 import { useAppContext } from "@/context/StoreContext";
@@ -94,6 +93,7 @@ export default function MeetingControl({
   meetingManager,
   attendeIDString,
   sendEmoji,
+  meetingName,
 }: {
   bgColor: boolean;
   onOpen: () => void;
@@ -102,27 +102,27 @@ export default function MeetingControl({
   meetingManager: MeetingManager;
   attendeIDString: string | null | undefined;
   sendEmoji: (sender: string, emoji: string) => void;
+  meetingName: any;
 }) {
   const currentTimeRef = useRef<HTMLDivElement>(null);
-  const [changeBg, setChangeBg] = useState(true);
   const { muted, toggleMute } = useToggleLocalMute();
   const { isVideoEnabled, toggleVideo } = useLocalVideo();
   const { toggleContentShare } = useContentShareControls();
   const { isLocalUserSharing } = useContentShareState();
-  const [localSideView, setLocalSideView] = useState("");
-  const [toggleSideView, setToggleSideView] = useState(false);
   const [otherViews, setOtherViews] = useState<string[]>([]);
   const navigate = useRouter();
-  const meetingSessionRef = useRef(null);
   const audioVideo = useAudioVideo();
   const [raiseHandAdded, setRaiseHandAdded] = useState(false);
   const [videoStatus] = useSessionStorage("videoStatus", "no");
   const [audioStatus] = useSessionStorage("audioStatus", "no");
-  const [isParticipantJoined, setIsParticipantJoined] = useState(false);
   const [setupDone, setSetupDone] = useState(false);
+  const { appState, setAppState } = useAppContext();
 
-  const meetingManagerImport = useMeetingManager();
-  const { setAppState } = useAppContext();
+  console.log(videoStatus);
+  console.log(audioStatus);
+  console.log(setupDone);
+  console.log(muted);
+  console.log(isVideoEnabled);
 
   useEffect(() => {
     if (otherViews.includes("Raise-Hand")) {
@@ -166,60 +166,27 @@ export default function MeetingControl({
   }, []);
 
   // useEffect(() => {
-  //   // Subscribe to attendee presence events
+  //   if (!setupDone) {
+  //     const setupDevices = () => {
+  //       const cameraOn = videoStatus === "yes";
+  //       const microphoneOn = audioStatus === "yes";
+  //       // if (cameraOn && !isVideoEnabled) {
+  //       //   toggleVideo();
+  //       // }
 
-  //   const handleAttendeePresence = (attendeeId: string, present: boolean) => {
-  //     if (present) {
-  //       setIsParticipantJoined(true);
-  //       console.log(present, attendeeId);
-  //     }
-  //   };
+  //       // if (microphoneOn && muted) {
+  //       //   toggleMute();
+  //       // }
 
-  //   meetingManagerImport.audioVideo?.realtimeSubscribeToAttendeeIdPresence(
-  //     handleAttendeePresence
-  //   );
-  //   console.log(isParticipantJoined);
-  //   // Cleanup subscription on unmount
-  //   return () => {
-  //     meetingManagerImport.audioVideo?.realtimeUnsubscribeToAttendeeIdPresence(
-  //       handleAttendeePresence
-  //     );
-  //   };
-  // }, [meetingManagerImport]);
+  //       setSetupDone(true);
+  //     };
 
-  // useEffect(() => {
-  //   if (isParticipantJoined) {
-  //     if (videoStatus === "yes") {
-  //       toggleVideo();
-  //     }
-  //     if (audioStatus === "no") {
-  //       toggleMute();
-  //     }
+  //     const timeoutId = setTimeout(setupDevices, 5000); // Delay of 2 seconds
+
+  //     // Cleanup function to clear timeout
+  //     return () => clearTimeout(timeoutId);
   //   }
-  // }, [isParticipantJoined]);
-
-  useEffect(() => {
-    if (!setupDone) {
-      const setupDevices = () => {
-        const cameraOn = videoStatus === "yes";
-        const microphoneOn = audioStatus === "yes";
-        if (cameraOn && !isVideoEnabled) {
-          toggleVideo();
-        }
-
-        if (microphoneOn && muted) {
-          toggleMute();
-        }
-
-        setSetupDone(true);
-      };
-
-      const timeoutId = setTimeout(setupDevices, 5000); // Delay of 2 seconds
-
-      // Cleanup function to clear timeout
-      return () => clearTimeout(timeoutId);
-    }
-  }, [isVideoEnabled, muted, setupDone, toggleVideo, toggleMute]);
+  // }, [isVideoEnabled, muted, setupDone, toggleVideo, toggleMute]);
 
   const handleLocalSideView = (value: string) => {
     if (value === sideView) {
@@ -273,15 +240,58 @@ export default function MeetingControl({
       await meetingManager.leave().then(() => {
         // router.reload();
         meetingManager.audioVideo?.stop();
-        navigate.push("/");
-        // .then(() => window.location.reload());
+        navigate.push("/").then(() => window.location.reload());
       });
     }
   };
 
+  useEffect(() => {
+    if (!audioVideo) {
+      return;
+    }
+
+    // Callback function to handle attendee presence changes
+    const handleAttendeePresence = (attendeeId: string, present: boolean) => {
+      if (present) {
+        console.log(`Attendee ${attendeeId} joined the meeting`);
+        if (!setupDone) {
+          const cameraOn = videoStatus === "yes";
+          const microphoneOn = audioStatus === "yes";
+          if (cameraOn && !isVideoEnabled) {
+            toggleVideo();
+          }
+
+          if (microphoneOn && muted) {
+            toggleMute();
+          }
+
+          setSetupDone(true);
+
+          console.log(videoStatus);
+          console.log(audioStatus);
+          console.log(setupDone);
+          console.log(muted);
+          console.log(isVideoEnabled);
+        }
+      } else {
+        console.log(`Attendee ${attendeeId} left the meeting`);
+      }
+    };
+
+    // Subscribe to attendee presence changes
+    audioVideo.realtimeSubscribeToAttendeeIdPresence(handleAttendeePresence);
+
+    // Cleanup function to unsubscribe from attendee presence changes
+    return () => {
+      audioVideo.realtimeUnsubscribeToAttendeeIdPresence(
+        handleAttendeePresence
+      );
+    };
+  }, [audioVideo]);
+
   return (
     <>
-      <div className="hidden md:flex justify-between items-center px-2 py-4 bg-cs-grey-45 border-t border-solid border-t-cs-grey-55">
+      <div className="hidden md:flex justify-between items-center px-2 py-4 bg-cs-grey-45 border-t border-solid border-t-cs-grey-55 metro-medium">
         <div className="flex gap-x-2 lg:gap-x-3 flex-2">
           <div
             className="hidden lg:block text-cs-grey-800 font-normal text-base lg:text-[20px]"
@@ -289,7 +299,7 @@ export default function MeetingControl({
           ></div>
           <div className="hidden lg:block w-[1px] bg-cs-grey-200"></div>
           <h3 className=" text-cs-grey-800 font-normal text-base lg:text-[20px]">
-            AWS Conference
+            {appState.sessionState.sessionName}
           </h3>
         </div>
 
@@ -369,15 +379,17 @@ export default function MeetingControl({
               <h6 className=" text-cs-grey-100 font-medium text-xs">Share</h6>
             </div>
 
-            <div className="text-center cursor-pointer">
+            <div className="text-center">
               <div className="p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto">
                 <RecordCircle
                   size="24"
-                  color="#5E29B7"
+                  // color="#5E29B7"
+                  color="#e1c6ff"
                   className="mx-auto max-w-5"
                 />
               </div>
-              <h6 className=" text-cs-grey-100 font-medium text-xs">Record</h6>
+              {/* <h6 className=" text-cs-grey-100 font-medium text-xs">Record</h6> */}
+              <h6 className=" text-[#e1c6ff] font-medium text-xs">Record</h6>
             </div>
 
             <div className=" relative">
@@ -473,8 +485,8 @@ export default function MeetingControl({
 
         <div className=" flex gap-x-4 lg:gap-x-6 flex-2 justify-end">
           <div
-            className="text-center cursor-pointer"
-            onClick={() => handleLocalSideView("Caption")}
+            className="text-center"
+            // onClick={() => handleLocalSideView("Caption")}
           >
             <div
               className={`p-3 ${
@@ -482,14 +494,16 @@ export default function MeetingControl({
               } rounded-md max-w-12  mx-auto`}
             >
               <Image
-                src={sideView === "Caption" ? captureWhite : capturePurple}
+                // src={sideView === "Caption" ? captureWhite : capturePurple}
+                src={captureGray}
                 alt="hand"
                 width={18}
                 height={18}
                 className="min-w-6 max-w-5 h-6"
               />
             </div>
-            <h6 className=" text-cs-grey-100 font-medium text-xs">Caption</h6>
+            {/* <h6 className=" text-cs-grey-100 font-medium text-xs">Caption</h6> */}
+            <h6 className=" text-[#e1c6ff] font-medium text-xs">Caption</h6>
           </div>
 
           <div
@@ -548,15 +562,17 @@ export default function MeetingControl({
 
           <div className="text-center">
             <div className="p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto">
-              <Coffee size="24" color="#5E29B7" className="mx-auto max-w-5" />
+              {/* <Coffee size="24" color="#5E29B7" className="mx-auto max-w-5" /> */}
+              <Coffee size="24" color="#e1c6ff" className="mx-auto max-w-5" />
             </div>
-            <h6 className=" text-cs-grey-100 font-medium text-xs">Activity</h6>
+            {/* <h6 className=" text-cs-grey-100 font-medium text-xs">Activity</h6> */}
+            <h6 className=" text-[#e1c6ff] font-medium text-xs">Activity</h6>
           </div>
         </div>
       </div>
 
       {/* Small screen controls */}
-      <div className=" md:hidden py-4 relative bg-cs-grey-45 border-t border-solid border-t-cs-grey-55">
+      <div className=" md:hidden py-4 relative bg-cs-grey-45 border-t border-solid border-t-cs-grey-55 metro-medium">
         <div className="px-4 sm:px-24">
           <div className=" flex justify-between ">
             <div className="text-center cursor-pointer" onClick={toggleMute}>
@@ -698,8 +714,8 @@ export default function MeetingControl({
                     <div className=" bg-white rounded-t-2xl px-6 py-6">
                       <div className="grid grid-cols-2 gap-x-12 justify-between gap-y-6">
                         <div
-                          className="text-center cursor-pointer max-w-[215px]"
-                          onClick={() => toggleContentShare()}
+                          className="text-center max-w-[215px]"
+                          // onClick={() => toggleContentShare()}
                         >
                           <div
                             className={`p-3 ${
@@ -708,10 +724,11 @@ export default function MeetingControl({
                           >
                             <Monitor
                               size="24"
-                              color={isLocalUserSharing ? "#FAFAFA" : "#333333"}
+                              // color={isLocalUserSharing ? "#FAFAFA" : "#333333"}
+                              color="#e1c6ff"
                               className="max-w-5"
                             />
-                            <h6
+                            {/* <h6
                               className={` font-medium text-xs ${
                                 isLocalUserSharing
                                   ? "text-cs-grey-50"
@@ -719,14 +736,16 @@ export default function MeetingControl({
                               }`}
                             >
                               Share screen
+                            </h6> */}
+                            <h6
+                              className={` font-medium text-xs text-[#e1c6ff]`}
+                            >
+                              Share screen
                             </h6>
                           </div>
                         </div>
 
-                        <div
-                          className="text-center cursor-pointer max-w-[215px]"
-                          onClick={() => toggleContentShare()}
-                        >
+                        <div className="text-center max-w-[215px]">
                           <div
                             className={`p-3 ${
                               isLocalUserSharing ? "bg-cs-purple-650" : ""
@@ -734,11 +753,15 @@ export default function MeetingControl({
                           >
                             <RecordCircle
                               size="24"
-                              color={isLocalUserSharing ? "#FAFAFA" : "#333333"}
+                              // color={isLocalUserSharing ? "#FAFAFA" : "#333333"}
+                              color="#e1c6ff"
                               className="max-w-5"
                             />
-                            <h6 className=" text-cs-grey-dark font-medium text-xs">
+                            {/* <h6 className=" text-cs-grey-dark font-medium text-xs">
                               {isLocalUserSharing ? "Stop recording" : "Record"}
+                            </h6> */}
+                            <h6 className=" text-[#e1c6ff] font-medium text-xs">
+                              Record
                             </h6>
                           </div>
                         </div>
@@ -804,8 +827,8 @@ export default function MeetingControl({
                         </div>
 
                         <div
-                          className="text-center cursor-pointer max-w-[215px]"
-                          onClick={() => handleLocalSideView("Caption")}
+                          className="text-center max-w-[215px]"
+                          // onClick={() => handleLocalSideView("Caption")}
                         >
                           <div
                             className={`p-3 ${
@@ -814,18 +837,22 @@ export default function MeetingControl({
                           >
                             <ProfileAdd
                               size="24"
-                              color={
-                                sideView === "Caption" ? "#FAFAFA" : "#333333"
-                              }
+                              // color={
+                              //   sideView === "Caption" ? "#FAFAFA" : "#333333"
+                              // }
+                              color="#e1c6ff"
                               className="max-w-5"
                             />
-                            <h6
+                            {/* <h6
                               className={` ${
                                 sideView === "Caption"
                                   ? "text-cs-grey-50"
                                   : "text-cs-grey-dark"
                               }  font-medium text-xs `}
                             >
+                              Caption
+                            </h6> */}
+                            <h6 className=" text-[#e1c6ff] font-medium text-xs">
                               Caption
                             </h6>
                           </div>

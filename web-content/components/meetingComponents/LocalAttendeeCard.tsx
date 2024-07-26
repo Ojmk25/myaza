@@ -16,6 +16,12 @@ import ReactionEmoji from "./ReactionEmoji";
 import { useAppContext } from "@/context/StoreContext";
 import RaisedHand from "./RaisedHand";
 
+type AtteendeeDetailsProp = {
+  full_name: string;
+  picture?: string;
+  user_id?: string;
+};
+
 export const LocalAttendeeCard = ({
   name,
   attendeeId,
@@ -23,13 +29,15 @@ export const LocalAttendeeCard = ({
   nameID,
   audioState,
   meetingManager,
-}: {
+}: // attendeeDetails,
+{
   name: string | undefined;
   attendeeId: any;
   videoTildId: number;
   nameID: string;
   audioState: JSX.Element;
   meetingManager?: MeetingManager;
+  // attendeeDetails: AtteendeeDetailsProp | undefined;
 }) => {
   const { isVideoEnabled } = useLocalVideo();
   const { appState, setAppState } = useAppContext();
@@ -37,7 +45,14 @@ export const LocalAttendeeCard = ({
 
   useEffect(() => {
     getNameAbbreviation();
-  }, []);
+    console.log(appState.sessionState.meetingAttendees);
+  }, [appState.sessionState.meetingAttendees]);
+  console.log(appState.sessionState.meetingAttendees);
+  const attendeeDetailItems = appState.sessionState.meetingAttendees.find(
+    (att) => att.user_id === nameID
+  );
+
+  console.log(attendeeDetailItems, nameID);
 
   return (
     <div
@@ -66,24 +81,51 @@ export const LocalAttendeeCard = ({
         <div className=" w-full h-full ">
           <LocalVideo
             className=" rounded relative bg-slate-800 capitalize"
-            nameplate={processString(name as string)}
+            nameplate={attendeeDetailItems?.full_name}
             id={`remotevideo-${videoTildId}`}
             css=" relative"
           />
 
           <div className=" flex w-full h-full justify-center items-center @container/imageWrapper">
-            <div>
+            <div className=" max-w-full whitespace-nowrap">
               {!isVideoEnabled && (
-                // <Image src={avatar} alt="" className=" max-w-[50px] @[300px]/imageWrapper:max-w-[100px] max-h-[297px] rounded-full m-auto" />
-                <div className=" bg-cs-grey-800 @[230px]/meetingCard:w-[80px] @[230px]/meetingCard:h-[80px]  rounded-full flex justify-center items-center text-cs-grey-55 font-semibold  m-auto @[100px]/meetingCard:w-[40px] @[100px]/meetingCard:h-[40px] @[100px]/meetingCard:text-xl @[230px]/meetingCard:text-[28px]">
-                  {getRemoteInitials(processString(name as string))}
-                </div>
+                <>
+                  {attendeeDetailItems?.picture &&
+                  attendeeDetailItems?.picture !== "" ? (
+                    <div>
+                      {/* <Image
+                        src={`${attendeeDetails.picture}`}
+                        alt=""
+                        // width={50}
+                        // height={50}
+
+                        layout="fill"
+                      /> */}
+                      <img
+                        src={attendeeDetailItems.picture}
+                        alt={attendeeDetailItems.full_name}
+                        className="w-[50px] h-[50px] @[300px]/imageWrapper:w-[100px] @[300px]/imageWrapper:h-[100px]  rounded-full m-auto object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className=" bg-cs-grey-800 @[230px]/meetingCard:w-[80px] @[230px]/meetingCard:h-[80px]  rounded-full flex justify-center items-center text-cs-grey-55 font-semibold  m-auto @[100px]/meetingCard:w-[40px] @[100px]/meetingCard:h-[40px] @[100px]/meetingCard:text-xl @[230px]/meetingCard:text-[28px]">
+                      {attendeeDetailItems &&
+                        getRemoteInitials(
+                          attendeeDetailItems &&
+                            processString(
+                              attendeeDetailItems?.full_name as string
+                            )
+                        )}
+                      {/* {attendeeDetails?.full_name as string} */}
+                    </div>
+                  )}
+                </>
               )}
               {/* w-[100px] h-[100px] max-w-[150px] max-h-[150px] */}
 
               {!isVideoEnabled && (
-                <h3 className=" font-medium text-cs-grey-50 text-center @[100px]/meetingCard:mt-0 @[230px]/meetingCard:mt-2 capitalize @[100px]/meetingCard:text-xs @[230px]/meetingCard:text-base">
-                  {processString(name as string)}
+                <h3 className=" font-medium text-cs-grey-50 text-center @[100px]/meetingCard:mt-0 @[230px]/meetingCard:mt-2 capitalize @[100px]/meetingCard:text-xs @[230px]/meetingCard:text-base overflow-hidden text-ellipsis">
+                  {attendeeDetailItems?.full_name}
                 </h3>
               )}
             </div>

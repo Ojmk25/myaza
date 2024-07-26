@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { isDynamicRoute } from "next/dist/shared/lib/router/utils";
 import { getRouteRegex } from "next/dist/shared/lib/router/utils/route-regex";
 import { getClientBuildManifest } from "next/dist/client/route-loader";
+import LoadingScreen from "@/components/modals/LoadingScreen";
 
 async function pageExists(location: string) {
   const { sortedPages } = await getClientBuildManifest();
@@ -33,7 +34,11 @@ const Custom404 = () => {
   }, [router.isReady, router.asPath, router]);
 
   if (!isNotFound) {
-    return <div>loading</div>;
+    return (
+      <div>
+        <LoadingScreen />
+      </div>
+    );
   }
 
   return <div>Custom404 page</div>;

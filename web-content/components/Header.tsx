@@ -10,6 +10,7 @@ import { AppCtx } from "@/context/StoreContext";
 import cecureStream from "@/public/assets/images/cecurestream.svg";
 import cecureStreamSmall from "@/public/assets/images/cecureStreamSmall.svg";
 import {
+  getClientInfo,
   getNameAbbreviation,
   IsAuthenticated,
   logOutUser,
@@ -28,6 +29,7 @@ export default function Header() {
   const [profilePic, setProfilePic] = useState(false);
   const [profileModal, setProfileModal] = useState(false);
   const [showModal, setShowModal] = useState("");
+  const { first_name, surname, email, picture } = getClientInfo();
 
   useEffect(() => {
     setLoggedIn(IsAuthenticated());
@@ -127,9 +129,11 @@ export default function Header() {
             ></div>
 
             <div className=" cursor-pointer">
-              {profilePic ? (
+              {picture && picture !== "" ? (
                 <Image
-                  src={avatar}
+                  src={picture}
+                  width={32}
+                  height={32}
                   alt="logo"
                   className="rounded-full w-8 h-8 md:w-10 md:h-10 object-cover"
                   onClick={() => setProfileModal(!profileModal)}
@@ -169,9 +173,11 @@ export default function Header() {
           <div className=" relative  md:hidden cursor-pointer">
             {
               // for bigger screens
-              profilePic && (
+              picture && picture !== "" && (
                 <Image
-                  src={avatar}
+                  src={picture}
+                  width={32}
+                  height={32}
                   alt="logo"
                   className={` cursor-pointer rounded-full w-8 h-8 md:w-10 md:h-10 object-cover ${
                     loggedIn ? "block md:hidden" : "hidden"
@@ -180,7 +186,7 @@ export default function Header() {
                 />
               )
             }
-            {!profilePic && loggedIn && (
+            {!picture && picture !== "" && loggedIn && (
               <div
                 className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 md:hidden cursor-pointer"
                 onClick={() => setProfileModal(!profileModal)}

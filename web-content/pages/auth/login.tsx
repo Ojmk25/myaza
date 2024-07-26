@@ -1,13 +1,17 @@
-"use client"
+"use client";
 import Link from "next/link";
 import Image from "next/image";
 import AuthLayout from "@/components/auth/AuthLayout";
 import { AuthInput } from "@/components/auth/AuthInput";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 
-import googleIcon from "@/public/assets/images/googleIcon.svg"
+import googleIcon from "@/public/assets/images/googleIcon.svg";
 import { useState } from "react";
-import { ValidateEmail, ValidatePassword, activateButton } from "@/utils/Validators";
+import {
+  ValidateEmail,
+  ValidatePassword,
+  activateButton,
+} from "@/utils/Validators";
 import { useRouter } from "next/router";
 import { loginUser } from "@/services/authService";
 import { SuccessSlideIn } from "@/components/SuccessSlideIn";
@@ -15,142 +19,181 @@ import { FailureSlideIn } from "@/components/FailureSlideIn";
 import LoadingScreen from "@/components/modals/LoadingScreen";
 
 export default function Login() {
-  const navigate = useRouter()
+  const navigate = useRouter();
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
   const [errMessage, setErrMessage] = useState({
-    email: '',
-    password: '',
-  })
-  const [openModal, setOpenModal] = useState(false)
-  const [successRes, setSuccessRes] = useState<any>()
+    email: "",
+    password: "",
+  });
+  const [openModal, setOpenModal] = useState(false);
+  const [successRes, setSuccessRes] = useState<any>();
   const [loading, setLoading] = useState(false);
-  const [errorColour, setErrorColour] = useState(false)
+  const [errorColour, setErrorColour] = useState(false);
 
   const [validateSuccess, setValidateSuccess] = useState({
     email: false,
     password: false,
-  })
+  });
 
   const handleInput = (input: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = input.target;
     const addColour = (elem: React.ChangeEvent<HTMLInputElement>) => {
-      elem.target.classList.add('border-cs-error-500');
-      elem.target.classList.add('placeholder:text-cs-error-500')
-      elem.target.classList.remove('bg-cs-grey-55')
-      setErrMessage(prevState => ({
+      elem.target.classList.add("border-cs-error-500");
+      elem.target.classList.add("placeholder:text-cs-error-500");
+      elem.target.classList.remove("bg-cs-grey-55");
+      setErrMessage((prevState) => ({
         ...prevState,
-        [name]: `Invalid ${name}`
+        [name]: `Invalid ${name}`,
       }));
-    }
+    };
     const removeColour = (elem: React.ChangeEvent<HTMLInputElement>) => {
-      elem.target.classList.remove('border-cs-error-500');
-      elem.target.classList.remove('placeholder:text-cs-error-500')
-      elem.target.classList.add('bg-cs-grey-55')
-      setErrMessage(prevState => ({
+      elem.target.classList.remove("border-cs-error-500");
+      elem.target.classList.remove("placeholder:text-cs-error-500");
+      elem.target.classList.add("bg-cs-grey-55");
+      setErrMessage((prevState) => ({
         ...prevState,
-        [name]: ''
+        [name]: "",
       }));
-    }
+    };
     if (value.length === 0) {
       // setErrorColour(true)
-      setErrMessage(prevState => ({
+      setErrMessage((prevState) => ({
         ...prevState,
-        [name]: `Enter your ${name}`
+        [name]: `Enter your ${name}`,
       }));
-    }
-    else if (name === "email") {
-      if ((!ValidateEmail(value))) {
-        addColour(input)
-        setValidateSuccess(prevState => ({
+    } else if (name === "email") {
+      if (!ValidateEmail(value)) {
+        addColour(input);
+        setValidateSuccess((prevState) => ({
           ...prevState,
-          [name]: false
-        }))
+          [name]: false,
+        }));
       } else {
-        removeColour(input)
-        setValidateSuccess(prevState => ({
+        removeColour(input);
+        setValidateSuccess((prevState) => ({
           ...prevState,
-          [name]: true
-        }))
+          [name]: true,
+        }));
       }
     } else if (name === "password") {
-      if ((!ValidatePassword(value))) {
-        addColour(input)
-        setValidateSuccess(prevState => ({
+      if (!ValidatePassword(value)) {
+        addColour(input);
+        setValidateSuccess((prevState) => ({
           ...prevState,
-          [name]: false
-        }))
+          [name]: false,
+        }));
       } else {
-        removeColour(input)
-        setValidateSuccess(prevState => ({
+        removeColour(input);
+        setValidateSuccess((prevState) => ({
           ...prevState,
-          [name]: true
-        }))
+          [name]: true,
+        }));
       }
     }
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
-      [name]: value
+      [name]: value,
     }));
-  }
+  };
 
   const loginPayload = {
     email: formData.email,
     password: formData.password,
-  }
+  };
 
   const handleSignUpSubmit = async () => {
-    setLoading(true)
+    setLoading(true);
     const clearAll = () => {
-      setLoading(false)
+      setLoading(false);
       setTimeout(() => {
-        setSuccessRes("")
-        setOpenModal(false)
-      }, 2000)
-    }
+        setSuccessRes("");
+        setOpenModal(false);
+      }, 2000);
+    };
     try {
-      const data = await loginUser(loginPayload)
-      setLoading(true)
-      setSuccessRes(data)
-      setOpenModal(true)
+      const data = await loginUser(loginPayload);
+      setLoading(true);
+      setSuccessRes(data);
+      setOpenModal(true);
       setTimeout(() => {
-        data.response && data?.response?.statusCode === 200 && navigate.push("/");
-      }, 3000)
-
+        data.response &&
+          data?.response?.statusCode === 200 &&
+          navigate.push("/");
+      }, 3000);
     } catch (error) {
-      console.log(error)
-      setLoading(true)
-      setOpenModal(true)
+      console.log(error);
+      setLoading(true);
+      setOpenModal(true);
     } finally {
-      clearAll()
+      clearAll();
     }
-  }
-
+  };
 
   return (
     <AuthLayout>
-      <h3 className=" text-2xl font-semibold text-cs-grey-dark mb-1">Sign in</h3>
-      <p className=" text-cs-grey-100 text-sm">Welcome back, sign in to your account</p>
+      <h3 className=" text-2xl font-semibold text-cs-grey-dark mb-1 metro-medium">
+        Sign in
+      </h3>
+      <p className=" text-cs-grey-100 text-sm">
+        Welcome back, sign in to your account
+      </p>
       <form>
-        <AuthInput label="Email" action={handleInput} errorMessage={errMessage.email} inputName="email" inputType="email" placeHolder="example@mail.com" />
-        <AuthInput label="Password" action={handleInput} errorMessage={errMessage.password} inputName="password" inputType="password" placeHolder="password" />
+        <AuthInput
+          label="Email"
+          action={handleInput}
+          errorMessage={errMessage.email}
+          inputName="email"
+          inputType="email"
+          placeHolder="example@mail.com"
+        />
+        <AuthInput
+          label="Password"
+          action={handleInput}
+          errorMessage={errMessage.password}
+          inputName="password"
+          inputType="password"
+          placeHolder="password"
+        />
         <div className="text-right">
-          <Link href={"/auth/forgot-password"} className=" text-cs-purple-650 text-sm">Forgot password</Link>
+          <Link
+            href={"/auth/forgot-password"}
+            className=" text-cs-purple-650 text-sm"
+          >
+            Forgot password
+          </Link>
         </div>
-        <SubmitButton text="Sign in" action={handleSignUpSubmit} activate={activateButton(validateSuccess)} />
+        <SubmitButton
+          text="Sign in"
+          action={handleSignUpSubmit}
+          activate={activateButton(validateSuccess)}
+        />
       </form>
       <div className="grid my-6 grid-cols-7 items-center">
         <div className=" h-[1px] bg-cs-grey-55 col-start-1 col-end-4"></div>
         <span className=" text-center text-cs-grey-400 text-sm">or</span>
         <div className=" h-[1px] bg-cs-grey-55 col-start-5 col-end-8"></div>
       </div>
-      <div className="border border-solid border-cs-grey-150 rounded-lg flex items-center justify-center w-full py-[10px] text-cs-grey-dark font-medium"><Image src={googleIcon} alt="google" className=" mr-2" />  Sign in with Google</div>
+      <div className="border border-solid border-cs-grey-150 rounded-lg flex items-center justify-center w-full py-[10px] text-cs-grey-dark font-medium">
+        <Image src={googleIcon} alt="google" className=" mr-2" /> Sign in with
+        Google
+      </div>
 
-      <SuccessSlideIn openModal={openModal} response={successRes && successRes?.response.statusCode === 200} successActionResponse={successRes && successRes?.response.body.message} closeModal={() => { }} />
-      <FailureSlideIn openModal={openModal} response={successRes && successRes?.response.statusCode !== 200} errResponse={successRes && successRes?.response.body.message} closeModal={() => { }} />
+      <SuccessSlideIn
+        openModal={openModal}
+        response={successRes && successRes?.response.statusCode === 200}
+        successActionResponse={successRes && successRes?.response.body.message}
+        closeModal={() => {}}
+      />
+      <FailureSlideIn
+        openModal={openModal}
+        response={successRes && successRes?.response.statusCode !== 200}
+        errResponse={successRes && successRes?.response.body.message}
+        closeModal={() => {}}
+      />
       {loading && <LoadingScreen />}
     </AuthLayout>
-  )
+  );
 }

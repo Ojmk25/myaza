@@ -35,7 +35,7 @@ const Participants = ({
           className="cursor-pointer w-5 @[300px]/bigScreenSideCards:w-6"
         />
       </div>
-      <div className=" relative mt-5 mb-3">
+      {/* <div className=" relative mt-5 mb-3">
         <input
           type="text"
           name=""
@@ -48,7 +48,7 @@ const Participants = ({
           color="#898989"
           className=" absolute top-[7px] left-[10px] @[300px]/bigScreenSideCards:top-[12px] @[300px]/bigScreenSideCards:left-[14px] @[300px]/bigScreenSideCards:w-[18px] @[300px]/bigScreenSideCards:h-[18px]"
         />
-      </div>
+      </div> */}
 
       <div className="">
         {attendees.map((attendee) => (
@@ -60,6 +60,7 @@ const Participants = ({
               <ShowVisualizer
                 meetingManager={meetingManager}
                 attendee={attendee}
+                noBackground={true}
               />
             }
           />

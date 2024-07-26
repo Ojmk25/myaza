@@ -16,6 +16,9 @@ export function processString(input: string): string {
 }
 
 export const getRemoteInitials = (input: string): string => {
+  if (!input) {
+    return "";
+  }
   const words = input.split(" ");
 
   // Get the first letter of each word and join them into a single string

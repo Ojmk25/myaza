@@ -14,7 +14,7 @@ export const timeSince = (date: Date): string => {
   if (interval > 1) return Math.floor(interval) + " hours ago";
 
   interval = seconds / 60;
-  if (interval > 1) return Math.floor(interval) + " minutes ago";
+  if (interval > 1) return Math.floor(interval) + " mins ago";
 
   return "now";
 };

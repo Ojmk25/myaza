@@ -1,16 +1,28 @@
 import { ArrowRight } from "iconsax-react";
 
-export const SubmitButton = ({ text, action, activate }: { text: string, action: () => void, activate: boolean }) => {
+export const SubmitButton = ({
+  text,
+  action,
+  activate,
+}: {
+  text: string;
+  action: () => void;
+  activate: boolean;
+}) => {
   return (
     <button
       onClick={(e) => {
         e.preventDefault();
-        action()
+        action();
       }}
-      className={` w-full h-[48px] ${activate ? "bg-cs-purple-650 text-white" : "bg-cs-grey-55 text-cs-grey-500"} hover:opacity-90 flex justify-center items-center gap-x-2 font-bold mt-6 rounded-[10px] transition-all`}
+      className={` w-full h-[48px] ${
+        activate
+          ? "bg-cs-purple-650 text-white"
+          : "bg-cs-grey-55 text-cs-grey-500"
+      } hover:opacity-90 flex justify-center items-center gap-x-2 font-bold mt-6 rounded-[10px] transition-all metro-medium`}
       disabled={!activate}
     >
       {text}
     </button>
-  )
-}
+  );
+};

@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAppContext } from "@/context/StoreContext";
 import { useSessionStorage } from "@/hooks/useStorage";
+import Image from "next/image";
 
 export default function GuestNameInput() {
   const [errMessage, setErrMessage] = useState({
@@ -27,7 +28,7 @@ export default function GuestNameInput() {
   const [activateButton, setActivateButton] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const [profilePic, setProfilePic] = useState(false);
-  const { first_name, surname } = getClientInfo();
+  const { first_name, surname, picture } = getClientInfo();
   const navigate = useRouter();
   const [url, setUrl] = useState("");
   const { setAppState } = useAppContext();
@@ -35,7 +36,6 @@ export default function GuestNameInput() {
     "meetingJoiner",
     "yes"
   );
-
   useEffect(() => {
     setLoggedIn(IsAuthenticated());
     getNameAbbreviation();
@@ -136,10 +136,18 @@ export default function GuestNameInput() {
               } flex gap-x-4 items-center mt-[48px]`}
             >
               {/* <Image src={avatar} alt="logo" className="rounded-full w-10 h-10 object-cover" /> */}
-              {!profilePic && (
+              {!picture ? (
                 <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50">
                   {getNameAbbreviation()}
                 </div>
+              ) : (
+                <Image
+                  src={picture}
+                  width={40}
+                  height={40}
+                  alt="logo"
+                  className="rounded-full w-10 h-10 object-cover"
+                />
               )}
               <p className=" text-cs-grey-dark font-medium">
                 Signed in as {first_name} {surname}

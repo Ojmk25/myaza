@@ -9,6 +9,10 @@ import {
   DeviceLabels,
 } from "amazon-chime-sdk-component-library-react";
 import {
+  ConsoleLogger,
+  DefaultDeviceController,
+  DefaultMeetingSession,
+  LogLevel,
   MeetingSessionConfiguration,
   VideoTileState,
 } from "amazon-chime-sdk-js";
@@ -19,7 +23,7 @@ import { ArrowLeft, Coffee, InfoCircle, Setting2 } from "iconsax-react";
 import ShareScreen from "@/components/modals/ShareScreen";
 import Settings from "@/components/modals/Settings";
 import { useRouter } from "next/router";
-import { joinMeetingFnc } from "@/services/meetingServices";
+import { joinMeetingFnc, listAttendees } from "@/services/meetingServices";
 import {
   decodeJwt,
   getClientInfo,
@@ -35,14 +39,18 @@ import LoadingScreen from "../modals/LoadingScreen";
 import { useAppContext } from "@/context/StoreContext";
 import { useSessionStorage } from "@/hooks/useStorage";
 
+type AtteendeeDetailsProp = {
+  full_name: string;
+  picture?: string;
+  user_id?: string;
+};
+
 export default function TempMeeting({
   param,
 }: {
   param: string | string[] | undefined;
 }) {
   const meetingManager = useMeetingManager();
-  const { roster } = useRosterState();
-  const attendees = Object.values(roster);
   const [showModal, setShowModal] = useState("");
   const { tiles, tileIdToAttendeeId, attendeeIdToTileId, size } =
     useRemoteVideoTileState();
@@ -50,19 +58,19 @@ export default function TempMeeting({
   const { isVideoEnabled, toggleVideo } = useLocalVideo();
   const [sideView, setSideView] = useState("");
   const router = useRouter();
-  const [meetingDetails, setMeetDetails] = useState(null);
+  const [meetingDetails, setMeetingDetails] = useState<any>();
   const [loading, setLoading] = useState(false);
   const [successRes, setSuccessRes] = useState<any>();
   const [openModal, setOpenModal] = useState(false);
   const audioVideo = useAudioVideo();
-  const [emoji, setEmoji] = useState<any>("");
   const [inputMessage, setInputMessage] = useState({ sender: "", emoji: "" });
   const { appState, setAppState } = useAppContext();
-  const [raisedHand, setRaisedHand] = useState("");
-  const [expressJoin, setExpressJoin] = useSessionStorage(
-    "meetingJoiner",
-    "yes"
-  );
+
+  const [attendeeDetails, setAttendeeDetails] = useState<
+    AtteendeeDetailsProp[]
+  >([]);
+  const { roster } = useRosterState();
+  const attendees = Object.values(roster);
 
   const handleShowModal = (type: string) => {
     setShowModal(type);
@@ -86,24 +94,35 @@ export default function TempMeeting({
     }
   };
 
+  console.log(meetingDetails);
+
+  useEffect(() => {
+    const handleAttendee = async () => {
+      const attend: AtteendeeDetailsProp[] = await getAttendeesList(
+        router.query.link as string
+      );
+      setAppState((prevState) => ({
+        ...prevState,
+        sessionState: {
+          ...prevState.sessionState,
+          sessionLink: window.location.href,
+          meetingAttendees: attend,
+        },
+      }));
+    };
+    handleAttendee();
+  }, [attendees.length]);
+
   useEffect(() => {
     if (router.isReady) {
       const { query } = router;
 
       const { first_name, surname, user_id } = getClientInfo();
-      const meetingPayload = IsAuthenticated()
-        ? {
-            meeting_id: query.link,
-            first_name: first_name || appState.sessionState.guestFirstName,
-            last_name: surname || appState.sessionState.guestLastName,
-            user_id: user_id || appState.sessionState.guestFirstName,
-          }
-        : {
-            meeting_id: query.link,
-            first_name: first_name || appState.sessionState.guestFirstName,
-            last_name: surname || appState.sessionState.guestLastName,
-          };
-
+      const meetingPayload = {
+        meeting_id: query.link,
+        first_name: first_name || appState.sessionState.guestFirstName,
+        last_name: surname || appState.sessionState.guestLastName,
+      };
       const handleJoinMeeting = async () => {
         const clearAll = () => {
           setLoading(false);
@@ -115,11 +134,13 @@ export default function TempMeeting({
         setLoading(true);
         try {
           const response = await joinMeetingFnc(meetingPayload);
+          const { meeting_info, attendee_info, meeting_name } =
+            response?.data.body.data;
 
-          console.log(response);
+          const attend: AtteendeeDetailsProp[] = await getAttendeesList(
+            query.link as string
+          );
 
-          setSuccessRes(response?.data);
-          setMeetDetails(response?.data.body.meeting_info);
           // setTimeout(() => {
           //   response?.data && response?.data?.data?.statusCode !== 200 && router.push("/");
           // }, 2000)
@@ -128,13 +149,30 @@ export default function TempMeeting({
             sessionState: {
               ...prevState.sessionState,
               sessionLink: window.location.href,
+              meetingAttendees: attend,
+              sessionName: meeting_name,
             },
           }));
+          console.log(attend);
+
+          setAttendeeDetails(attend);
+          setSuccessRes(response?.data);
+          setMeetingDetails(response?.data.body.data);
+          console.log(response?.data.body.data.meeting_info);
 
           const meetingSessionConfiguration = new MeetingSessionConfiguration(
-            response?.data.body.data.meeting_info,
-            response?.data.body.data.attendee_info
+            meeting_info,
+            attendee_info
           );
+          const logger = new ConsoleLogger("ChimeMeetingLogs", LogLevel.INFO);
+          const deviceController = new DefaultDeviceController(logger);
+          const meetingSession = new DefaultMeetingSession(
+            meetingSessionConfiguration,
+            logger,
+            deviceController
+          );
+          // console.log(meetingSession);
+
           await meetingManager.join(meetingSessionConfiguration);
           await meetingManager.start();
         } catch (error) {
@@ -145,10 +183,104 @@ export default function TempMeeting({
           clearAll();
         }
       };
-
       handleJoinMeeting();
+      // joinMeeting();
     }
   }, [router.isReady, router.asPath]);
+
+  const getAttendeesList = async (meetingId: string) => {
+    try {
+      const response = await listAttendees({
+        meeting_id: meetingId,
+      });
+      if (response) {
+        const { data } = response.data.body;
+        const attendee = response.data.body;
+        // setAttendeeDetails(data);
+        // console.log(data);
+        // console.log(attendeeDetails);
+        // console.log(attendee);
+        return data;
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+    }
+  };
+
+  useEffect(() => {
+    const { query } = router;
+    getAttendeesList(query.link as string);
+    const handleAudioVideoDidStart = async () => {
+      console.log("User has joined the meeting");
+      console.log("User has joined the meeting");
+      console.log("User has joined the meeting");
+      console.log("User has joined the meeting");
+      return await getAttendeesList(query.link as string);
+    };
+    meetingManager?.audioVideo?.addObserver({
+      audioVideoDidStart: handleAudioVideoDidStart,
+    });
+
+    return () => {
+      meetingManager?.audioVideo?.removeObserver({
+        audioVideoDidStart: handleAudioVideoDidStart,
+      });
+    };
+  }, [
+    meetingManager.audioVideo,
+    // attendeeDetails,
+    // router.isReady,
+    // router.asPath,
+    // appState.sessionState.meetingAttendees,
+  ]);
+
+  //   useEffect(() => {
+  //   const audioVideo = meetingM?.audioVideo;
+
+  //   if (audioVideo) {
+  //     const handleAudioVideoDidStart = async () => {
+  //       console.log("User has joined the meeting");
+  //       await getAttendeesList();
+  //     };
+
+  //     audioVideo.addObserver({
+  //       audioVideoDidStart: handleAudioVideoDidStart,
+  //     });
+
+  //     return () => {
+  //       audioVideo.removeObserver({
+  //         audioVideoDidStart: handleAudioVideoDidStart,
+  //       });
+  //     };
+  //   }
+  // }, [meetingM]);
+
+  useEffect(() => {
+    const handleAttendeePresence = async (attendeeId: any, present: any) => {
+      if (present) {
+        console.log(
+          `User with attendee ID: ${attendeeId} has joined the meeting.`
+        );
+      } else {
+        console.log(
+          `User with attendee ID: ${attendeeId} has left the meeting.`
+        );
+      }
+      return await getAttendeesList(router.query.link as string);
+    };
+
+    meetingManager?.audioVideo?.realtimeSubscribeToAttendeeIdPresence(
+      handleAttendeePresence
+    );
+
+    // Clean up the subscription when the component is unmounted
+    return () => {
+      meetingManager.audioVideo?.realtimeUnsubscribeToAttendeeIdPresence(
+        handleAttendeePresence
+      );
+    };
+  }, [meetingManager]);
 
   useLayoutEffect(() => {
     return () => {
@@ -252,7 +384,7 @@ export default function TempMeeting({
             </div>
             <div className=" flex gap-x-2 items-center">
               <ArrowLeft size="18" color="#080808" className="" />
-              <h2>AWS Conference</h2>
+              <h2>{meetingDetails && meetingDetails.meeting_name}</h2>
             </div>
           </div>
 
@@ -309,6 +441,10 @@ export default function TempMeeting({
             sideViewFunc={handleSideView}
             meetingManager={meetingManager}
             emoji={inputMessage}
+            meetingId={
+              meetingManager.meetingSessionConfiguration?.meetingId as string
+            }
+            attendeeDetailPass={attendeeDetails}
           />
 
           <MeetingControl
@@ -322,18 +458,19 @@ export default function TempMeeting({
                 ?.attendeeId
             }
             sendEmoji={sendReaction}
+            meetingName={meetingDetails && meetingDetails.meeting_name}
           />
           {showModal === "shareScreen" && (
             <ShareScreen onClose={handleCloseModal} />
           )}
           {showModal === "settings" && <Settings onClose={handleCloseModal} />}
           {/* <SuccessSlideIn openModal={openModal} response={successRes && successRes?.statusCode === 200} successActionResponse={successRes && successRes?.message} closeModal={() => { }} /> */}
-          <FailureSlideIn
+          {/* <FailureSlideIn
             openModal={openModal}
             response={successRes && successRes?.statusCode !== 200}
             errResponse={successRes && successRes?.body.message}
             closeModal={() => {}}
-          />
+          /> */}
           {loading && <LoadingScreen />}
         </main>
       </div>
