@@ -1,20 +1,3 @@
-export function processString(input: string): string {
-  // Find the last comma
-  const lastCommaIndex = input.lastIndexOf(",");
-  if (lastCommaIndex === -1) {
-    // If there's no comma, return the original string
-    return input;
-  }
-
-  // Remove the substring after the last comma
-  const stringWithoutLastPart = input.substring(0, lastCommaIndex);
-
-  // Replace remaining commas with spaces
-  const resultString = stringWithoutLastPart.replace(/,/g, " ");
-
-  return resultString;
-}
-
 export const getRemoteInitials = (input: string): string => {
   if (!input) {
     return "";

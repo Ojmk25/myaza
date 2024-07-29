@@ -4,23 +4,13 @@ import * as http from "@/services/httpServices";
 
 const apiLogIn = getApiPath("open", "login");
 const apiSignUp = getApiPath("open", "sign-up");
-const apiConfirmSignUp = getApiPath("open/", "confirm-sign-up");
+const apiConfirmSignUp = getApiPath("open", "confirm-sign-up");
 const uploadMedia = getApiPath("core", "upload-media");
 const updateUser = getApiPath("core", "update-user");
 
 const apiResendCode = getApiPath("open", "resend-verify-code");
-// const apiForgotPassword = getApiPath('open/user', 'forgot-password')
-// const apiConfirmForgotPassword = getApiPath(
-//   'open/user',
-//   'confirm-forgot-password'
-// )
-
-// const apiChangePassword = getApiPath('open/user', 'change-password')
-// const apiGetUserLocation = getApiPath('core/user', 'get-user-location')
-
-// export interface UploadMediaPayload {
-//   media_type: File & { type: "image/jpeg" | "image/png" | "image/jpg" };
-// }
+const apiForgotPassword = getApiPath("open", "forgot-password");
+const apiResetPassword = getApiPath("open", "confirm-forgot-password");
 
 export interface UploadMediaPayload {
   media_type: string | undefined;
@@ -90,6 +80,16 @@ export interface SigninResponse {
       };
     };
   };
+}
+
+export interface ForgotPAsswordUserDetailsProps {
+  email: string;
+}
+
+export interface ResetPAsswordUserDetailsProps {
+  email: string;
+  code: string;
+  password: string;
 }
 
 // local auth set and get
@@ -242,13 +242,25 @@ export const confirmSignUpOpt = async (
   }
 };
 // Forgot Password
-// export const forgotPassword = async (data: ForgotPAsswordUserDetailsProps) => {
-//   try {
-//     return await http.apiCall.post(apiForgotPassword, data)
-//   } catch (error) {
-//     return error
-//   }
-// }
+export const forgotPassword = async (
+  data: ForgotPAsswordUserDetailsProps
+): Promise<any> => {
+  try {
+    return await http.apiCall.post(apiForgotPassword, data);
+  } catch (error) {
+    return error;
+  }
+};
+
+export const resetPassword = async (
+  data: ResetPAsswordUserDetailsProps
+): Promise<any> => {
+  try {
+    return await http.apiCall.post(apiResetPassword, data);
+  } catch (error) {
+    return error;
+  }
+};
 
 // export const changePassword = async (data: ChangePasssword) => {
 //   try {

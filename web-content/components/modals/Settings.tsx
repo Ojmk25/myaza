@@ -2,10 +2,7 @@ import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import closeIcon from "@/public/assets/images/closeIcon.svg";
 import { AuthInput } from "../auth/AuthInput";
-import appleIcon from "@/public/assets/images/appleIcon.svg";
-import googleIcon from "@/public/assets/images/googleIcon.svg";
-import avatar from "@/public/assets/images/avatar.png";
-import { SubmitButton } from "../auth/SubmitButton";
+import { useAppContext } from "@/context/StoreContext";
 import {
   IsAuthenticated,
   getClientInfo,
@@ -14,8 +11,15 @@ import {
   uploadImageFile,
   uploadMediaFnc,
 } from "@/services/authService";
-import { extractAfterLastSlashOrFull } from "@/utils/Validators";
+import {
+  activateButton,
+  extractAfterLastSlashOrFull,
+  ValidateText,
+} from "@/utils/Validators";
 import LoadingScreen from "./LoadingScreen";
+import { getRemoteInitials } from "@/utils/meetingFunctions";
+import { SuccessSlideIn } from "../SuccessSlideIn";
+import { FailureSlideIn } from "../FailureSlideIn";
 
 export interface UploadMediaPayload {
   media_type: File & { type: "image/jpeg" | "image/png" | "image/jpg" };
@@ -23,9 +27,26 @@ export interface UploadMediaPayload {
 const Settings = ({ onClose }: { onClose: () => void }) => {
   const [loggedIn, setLoggedIn] = useState<boolean>();
   const [loading, setLoading] = useState(false);
+
+  const [formData, setFormData] = useState({
+    "First name": "",
+    "Last name": "",
+  });
+  const [errMessage, setErrMessage] = useState({
+    "First name": "",
+    "Last name": "",
+  });
+  const [validateSuccess, setValidateSuccess] = useState({
+    "First name": false,
+    "Last name": false,
+  });
+  const [openModal, setOpenModal] = useState(false);
+  const [successRes, setSuccessRes] = useState<any>();
+
   useEffect(() => setLoggedIn(IsAuthenticated()), []);
   const { first_name, surname, email, picture } = getClientInfo();
   const [newFile, setNewFile] = useState<File | null>();
+  const { appState } = useAppContext();
 
   const handleSubmit = async (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault();
@@ -55,6 +76,89 @@ const Settings = ({ onClose }: { onClose: () => void }) => {
       }
     }
   };
+
+  const handleInput = (input: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type } = input.target;
+    const addColour = (elem: React.ChangeEvent<HTMLInputElement>) => {
+      elem.target.classList.add("border-cs-error-500");
+      elem.target.classList.add("placeholder:text-cs-error-500");
+      elem.target.classList.remove("bg-cs-grey-55");
+      setErrMessage((prevState) => ({
+        ...prevState,
+        [name]: `Invalid ${name}`,
+      }));
+    };
+    const removeColour = (elem: React.ChangeEvent<HTMLInputElement>) => {
+      elem.target.classList.remove("border-cs-error-500");
+      elem.target.classList.remove("placeholder:text-cs-error-500");
+      elem.target.classList.add("bg-cs-grey-55");
+      setErrMessage((prevState) => ({
+        ...prevState,
+        [name]: "",
+      }));
+    };
+    if (value.length === 0) {
+      // setErrorColour(true)
+      setErrMessage((prevState) => ({
+        ...prevState,
+        [name]: `Enter your ${name}`,
+      }));
+    } else if (type === "text") {
+      if (!ValidateText(value)) {
+        addColour(input);
+        setValidateSuccess((prevState) => ({
+          ...prevState,
+          [name]: false,
+        }));
+      } else {
+        removeColour(input);
+        setValidateSuccess((prevState) => ({
+          ...prevState,
+          [name]: true,
+        }));
+      }
+    }
+    if (name === "First name" || name === "Last name") {
+      setFormData((prevState) => ({
+        ...prevState,
+        [name]: value && value[0].toUpperCase() + value.slice(1),
+      }));
+    } else {
+      setFormData((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    }
+  };
+
+  const updatePayload = {
+    given_name: formData["First name"],
+    family_name: formData["Last name"],
+  };
+
+  const handleUpdateSubmit = async () => {
+    const clearAll = () => {
+      setLoading(false);
+      setTimeout(() => {
+        setSuccessRes("");
+        setOpenModal(false);
+      }, 2000);
+    };
+    try {
+      setLoading(true);
+      const data = await updateUserFnc(updatePayload);
+      setLoading(true);
+      setSuccessRes(data.data.body);
+      setOpenModal(true);
+    } catch (error) {
+      setLoading(true);
+      console.log(error);
+    } finally {
+      clearAll();
+    }
+  };
+
+  console.log(openModal, successRes?.status === "Success");
 
   if (loggedIn !== null && loggedIn) {
     return (
@@ -105,19 +209,19 @@ const Settings = ({ onClose }: { onClose: () => void }) => {
             <div className="px-6">
               <AuthInput
                 label="First name"
-                action={() => {}}
-                errorMessage=""
+                action={handleInput}
+                errorMessage={errMessage["First name"]}
                 inputType="text"
-                inputName="firstName"
+                inputName="First name"
                 placeHolder="First name"
                 defaultValue={first_name}
               />
               <AuthInput
                 label="Last name"
-                action={() => {}}
-                errorMessage=""
+                action={handleInput}
+                errorMessage={errMessage["Last name"]}
                 inputType="text"
-                inputName="last"
+                inputName="Last name"
                 placeHolder="Last name"
                 defaultValue={surname}
               />
@@ -139,12 +243,28 @@ const Settings = ({ onClose }: { onClose: () => void }) => {
               >
                 Cancel
               </button>
-              <button className="bg-cs-purple-650  text-cs-grey-50 py-4 px-4 rounded-[10px] w-36 hover:bg-cs-purple-650/80">
+              <button
+                className="bg-cs-purple-650  text-cs-grey-50 py-4 px-4 rounded-[10px] w-36 hover:bg-cs-purple-650/80"
+                onClick={handleUpdateSubmit}
+                disabled={!activateButton(validateSuccess)}
+              >
                 Update
               </button>
             </div>
           </div>
         </div>
+        <SuccessSlideIn
+          openModal={openModal}
+          response={successRes?.status === "Success"}
+          successActionResponse={successRes?.message}
+          closeModal={() => {}}
+        />
+        <FailureSlideIn
+          openModal={openModal}
+          response={successRes?.status === "Error"}
+          errResponse={successRes?.message}
+          closeModal={() => {}}
+        />
         {loading && <LoadingScreen />}
       </div>
     );
@@ -167,14 +287,11 @@ const Settings = ({ onClose }: { onClose: () => void }) => {
               />
             </div>
             <div className=" mx-auto my-3">
-              {/* <Image
-                src={avatar}
-                alt="image"
-                className="rounded-full w-20 h-20 object-cover mx-auto"
-              /> */}
-              <h3 className=" text-sm font-medium text-cs-purple-650 text-center">
-                Change image
-              </h3>
+              <div className=" bg-cs-grey-800 w-[80px] h-[80px] rounded-full flex justify-center items-center text-cs-grey-55 font-semibold text-[28px] m-auto">
+                {getRemoteInitials(
+                  `${appState.sessionState.guestFirstName} ${appState.sessionState.guestLastName}`
+                )}
+              </div>
             </div>
             <form className="px-6" id="guest">
               <AuthInput
@@ -184,23 +301,18 @@ const Settings = ({ onClose }: { onClose: () => void }) => {
                 inputType="text"
                 inputName="firstName"
                 placeHolder="First name"
-                defaultValue="firstOne"
+                defaultValue={appState.sessionState.guestFirstName}
+                disabledOpt
               />
               <AuthInput
                 label="Last name"
                 action={() => {}}
                 errorMessage=""
                 inputType="text"
-                inputName="lasttName"
+                inputName="lastNames"
                 placeHolder="Last name"
-              />
-              <AuthInput
-                label="Email"
-                action={() => {}}
-                errorMessage=""
-                inputType="email"
-                inputName="email"
-                placeHolder="email"
+                defaultValue={appState.sessionState.guestLastName}
+                disabledOpt
               />
             </form>
 
@@ -211,8 +323,11 @@ const Settings = ({ onClose }: { onClose: () => void }) => {
               >
                 Cancel
               </button>
-              <button className="bg-cs-purple-650  text-cs-grey-50 py-4 px-4 rounded-[10px] w-36 hover:bg-cs-purple-650/80">
-                Create
+              <button
+                className="bg-cs-purple-650  text-cs-grey-50 py-4 px-4 rounded-[10px] w-36 hover:bg-cs-purple-650/80 disabled:bg-[#5d29b78e]"
+                disabled
+              >
+                Update
               </button>
             </div>
           </div>

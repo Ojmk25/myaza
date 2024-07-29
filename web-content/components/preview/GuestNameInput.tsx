@@ -99,6 +99,7 @@ export default function GuestNameInput() {
     }));
     // sessionStorage.setItem("meetingJoiner", "no");
     setExpressJoin("yes");
+    // window.history.replaceState(null, "", "/");
     navigate.push(`/meet/${localStorage.getItem("meetingLink")}`);
   };
 

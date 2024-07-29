@@ -18,17 +18,13 @@ import {
 } from "amazon-chime-sdk-js";
 import MeetingSection from "@/components/meetingComponents/MeetingSection";
 import MeetingControl from "@/components/meetingComponents/MeetingControl";
-import { useContext, useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowLeft, Coffee, InfoCircle, Setting2 } from "iconsax-react";
 import ShareScreen from "@/components/modals/ShareScreen";
 import Settings from "@/components/modals/Settings";
 import { useRouter } from "next/router";
 import { joinMeetingFnc, listAttendees } from "@/services/meetingServices";
-import {
-  decodeJwt,
-  getClientInfo,
-  IsAuthenticated,
-} from "@/services/authService";
+import { getClientInfo } from "@/services/authService";
 import Link from "next/link";
 import Image from "next/image";
 import cecureStream from "@/public/assets/images/cecurestream.svg";
@@ -37,7 +33,6 @@ import { SuccessSlideIn } from "../SuccessSlideIn";
 import { FailureSlideIn } from "../FailureSlideIn";
 import LoadingScreen from "../modals/LoadingScreen";
 import { useAppContext } from "@/context/StoreContext";
-import { useSessionStorage } from "@/hooks/useStorage";
 
 type AtteendeeDetailsProp = {
   full_name: string;
@@ -65,6 +60,11 @@ export default function TempMeeting({
   const audioVideo = useAudioVideo();
   const [inputMessage, setInputMessage] = useState({ sender: "", emoji: "" });
   const { appState, setAppState } = useAppContext();
+  const hasRunRef = useRef(false);
+  const [meetingSession, setMeetingSession] =
+    useState<DefaultMeetingSession | null>(null);
+  const [dynamicElementId, setDynamicElementId] =
+    useState<string>("localvideo-1");
 
   const [attendeeDetails, setAttendeeDetails] = useState<
     AtteendeeDetailsProp[]
@@ -94,8 +94,6 @@ export default function TempMeeting({
     }
   };
 
-  console.log(meetingDetails);
-
   useEffect(() => {
     const handleAttendee = async () => {
       const attend: AtteendeeDetailsProp[] = await getAttendeesList(
@@ -114,7 +112,8 @@ export default function TempMeeting({
   }, [attendees.length]);
 
   useEffect(() => {
-    if (router.isReady) {
+    if (router.isReady && !hasRunRef.current) {
+      hasRunRef.current = true;
       const { query } = router;
 
       const { first_name, surname, user_id } = getClientInfo();
@@ -153,25 +152,25 @@ export default function TempMeeting({
               sessionName: meeting_name,
             },
           }));
-          console.log(attend);
-
           setAttendeeDetails(attend);
           setSuccessRes(response?.data);
           setMeetingDetails(response?.data.body.data);
           console.log(response?.data.body.data.meeting_info);
 
+          const logger = new ConsoleLogger("MyLogger", LogLevel.INFO);
+          const deviceController = new DefaultDeviceController(logger);
+
           const meetingSessionConfiguration = new MeetingSessionConfiguration(
             meeting_info,
             attendee_info
           );
-          const logger = new ConsoleLogger("ChimeMeetingLogs", LogLevel.INFO);
-          const deviceController = new DefaultDeviceController(logger);
           const meetingSession = new DefaultMeetingSession(
             meetingSessionConfiguration,
             logger,
             deviceController
           );
-          // console.log(meetingSession);
+
+          setMeetingSession(meetingSession);
 
           await meetingManager.join(meetingSessionConfiguration);
           await meetingManager.start();
@@ -184,7 +183,6 @@ export default function TempMeeting({
         }
       };
       handleJoinMeeting();
-      // joinMeeting();
     }
   }, [router.isReady, router.asPath]);
 
@@ -235,27 +233,6 @@ export default function TempMeeting({
     // appState.sessionState.meetingAttendees,
   ]);
 
-  //   useEffect(() => {
-  //   const audioVideo = meetingM?.audioVideo;
-
-  //   if (audioVideo) {
-  //     const handleAudioVideoDidStart = async () => {
-  //       console.log("User has joined the meeting");
-  //       await getAttendeesList();
-  //     };
-
-  //     audioVideo.addObserver({
-  //       audioVideoDidStart: handleAudioVideoDidStart,
-  //     });
-
-  //     return () => {
-  //       audioVideo.removeObserver({
-  //         audioVideoDidStart: handleAudioVideoDidStart,
-  //       });
-  //     };
-  //   }
-  // }, [meetingM]);
-
   useEffect(() => {
     const handleAttendeePresence = async (attendeeId: any, present: any) => {
       if (present) {
@@ -282,15 +259,75 @@ export default function TempMeeting({
     };
   }, [meetingManager]);
 
+  // useLayoutEffect(() => {
+  //   const videoElement = document.getElementById(
+  //     "localvideo-1"
+  //   ) as HTMLVideoElement;
+  //   return () => {
+  //     // if (meetingManager !== null) {
+  //     // sessionStorage.setItem("meetingJoiner", "yes")
+  //     console.log(videoElement);
+
+  //     if (videoElement) {
+  //       meetingManager.meetingSession?.audioVideo.stopVideoInput();
+  //       meetingManager.meetingSession?.audioVideo.stopLocalVideoTile();
+  //       meetingManager.meetingSession?.audioVideo.stopVideoPreviewForVideoInput(
+  //         videoElement
+  //       );
+  //       meetingManager.meetingSession?.audioVideo.stop();
+  //       meetingManager.leave();
+  //     }
+  //   };
+  // }, []);
+
   useLayoutEffect(() => {
     return () => {
-      // if (meetingManager !== null) {
-      // sessionStorage.setItem("meetingJoiner", "yes")
-      meetingManager.audioVideo?.stop();
-      meetingManager.leave();
-      // }
+      const videoContainer = document.getElementById(
+        "localvideo-1"
+      ) as HTMLDivElement;
+      console.log(videoContainer);
+
+      if (videoContainer) {
+        const videoElement = videoContainer.querySelector<HTMLVideoElement>(
+          "video"
+        ) as HTMLVideoElement;
+        console.log(videoElement);
+
+        if (videoElement) {
+          meetingManager.meetingSession?.audioVideo.stopVideoInput();
+          meetingManager.meetingSession?.audioVideo.stopLocalVideoTile();
+          meetingManager.meetingSession?.audioVideo.stopVideoPreviewForVideoInput(
+            videoElement
+          );
+          meetingManager.meetingSession?.audioVideo.stop();
+        }
+      }
     };
   }, []);
+
+  useLayoutEffect(() => {
+    return () => {
+      const videoContainer = document.getElementById(
+        dynamicElementId
+      ) as HTMLDivElement;
+      console.log(videoContainer);
+
+      if (videoContainer) {
+        const videoElement =
+          videoContainer.querySelector<HTMLVideoElement>("video");
+        console.log(videoElement);
+
+        if (videoElement) {
+          meetingManager.meetingSession?.audioVideo.stopVideoInput();
+          meetingManager.meetingSession?.audioVideo.stopLocalVideoTile();
+          meetingManager.meetingSession?.audioVideo.stopVideoPreviewForVideoInput(
+            videoElement
+          );
+          meetingManager.meetingSession?.audioVideo.stop();
+        }
+      }
+    };
+  }, [meetingSession]);
 
   const sendReaction = (sender: string, emoji: string) => {
     // Update local state immediately
@@ -311,28 +348,40 @@ export default function TempMeeting({
     meetingManager.audioVideo?.realtimeSendDataMessage("reaction", message);
   };
 
-  const sendRaiseHand = (timestamp: string, attendee: string) => {
-    // Update local state immediately
-    setAppState((prevState) => ({
-      ...prevState,
-      sessionState: {
-        ...prevState.sessionState,
-        raisedHand: { timestamp: timestamp, message: attendee },
-      },
-    }));
+  useEffect(() => {
+    const handleElement = () => {
+      const parentElement = document.getElementById(dynamicElementId);
+      if (parentElement) {
+        const videoElement =
+          parentElement.querySelector<HTMLVideoElement>("video");
+        if (videoElement) {
+          // Perform any operations with the dynamically added video element
+          // videoElement.play(); // Example operation
+          console.log("Video element found and played:", videoElement);
+        } else {
+          console.log("Video element not found");
+        }
+      } else {
+        console.log("Parent element not found");
+      }
+    };
 
-    // Check if audioVideo is available
-    if (!audioVideo) return;
-    const message = JSON.stringify({ timestamp: timestamp, message: attendee });
+    if (meetingSession) {
+      const observer = new MutationObserver(() => {
+        handleElement();
+      });
 
-    // Send the message
-    audioVideo.realtimeSendDataMessage("raise-hand", message);
-  };
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      // Cleanup observer on component unmount
+      return () => observer.disconnect();
+    }
+  }, [meetingSession, dynamicElementId]);
 
   return (
     <div className="w-full flex items-center flex-col">
       <div className="max-auto w-full ">
-        <main className=" flex flex-col px-6 h-dvh w-full relative">
+        <main className=" flex flex-col md:px-6 h-dvh w-full relative">
           <div className="md:hidden px-4">
             <div className="flex  justify-between items-center py-4 bg-[#FEFDFF] border-solid border-b border-b-[#FAFAFA]">
               <Link href={"/"} className=" md:hidden">
@@ -382,7 +431,10 @@ export default function TempMeeting({
                 </div>
               </div>
             </div>
-            <div className=" flex gap-x-2 items-center">
+            <div
+              className=" flex gap-x-2 items-center cursor-pointer"
+              onClick={() => window.history.back()}
+            >
               <ArrowLeft size="18" color="#080808" className="" />
               <h2>{meetingDetails && meetingDetails.meeting_name}</h2>
             </div>
@@ -426,8 +478,6 @@ export default function TempMeeting({
             </div>
           </div>
 
-          {/* grid px-20 gap-x-16 items-center grid-cols-2 */}
-          {/* <button onClick={joinMeeting}>join</button> */}
           <MeetingSection
             attendeIDString={
               meetingManager.meetingSessionConfiguration?.credentials

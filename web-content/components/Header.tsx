@@ -1,12 +1,9 @@
 import Image from "next/image";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DateTimeDisplay from "@/utils/getDate";
-import avatar from "@/public/assets/images/avatar.png";
 import { Profile, LoginCurve } from "iconsax-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AppCtx } from "@/context/StoreContext";
-
 import cecureStream from "@/public/assets/images/cecurestream.svg";
 import cecureStreamSmall from "@/public/assets/images/cecureStreamSmall.svg";
 import {
@@ -18,18 +15,15 @@ import {
 import Settings from "@/components/modals/Settings";
 
 export default function Header() {
-  const ctx = useContext(AppCtx);
   const [loggedIn, setLoggedIn] = useState(false);
   const currentTimeRef = useRef<HTMLDivElement>(null);
   const currentDateRef = useRef<HTMLDivElement>(null);
   const currentTimeRefSmall = useRef<HTMLDivElement>(null);
   const currentDateRefSmall = useRef<HTMLDivElement>(null);
   const navigate = useRouter();
-
-  const [profilePic, setProfilePic] = useState(false);
   const [profileModal, setProfileModal] = useState(false);
   const [showModal, setShowModal] = useState("");
-  const { first_name, surname, email, picture } = getClientInfo();
+  const { picture } = getClientInfo();
 
   useEffect(() => {
     setLoggedIn(IsAuthenticated());
@@ -217,6 +211,7 @@ export default function Header() {
             )}
           </div>
 
+          {/* big screen auth buttons */}
           <div
             className={`  gap-x-4 ${loggedIn ? "hidden" : "hidden md:flex"}`}
           >
@@ -242,10 +237,12 @@ export default function Header() {
             <div
               className=" text-xs text-cs-grey-800 font-normal block md:hidden"
               id="small-screen-time"
+              ref={currentTimeRefSmall}
             ></div>
             <div
               className=" text-xs text-cs-grey-800 font-normal block md:hidden"
               id="small-screen-date"
+              ref={currentDateRefSmall}
             ></div>
           </div>
         </div>

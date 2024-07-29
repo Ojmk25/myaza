@@ -41,7 +41,7 @@ export const joinMeetingAuth = async (data: any) => {
     if (true) {
       const parsedAuthToken = JSON.parse(authToken as string);
       const accessToken = parsedAuthToken?.cecureStreamAcToken;
-      return await http.apiCall.api.post(apiJoinMeeting, data, {
+      return await http.apiCall.post(apiJoinMeeting, data, {
         headers: {
           Authorization: accessToken,
         },
@@ -53,12 +53,12 @@ export const joinMeetingAuth = async (data: any) => {
 };
 
 export const listAttendees = async (data: any) => {
-  const authToken = localStorage.getItem("cecureStreamAuthToken");
+  const authToken = localStorage?.getItem("cecureStreamAuthToken");
   try {
     if (true) {
       const parsedAuthToken = JSON.parse(authToken as string);
       const accessToken = parsedAuthToken?.cecureStreamAcToken;
-      return await http.apiCall.api.post(listAttendeesPath, data);
+      return await http.apiCall.post(listAttendeesPath, data);
     }
   } catch (error) {
     console.error("Error fetching data:", error);

@@ -18,6 +18,22 @@ const Meet = () => {
     }
   }, [router.isReady, router.asPath]);
 
+  useEffect(() => {
+    // Push the state for the back button navigation
+    history.pushState(null, "", router.asPath);
+
+    const handlePopState = () => {
+      router.replace("/");
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [router]);
+
   if (updateRoute !== "" && updateRoute === "yes") {
     return <TempMeeting param={router.query.link} />;
   } else {

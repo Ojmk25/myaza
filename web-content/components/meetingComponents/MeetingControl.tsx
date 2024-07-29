@@ -237,7 +237,13 @@ export default function MeetingControl({
     // meetingManager.audioVideo?.stop();
     // navigate.push("/");
     if (meetingManager) {
-      await meetingManager.leave().then(() => {
+      meetingManager.leave().then(() => {
+        meetingManager.meetingSession?.audioVideo.stopVideoInput();
+        meetingManager.meetingSession?.audioVideo.stopLocalVideoTile();
+        // meetingManager.meetingSession?.audioVideo.stopVideoPreviewForVideoInput(
+        //   videoElement
+        // );
+        meetingManager.meetingSession?.audioVideo.stop();
         // router.reload();
         meetingManager.audioVideo?.stop();
         navigate.push("/").then(() => window.location.reload());

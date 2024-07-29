@@ -24,15 +24,13 @@ import {
   Transcript,
 } from "amazon-chime-sdk-js";
 import Chat from "./IncallMessage";
-import { getRemoteInitials, processString } from "@/utils/meetingFunctions";
+import { getRemoteInitials } from "@/utils/meetingFunctions";
 import ShowVisualizer from "./ShowVisualizer";
 import capturePurple from "@/public/assets/images/capturePurple.svg";
 import Participants from "./Participants";
 import Conference from "./Conference";
 import { listAttendees, startTranscription } from "@/services/meetingServices";
 import { useAppContext } from "@/context/StoreContext";
-
-const testMeetingParticipants = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 type DynamicWidth = {
   width: number | string;
@@ -443,6 +441,13 @@ export default function MeetingSection({
     return getRemoteInitials(details?.full_name as string);
   };
 
+  const returnFullName = (string: any) => {
+    const details = appState.sessionState.meetingAttendees.find(
+      (att) => att.user_id === string
+    );
+    return details?.full_name as string;
+  };
+
   return (
     <>
       <div className=" flex-4 overflow-hidden hidden md:flex metro-medium">
@@ -455,15 +460,15 @@ export default function MeetingSection({
               <div className=" w-[1px] bg-cs-grey-200 min-h-6"></div> */}
                 <h3 className=" text-cs-grey-50 font-semibold ">
                   <span className=" capitalize">
-                    {processString(sharingExternalID as string)}{" "}
-                  </span>
+                    {returnFullName(sharingExternalID as string)}
+                  </span>{" "}
                   share screen
                 </h3>
               </div>
               <div className="flex justify-center items-center rounded-lg overflow-hidden h-full">
                 <div className=" min-h-[200px] w-full h-full rounded-lg min-w-[200px]">
                   <ContentShare
-                    nameplate={processString(externalID as string)}
+                    nameplate={returnFullName(externalID as string)}
                     className=" rounded-lg relative bg-slate-800 min-h-[200px] [&>video]:object-cover capitalize"
                     css="border: 1px solid"
                   />
@@ -613,7 +618,7 @@ export default function MeetingSection({
               {externalID && (
                 <Chat
                   attendeeIDProp={attendeIDString}
-                  externalID={processString(externalID as string)}
+                  externalID={externalID as string}
                   sideViewFunc={sideViewFunc}
                 />
               )}
@@ -693,7 +698,7 @@ export default function MeetingSection({
                         <div>
                           <div className=" flex items-center gap-x-2 mt-[3px]">
                             <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">
-                              {processString("Emmanuel")}
+                              Emmanuel
                             </h4>
                           </div>
                           <p className=" text-xs font-normal text-cs-grey-800">
@@ -717,7 +722,7 @@ export default function MeetingSection({
                         <div>
                           <div className=" flex items-center gap-x-2 mt-[3px]">
                             <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">
-                              {processString("Emmanuel")}
+                              Emmanuel
                             </h4>
                           </div>
                           <p className=" text-xs font-normal text-cs-grey-800">
@@ -772,7 +777,7 @@ export default function MeetingSection({
                 <div className="flex justify-center items-center rounded-lg overflow-hidden h-full">
                   <div className=" min-h-[200px] w-full h-full rounded-lg min-w-[200px]">
                     <ContentShare
-                      nameplate={processString(externalID as string)}
+                      nameplate={returnFullName(externalID)}
                       className=" rounded-lg relative bg-slate-800 min-h-[200px] [&>video]:object-cover capitalize"
                       css="border: 1px solid"
                     />
@@ -925,7 +930,7 @@ export default function MeetingSection({
             {externalID && (
               <Chat
                 attendeeIDProp={attendeIDString}
-                externalID={processString(externalID as string)}
+                externalID={externalID as string}
                 sideViewFunc={sideViewFunc}
               />
             )}
@@ -1002,7 +1007,7 @@ export default function MeetingSection({
                       <div>
                         <div className=" flex items-center gap-x-2 mt-[3px]">
                           <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">
-                            {processString("Emmanuel")}
+                            Emmanuel
                           </h4>
                         </div>
                         <p className=" text-xs font-normal text-cs-grey-800">
@@ -1025,7 +1030,7 @@ export default function MeetingSection({
                       <div>
                         <div className=" flex items-center gap-x-2 mt-[3px]">
                           <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">
-                            {processString("Emmanuel")}
+                            Emmanuel
                           </h4>
                         </div>
                         <p className=" text-xs font-normal text-cs-grey-800">

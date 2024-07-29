@@ -11,7 +11,7 @@ import avatar from "@/public/assets/images/avatar.png";
 import dottedLine from "@/public/assets/images/dottedLine.svg";
 import { useEffect } from "react";
 import { getNameAbbreviation } from "@/services/authService";
-import { getRemoteInitials, processString } from "@/utils/meetingFunctions";
+import { getRemoteInitials } from "@/utils/meetingFunctions";
 import ReactionEmoji from "./ReactionEmoji";
 import { useAppContext } from "@/context/StoreContext";
 import RaisedHand from "./RaisedHand";
@@ -80,9 +80,9 @@ export const LocalAttendeeCard = ({
       <div className="flex-1 flex justify-center items-center">
         <div className=" w-full h-full ">
           <LocalVideo
-            className=" rounded relative bg-slate-800 capitalize"
+            className=" rounded relative bg-slate-800 capitalize localVideo"
             nameplate={attendeeDetailItems?.full_name}
-            id={`remotevideo-${videoTildId}`}
+            id={`localvideo-${videoTildId}`}
             css=" relative"
           />
 
@@ -112,9 +112,7 @@ export const LocalAttendeeCard = ({
                       {attendeeDetailItems &&
                         getRemoteInitials(
                           attendeeDetailItems &&
-                            processString(
-                              attendeeDetailItems?.full_name as string
-                            )
+                            (attendeeDetailItems?.full_name as string)
                         )}
                       {/* {attendeeDetails?.full_name as string} */}
                     </div>

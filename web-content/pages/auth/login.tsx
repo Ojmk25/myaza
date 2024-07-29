@@ -17,6 +17,7 @@ import { loginUser } from "@/services/authService";
 import { SuccessSlideIn } from "@/components/SuccessSlideIn";
 import { FailureSlideIn } from "@/components/FailureSlideIn";
 import LoadingScreen from "@/components/modals/LoadingScreen";
+import { updateSignUpUser } from "@/config";
 
 export default function Login() {
   const navigate = useRouter();
@@ -119,6 +120,7 @@ export default function Login() {
       setSuccessRes(data);
       setOpenModal(true);
       setTimeout(() => {
+        updateSignUpUser(loginPayload.email);
         data.response &&
           data?.response?.statusCode === 200 &&
           navigate.push("/");

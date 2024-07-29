@@ -1,41 +1,35 @@
 "use client";
 import Link from "next/link";
-import Image from "next/image";
-
 import { AuthInput } from "@/components/auth/AuthInput";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import AuthLayout from "@/components/auth/AuthLayout";
-
-import appleIcon from "@/public/assets/images/appleIcon.svg";
-import googleIcon from "@/public/assets/images/googleIcon.svg";
-import { useContext, useEffect, useRef, useState } from "react";
-import PinInput from "react-pin-input";
-import { ValidateEmail, ValidatePassword } from "@/utils/Validators";
-import { useCountdown } from "@/hooks/useTimeCountDown";
-import { AppCtx } from "@/context/StoreContext";
-import { resendVerificationOTP } from "@/services/authService";
+import { useRouter } from "next/router";
+import { useState } from "react";
+import { ValidateEmail } from "@/utils/Validators";
+import { forgotPassword } from "@/services/authService";
 import { SuccessSlideIn } from "@/components/SuccessSlideIn";
 import { FailureSlideIn } from "@/components/FailureSlideIn";
 import LoadingScreen from "@/components/modals/LoadingScreen";
+import { updateSignUpUser } from "@/config";
 
 export default function ForgotPassword() {
-  const context = useContext(AppCtx);
-
   const [allowSubmit, setAllowSubmit] = useState(false);
-
-  const [authData, setAuthData] = useState({
+  const [formData, setFormData] = useState({
     email: "",
-    password: "",
   });
   const [errMessage, setErrMessage] = useState({
     email: "",
-    password: "",
   });
   const [openModal, setOpenModal] = useState(false);
   const [successRes, setSuccessRes] = useState<any>();
   const [errorColour, setErrorColour] = useState(false);
   const [extendTimer, setExtendTimer] = useState(false);
   const [loading, setLoading] = useState(false);
+  const navigate = useRouter();
+
+  const forgotPasswordPayload = {
+    email: formData.email,
+  };
 
   const handleInput = (input: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = input.target;
@@ -73,10 +67,39 @@ export default function ForgotPassword() {
         [name]: `Enter your ${name}`,
       }));
     } else {
-      setAuthData((prevState) => ({
+      setFormData((prevState) => ({
         ...prevState,
         [name]: value,
       }));
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    setLoading(true);
+    const clearAll = () => {
+      setLoading(false);
+      setTimeout(() => {
+        setSuccessRes("");
+        setOpenModal(false);
+      }, 2000);
+    };
+    try {
+      const data = await forgotPassword(forgotPasswordPayload);
+      setLoading(true);
+      setSuccessRes(data?.data);
+      setOpenModal(true);
+      setTimeout(() => {
+        updateSignUpUser(forgotPasswordPayload.email);
+        data?.data &&
+          data?.data.statusCode === 200 &&
+          navigate.push("/auth/new-password");
+      }, 3000);
+    } catch (error) {
+      console.log(error);
+      setLoading(true);
+      setOpenModal(true);
+    } finally {
+      clearAll();
     }
   };
 
@@ -99,7 +122,7 @@ export default function ForgotPassword() {
         />
         <SubmitButton
           text="Reset password"
-          action={() => {}}
+          action={handleForgotPassword}
           activate={allowSubmit}
         />
         <div className="text-center  mt-8">
@@ -114,14 +137,14 @@ export default function ForgotPassword() {
 
       <SuccessSlideIn
         openModal={openModal}
-        response={successRes && successRes?.response.statusCode === 200}
-        successActionResponse={successRes && successRes?.response.body.message}
+        response={successRes && successRes?.statusCode === 200}
+        successActionResponse={successRes && successRes?.body.message}
         closeModal={() => {}}
       />
       <FailureSlideIn
         openModal={openModal}
-        response={successRes && successRes?.response.statusCode !== 200}
-        errResponse={successRes && successRes?.response.body.message}
+        response={successRes && successRes?.statusCode !== 200}
+        errResponse={successRes && successRes?.body.message}
         closeModal={() => {}}
       />
       {loading && <LoadingScreen />}

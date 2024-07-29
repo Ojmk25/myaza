@@ -7,7 +7,7 @@ import avatar from "@/public/assets/images/avatar.png";
 import { EmojiNormal, Send } from "iconsax-react";
 import { AppCtx, StoreContext } from "@/context/StoreContext";
 import { timeSince } from "@/utils/formatTime";
-import { getRemoteInitials, processString } from "@/utils/meetingFunctions";
+import { getRemoteInitials } from "@/utils/meetingFunctions";
 
 const Chat = ({
   attendeeIDProp,
@@ -34,21 +34,6 @@ const Chat = ({
   const [lastClicked, setLastClicked] = useState<Date | null>(null);
   const [timeAgo, setTimeAgo] = useState<string>("");
   const { meetingAttendees } = appState.sessionState;
-  // const attendeeDetailItems = meetingAttendees.find(
-  //   (att) => att.user_id === externalID
-  // );
-
-  // const attendeeDetailItems = appState.sessionState.meetingAttendees.find(
-  //   (att, i) => att.user_id === messages[i].externalID
-  // );
-  // const tte = appState.sessionState.meetingAttendees.find(
-  //   (att, i) => att.user_id === messages[0].externalID
-  // );
-  // console.log(attendeeDetailItems);
-  // console.log(messages);
-  // console.log(externalID);
-  // console.log(appState.sessionState.meetingAttendees);
-  // console.log(tte);
 
   useEffect(() => {
     if (!audioVideo) return;
@@ -69,15 +54,6 @@ const Chat = ({
           externalID: dataMessage.senderExternalUserId,
         },
       ]);
-
-      // setAppState(
-      //   prevState => ({
-      //     ...prevState,
-      //     sessionState: {
-      //       ...prevState.sessionState,
-      //       incallMessages: [...prevState.sessionState.incallMessages, { sender, attendeeId: dataMessage.senderAttendeeId, message }],
-      //     }
-      //   }));
     });
 
     return () => {
@@ -104,15 +80,6 @@ const Chat = ({
       },
     ]);
     setInputMessage("");
-
-    // setAppState(
-    //   prevState => ({
-    //     ...prevState,
-    //     sessionState: {
-    //       ...prevState.sessionState,
-    //       incallMessages: [...prevState.sessionState.incallMessages, { sender: 'Local User', attendeeId: attendeeIDProp || '', message: inputMessage }],
-    //     }
-    //   }));
   };
 
   const handleEnterKeyPress = (
@@ -184,9 +151,7 @@ const Chat = ({
                       ) : (
                         <div className=" bg-cs-grey-800 w-5 h-5 rounded-full flex justify-center items-center text-cs-grey-50 uppercase text-[10px] min-w-5">
                           {getRemoteInitials(
-                            processString(
-                              returName(message.externalID)?.full_name as string
-                            )
+                            returName(message.externalID)?.full_name as string
                           )}
                         </div>
                       )}
@@ -209,9 +174,7 @@ const Chat = ({
                     ) : (
                       <div className=" bg-cs-grey-800 w-5 h-5 rounded-full flex justify-center items-center text-cs-grey-50 uppercase text-[10px] min-w-5">
                         {getRemoteInitials(
-                          processString(
-                            returName(message.externalID)?.full_name as string
-                          )
+                          returName(message.externalID)?.full_name as string
                         )}
                       </div>
                     )}

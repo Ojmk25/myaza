@@ -1,40 +1,45 @@
 "use client";
 import Link from "next/link";
 import AuthLayout from "@/components/auth/AuthLayout";
-
 import { AuthInput } from "@/components/auth/AuthInput";
 import { SubmitButton } from "@/components/auth/SubmitButton";
-
-import appleIcon from "@/public/assets/images/appleIcon.svg";
-import googleIcon from "@/public/assets/images/googleIcon.svg";
-import { useContext, useEffect, useRef, useState } from "react";
-import PinInput from "react-pin-input";
-import { ValidateEmail, ValidatePassword } from "@/utils/Validators";
+import { useEffect, useState } from "react";
+import { activateButton, ValidatePassword } from "@/utils/Validators";
 import { useCountdown } from "@/hooks/useTimeCountDown";
 import { AppCtx } from "@/context/StoreContext";
 import { SuccessSlideIn } from "@/components/SuccessSlideIn";
 import { FailureSlideIn } from "@/components/FailureSlideIn";
+import { resetPassword } from "@/services/authService";
+import { useRouter } from "next/router";
+import { getSignUpUser } from "@/config";
+import LoadingScreen from "@/components/modals/LoadingScreen";
 
 export default function NewPassword() {
-  const context = useContext(AppCtx);
-
   const [allowSubmit, setAllowSubmit] = useState(false);
-
-  const [authData, setAuthData] = useState({
-    email: "",
+  const [formData, setFormData] = useState({
+    code: "",
     password: "",
+    "confirm-password": "",
   });
   const [errMessage, setErrMessage] = useState({
-    email: "",
+    code: "",
     password: "",
+    "confirm-password": "",
   });
+  const [validateSuccess, setValidateSuccess] = useState({
+    code: false,
+    password: false,
+    "confirm-password": false,
+  });
+  const navigate = useRouter();
+  const [loading, setLoading] = useState(false);
   const [openModal, setOpenModal] = useState(true);
-  const [successRes, setSuccessRes] = useState("");
+  const [successRes, setSuccessRes] = useState<any>();
   const [errorColour, setErrorColour] = useState(false);
   const [extendTimer, setExtendTimer] = useState(false);
 
   const handleInput = (input: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = input.target;
+    const { name, value, type } = input.target;
     const addColour = (elem: React.ChangeEvent<HTMLInputElement>) => {
       elem.target.classList.add("border-cs-error-500");
       elem.target.classList.add("placeholder:text-cs-error-500");
@@ -53,10 +58,56 @@ export default function NewPassword() {
         [name]: "",
       }));
     };
-    if (name === "email") {
-      if (!ValidateEmail(value)) {
+    if (name === "password") {
+      if (!ValidatePassword(value)) {
         addColour(input);
+        setValidateSuccess((prevState) => ({
+          ...prevState,
+          [name]: false,
+        }));
+        setErrMessage((prevState) => ({
+          ...prevState,
+          [name]: `password should be 8 characters with atleast a capital letter, number, and special character`,
+        }));
       } else {
+        setValidateSuccess((prevState) => ({
+          ...prevState,
+          [name]: true,
+        }));
+        removeColour(input);
+      }
+    }
+    if (name === "code") {
+      if (value.length !== 6) {
+        addColour(input);
+        setValidateSuccess((prevState) => ({
+          ...prevState,
+          [name]: false,
+        }));
+      } else {
+        setValidateSuccess((prevState) => ({
+          ...prevState,
+          [name]: true,
+        }));
+        removeColour(input);
+      }
+    }
+    if (name === "confirm-password") {
+      if (value !== formData.password) {
+        addColour(input);
+        setValidateSuccess((prevState) => ({
+          ...prevState,
+          [name]: false,
+        }));
+        setErrMessage((prevState) => ({
+          ...prevState,
+          [name]: `passwords must match`,
+        }));
+      } else {
+        setValidateSuccess((prevState) => ({
+          ...prevState,
+          [name]: true,
+        }));
         removeColour(input);
       }
     }
@@ -68,7 +119,7 @@ export default function NewPassword() {
       }));
       setAllowSubmit(false);
     } else {
-      setAuthData((prevState) => ({
+      setFormData((prevState) => ({
         ...prevState,
         [name]: value,
       }));
@@ -76,6 +127,56 @@ export default function NewPassword() {
     }
   };
 
+  useEffect(() => {
+    if (formData["confirm-password"] !== formData.password) {
+      setValidateSuccess((prevState) => ({
+        ...prevState,
+        ["confirm-password"]: false,
+      }));
+    } else {
+      setValidateSuccess((prevState) => ({
+        ...prevState,
+        ["confirm-password"]: true,
+      }));
+    }
+  }, [formData.password]);
+
+  const handleResetPassword = async () => {
+    const email = getSignUpUser();
+    if (!email) {
+      throw new Error("No email found in session storage");
+    }
+    const resetPasswordPayload = {
+      email: email,
+      code: formData.code,
+      password: formData.password,
+    };
+    setLoading(true);
+    const clearAll = () => {
+      setLoading(false);
+      setTimeout(() => {
+        setSuccessRes("");
+        setOpenModal(false);
+      }, 2000);
+    };
+    try {
+      const data = await resetPassword(resetPasswordPayload);
+      setLoading(true);
+      setSuccessRes(data?.data);
+      setOpenModal(true);
+      setTimeout(() => {
+        data?.data &&
+          data?.data.statusCode === 200 &&
+          navigate.push("/auth/login");
+      }, 3000);
+    } catch (error) {
+      console.log(error);
+      setLoading(true);
+      setOpenModal(true);
+    } finally {
+      clearAll();
+    }
+  };
   const closeSlider = () => {
     setSuccessRes("");
     setOpenModal(false);
@@ -89,6 +190,14 @@ export default function NewPassword() {
       <p className=" text-cs-grey-100 text-sm">Set up your new password</p>
       <form>
         <AuthInput
+          label="Code"
+          action={handleInput}
+          errorMessage={errMessage.code}
+          inputName="code"
+          inputType="number"
+          placeHolder="code"
+        />
+        <AuthInput
           label="Password"
           action={handleInput}
           errorMessage={errMessage.password}
@@ -99,15 +208,15 @@ export default function NewPassword() {
         <AuthInput
           label="Confirm password"
           action={handleInput}
-          errorMessage={errMessage.password}
-          inputName="Confirm"
+          errorMessage={errMessage["confirm-password"]}
+          inputName="confirm-password"
           inputType="password"
           placeHolder="password"
         />
         <SubmitButton
           text="Set password"
-          action={() => {}}
-          activate={allowSubmit}
+          action={handleResetPassword}
+          activate={activateButton(validateSuccess)}
         />
         <div className="text-center  mt-8">
           <Link
@@ -118,8 +227,19 @@ export default function NewPassword() {
           </Link>
         </div>
       </form>
-      {/* <SuccessSlideIn openModal={openModal} successRes={successRes} closeModal={closeSlider} />
-      <FailureSlideIn openModal={openModal} successRes={successRes} closeModal={closeSlider} /> */}
+      <SuccessSlideIn
+        openModal={openModal}
+        response={successRes && successRes?.statusCode === 200}
+        successActionResponse={successRes && successRes?.body.message}
+        closeModal={() => {}}
+      />
+      <FailureSlideIn
+        openModal={openModal}
+        response={successRes && successRes?.statusCode !== 200}
+        errResponse={successRes && successRes?.body.message}
+        closeModal={() => {}}
+      />
+      {loading && <LoadingScreen />}
     </AuthLayout>
   );
 }

@@ -7,7 +7,10 @@ import {
   useRef,
   useState,
 } from "react";
-import { useToggleLocalMute } from "amazon-chime-sdk-component-library-react";
+import {
+  useToggleLocalMute,
+  useMeetingManager,
+} from "amazon-chime-sdk-component-library-react";
 import { useRouter } from "next/navigation";
 import { AppCtx } from "@/context/StoreContext";
 import { ToggleVideoButton } from "@/components/meetingComponents/meetingControlButtons/ToggleVideo";
@@ -28,6 +31,7 @@ export default function PreviewComponent() {
   const navigate = useRouter();
   const { muted, toggleMute } = useToggleLocalMute();
   let videoStatus = true;
+  const meetingManager = useMeetingManager();
 
   const audioLevelDisplayRef = useRef(null);
 
@@ -46,9 +50,17 @@ export default function PreviewComponent() {
     return () => {
       const videoElement = videoRef.current as HTMLVideoElement;
       if (videoElement) {
-        deviceController.stopVideoPreviewForVideoInput(videoElement);
-        deviceController.stopVideoInput();
-        deviceController.stopAudioInput();
+        // deviceController.stopVideoPreviewForVideoInput(videoElement);
+        // deviceController.stopVideoInput();
+        // deviceController.stopAudioInput();
+        // meetingManager.meetingSession?.audioVideo.stop()
+        // meetingManager.meetingSession?.audioVideo.chooseVideoInputDevice(null);
+        meetingManager.meetingSession?.audioVideo.stopVideoInput();
+        meetingManager.meetingSession?.audioVideo.stopLocalVideoTile();
+        meetingManager.meetingSession?.audioVideo.stopVideoPreviewForVideoInput(
+          videoElement
+        );
+        meetingManager.meetingSession?.audioVideo.stop();
       }
     };
   }, []);

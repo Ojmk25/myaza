@@ -1,19 +1,40 @@
-import { CloseCircle, Danger } from "iconsax-react"
+import { CloseCircle, Danger } from "iconsax-react";
 
-export const FailureSlideIn = ({ openModal, response, closeModal, errResponse }: { openModal: boolean, response: boolean, closeModal: () => void, errResponse: string }) => {
+export const FailureSlideIn = ({
+  openModal,
+  response,
+  closeModal,
+  errResponse,
+}: {
+  openModal: boolean;
+  response: boolean;
+  closeModal: () => void;
+  errResponse: string;
+}) => {
   return (
-    <div className={`flex bg-cs-error-50 fixed top-9 transition-all ${openModal && response ? "right-[30px]" : "right-[-200%]"} min-w-[344px] duration-500`}>
+    <div
+      className={`flex bg-cs-error-50 fixed top-9 transition-all ${
+        openModal && response ? "right-[30px]" : "right-[-200%]"
+      } min-w-[344px] duration-500 z-10`}
+    >
       <div className=" w-1 bg-[#8D2822]"></div>
       <div className="p-4 flex w-full justify-between">
         <div className="flex gap-x-2">
           <Danger size="24" color="#DE524C" variant="Bold" />
           <div>
-            <h5 className=" font-semibold text-sm text-cil-neutral-900">Error</h5>
+            <h5 className=" font-semibold text-sm text-cil-neutral-900">
+              Error
+            </h5>
             <p className="text-cil-blue-600 text-sm">{errResponse}</p>
           </div>
         </div>
-        <CloseCircle size="24" color="#121826" onClick={closeModal} className=" cursor-pointer" />
+        <CloseCircle
+          size="24"
+          color="#121826"
+          onClick={closeModal}
+          className=" cursor-pointer"
+        />
       </div>
     </div>
-  )
-}
+  );
+};

@@ -1,4 +1,4 @@
-import { getRemoteInitials, processString } from "@/utils/meetingFunctions";
+import { getRemoteInitials } from "@/utils/meetingFunctions";
 import RaisedHand from "./RaisedHand";
 import { useAppContext } from "@/context/StoreContext";
 import Image from "next/image";
@@ -31,15 +31,12 @@ export const AttendeeListCard = ({
           />
         ) : (
           <div className=" bg-cs-grey-800 w-[30px] h-[30px] min-w-[30px] rounded-full flex justify-center items-center text-cs-grey-50 uppercase">
-            {getRemoteInitials(
-              processString(attendeeDetailItems?.full_name as string)
-            )}
+            {getRemoteInitials(attendeeDetailItems?.full_name as string)}
           </div>
         )}
 
         <h4 className=" text-cs-grey-dark font-medium text-sm overflow-hidden text-ellipsis capitalize">
-          {externalID &&
-            processString(attendeeDetailItems?.full_name as string)}
+          {externalID && (attendeeDetailItems?.full_name as string)}
         </h4>
       </div>
       <div className=" flex items-center gap-x-1">

@@ -4,7 +4,7 @@ interface CustomAxiosRequestConfig extends AxiosRequestConfig {
   _retry?: boolean;
 }
 
-const refreshTokenUrl = getApiPath("core", "refresh-token");
+const refreshTokenUrl = getApiPath("open", "refresh-token");
 
 axios.interceptors.response.use(null, (err) => {
   const expectedError = err.response && err.response.status >= 400;
@@ -85,21 +85,37 @@ export const apiCall = {
 };
 
 // Function to get the access token expiration time
-const getTokenExpirationTime = () => {
-  const token = global?.window?.localStorage.getItem("cecureStreamAcToken");
-  if (!token) return null;
-  const payload = JSON.parse(atob(token.split(".")[1]));
-  return payload.exp * 1000; // Convert to milliseconds
+export const getTokenExpirationTime = () => {
+  const token = global?.window?.localStorage?.getItem("cecureStreamAcToken");
+  if (!token || token === undefined) return null;
+
+  const tokenParts = token.split(".");
+  if (tokenParts.length !== 3) return null; // Ensure token has three parts
+
+  try {
+    const payload = JSON.parse(atob(tokenParts[1]));
+    return payload.exp * 1000; // Convert to milliseconds
+  } catch (error) {
+    console.error("Invalid token:", error);
+    return null;
+  }
 };
 
 // Function to refresh the access token
-const refreshToken = async () => {
+export const refreshToken = async () => {
   try {
     const refreshToken = localStorage.getItem("cecureStreamRefToken");
-    const response = await apiCall.post(refreshTokenUrl, { refreshToken });
-    const { access_token } = response.data;
-    localStorage.setItem("cecureStreamAcToken", access_token);
-    console.log("Token refreshed successfully");
+    if (refreshToken) {
+      const parsedAccessToken = JSON.parse(refreshToken);
+      const response = await apiCall.post(refreshTokenUrl, {
+        refresh_token: parsedAccessToken,
+      });
+      const { access_token } = response?.data.body.data;
+
+      localStorage.setItem("cecureStreamAcToken", access_token);
+      sessionStorage.setItem("cecureStreamAcToken", access_token);
+      console.log("Token refreshed successfully");
+    }
   } catch (error) {
     console.error("Failed to refresh token", error);
     // Handle token refresh failure, e.g., redirect to login
@@ -114,7 +130,6 @@ const refreshToken = async () => {
 const checkAndRefreshToken = () => {
   const tokenExpirationTime = getTokenExpirationTime();
   const now = Date.now();
-
   // Refresh the token if it expires within the next hour (3600000 ms)
   if (tokenExpirationTime && tokenExpirationTime < now + 3600000) {
     refreshToken();
@@ -125,4 +140,5 @@ const checkAndRefreshToken = () => {
 setInterval(checkAndRefreshToken, 3600000);
 
 // Optionally, call the checkAndRefreshToken function once at the start
-checkAndRefreshToken();
+
+setTimeout(checkAndRefreshToken, 2000);

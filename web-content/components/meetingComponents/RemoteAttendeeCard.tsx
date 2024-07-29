@@ -10,7 +10,7 @@ import avatar from "@/public/assets/images/avatar.png";
 import dottedLine from "@/public/assets/images/dottedLine.svg";
 import { useEffect } from "react";
 import { getNameAbbreviation } from "@/services/authService";
-import { getRemoteInitials, processString } from "@/utils/meetingFunctions";
+import { getRemoteInitials } from "@/utils/meetingFunctions";
 import ReactionEmoji from "./ReactionEmoji";
 import RaisedHand from "./RaisedHand";
 import { useAppContext } from "@/context/StoreContext";
@@ -135,9 +135,7 @@ export const RemoteAttendeeCard = ({
                       {attendeeDetailItems &&
                         getRemoteInitials(
                           attendeeDetailItems &&
-                            processString(
-                              attendeeDetailItems?.full_name as string
-                            )
+                            (attendeeDetailItems?.full_name as string)
                         )}
                     </div>
                   )}
