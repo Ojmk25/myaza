@@ -17,7 +17,7 @@ export AWS_SESSION_TOKEN=`echo ${CREDENTIALS} | jq -r '.Credentials.SessionToken
 aws sts get-caller-identity
 cd ./web-content
 npm config set legacy-peer-deps true
-npm install
+npm install --legacy-peer-deps
 npm install npm@latest -g
 # sudo npm install npm@latest -g
 #sudo npm cache clean -f
