@@ -468,7 +468,7 @@ export default function MeetingSection({
               <div className="flex justify-center items-center rounded-lg overflow-hidden h-full">
                 <div className=" min-h-[200px] w-full h-full rounded-lg min-w-[200px]">
                   <ContentShare
-                    nameplate={returnFullName(externalID as string)}
+                    nameplate={returnFullName(sharingExternalID as string)}
                     className=" rounded-lg relative bg-slate-800 min-h-[200px] [&>video]:object-cover capitalize"
                     css="border: 1px solid"
                   />
@@ -777,7 +777,7 @@ export default function MeetingSection({
                 <div className="flex justify-center items-center rounded-lg overflow-hidden h-full">
                   <div className=" min-h-[200px] w-full h-full rounded-lg min-w-[200px]">
                     <ContentShare
-                      nameplate={returnFullName(externalID)}
+                      nameplate={returnFullName(sharingExternalID)}
                       className=" rounded-lg relative bg-slate-800 min-h-[200px] [&>video]:object-cover capitalize"
                       css="border: 1px solid"
                     />

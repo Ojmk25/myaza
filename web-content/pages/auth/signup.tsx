@@ -241,14 +241,14 @@ export default function Signup() {
       </div>
       <SuccessSlideIn
         openModal={openModal}
-        response={successRes?.status === "Success"}
+        response={successRes && successRes?.status === "Success"}
         successActionResponse="Signup successful"
         closeModal={() => {}}
       />
       <FailureSlideIn
         openModal={openModal}
-        response={successRes?.status === "Error"}
-        errResponse={successRes?.message}
+        response={successRes && successRes?.status === "Error"}
+        errResponse={successRes && successRes?.message}
         closeModal={() => {}}
       />
       {loading && <LoadingScreen />}

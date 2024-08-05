@@ -138,13 +138,15 @@ export default function ForgotPassword() {
       <SuccessSlideIn
         openModal={openModal}
         response={successRes && successRes?.statusCode === 200}
-        successActionResponse={successRes && successRes?.body.message}
+        successActionResponse={
+          successRes && successRes?.body && successRes?.body.message
+        }
         closeModal={() => {}}
       />
       <FailureSlideIn
         openModal={openModal}
         response={successRes && successRes?.statusCode !== 200}
-        errResponse={successRes && successRes?.body.message}
+        errResponse={successRes && successRes?.body && successRes?.body.message}
         closeModal={() => {}}
       />
       {loading && <LoadingScreen />}

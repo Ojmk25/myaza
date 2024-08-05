@@ -1,5 +1,9 @@
 "use client";
-import { ConsoleLogger, DefaultDeviceController } from "amazon-chime-sdk-js";
+import {
+  ConsoleLogger,
+  DefaultDeviceController,
+  MediaStreamBrokerObserver,
+} from "amazon-chime-sdk-js";
 import {
   useContext,
   useEffect,
@@ -7,30 +11,19 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  useToggleLocalMute,
-  useMeetingManager,
-} from "amazon-chime-sdk-component-library-react";
+import { useMeetingManager } from "amazon-chime-sdk-component-library-react";
 import { useRouter } from "next/navigation";
-import { AppCtx } from "@/context/StoreContext";
 import { ToggleVideoButton } from "@/components/meetingComponents/meetingControlButtons/ToggleVideo";
 import { ToggleAudio } from "@/components/meetingComponents/meetingControlButtons/ToggleAudio";
 
-import {
-  getNameAbbreviation,
-  IsAuthenticated,
-  logOutUser,
-} from "@/services/authService";
+import { getNameAbbreviation, IsAuthenticated } from "@/services/authService";
 import GuestNameInput from "./GuestNameInput";
 import Header from "../Header";
 
 export default function PreviewComponent() {
-  const ctx = useContext(AppCtx);
   const [loggedIn, setLoggedIn] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const navigate = useRouter();
-  const { muted, toggleMute } = useToggleLocalMute();
-  let videoStatus = true;
   const meetingManager = useMeetingManager();
 
   const audioLevelDisplayRef = useRef(null);
@@ -43,24 +36,37 @@ export default function PreviewComponent() {
   }, []);
 
   //Initialize DefaultDeviceController
-  // const deviceController = new DefaultDeviceController(logger, { enableWebAudio: true });
-  const deviceController = new DefaultDeviceController(logger);
+  const deviceController = new DefaultDeviceController(logger, {
+    enableWebAudio: false,
+  });
+  // const deviceController = new DefaultDeviceController(logger);
 
   useLayoutEffect(() => {
     return () => {
       const videoElement = videoRef.current as HTMLVideoElement;
+      const unMountCamera = async () => {
+        deviceController.stopVideoPreviewForVideoInput(videoElement);
+        await deviceController.stopVideoInput();
+      };
       if (videoElement) {
         // deviceController.stopVideoPreviewForVideoInput(videoElement);
         // deviceController.stopVideoInput();
         // deviceController.stopAudioInput();
         // meetingManager.meetingSession?.audioVideo.stop()
         // meetingManager.meetingSession?.audioVideo.chooseVideoInputDevice(null);
-        meetingManager.meetingSession?.audioVideo.stopVideoInput();
-        meetingManager.meetingSession?.audioVideo.stopLocalVideoTile();
-        meetingManager.meetingSession?.audioVideo.stopVideoPreviewForVideoInput(
-          videoElement
-        );
-        meetingManager.meetingSession?.audioVideo.stop();
+
+        // deviceController.stopVideoPreviewForVideoInput(videoElement);
+        // deviceController.stopVideoInput();
+        // deviceController.destroy();
+        // meetingManager.meetingSession?.audioVideo.stopVideoInput();
+        // meetingManager.meetingSession?.audioVideo.stopLocalVideoTile();
+        // meetingManager.meetingSession?.audioVideo.stopVideoPreviewForVideoInput(
+        //   videoElement
+        // );
+
+        // meetingManager.meetingSession?.audioVideo.stop();
+        // deviceController.destroy();
+        unMountCamera();
       }
     };
   }, []);
@@ -75,53 +81,75 @@ export default function PreviewComponent() {
       await deviceController.startAudioInput(audioList[0].deviceId);
 
       // //Grab the video element
-      const videoElement = videoRef.current as HTMLVideoElement;
+      // const videoElement = videoRef.current as HTMLVideoElement;
+      const videoElement = document.querySelector(
+        "#video-preview"
+      ) as HTMLVideoElement;
 
       //Start video/audio preview
       if (videoElement) {
         deviceController?.startVideoPreviewForVideoInput(videoElement);
-      } else {
-        console.log("element unmounted");
       }
-
       deviceController.chooseAudioOutput(audioList[0].deviceId);
     };
 
     init();
     return () => {
-      const videoElement = videoRef.current as HTMLVideoElement;
+      // const videoElement = videoRef.current as HTMLVideoElement;
+      const videoElement = document.querySelector(
+        "#video-preview"
+      ) as HTMLVideoElement;
       if (videoElement) {
         deviceController.stopVideoInput();
         deviceController.stopAudioInput();
         deviceController.stopVideoPreviewForVideoInput(videoElement);
+        // meetingManager.meetingSession?.audioVideo.chooseVideoInputDevice(null);
+        meetingManager.meetingSession?.audioVideo.stopVideoInput();
+        meetingManager.meetingSession?.audioVideo.stopLocalVideoTile();
+        meetingManager.meetingSession?.audioVideo.stopVideoPreviewForVideoInput(
+          videoElement
+        );
+        meetingManager.meetingSession?.audioVideo.stop();
       }
-
+      const unMount = async () => {
+        if (!videoElement) return;
+        deviceController.stopVideoPreviewForVideoInput(videoElement);
+        await deviceController.stopVideoInput();
+        deviceController.stopAudioInput();
+      };
+      unMount();
+      deviceController.stopVideoInput();
+      deviceController.stopAudioInput();
       // window.location.reload();
     };
   }, [deviceController]);
 
-  async function toggleVideo() {
-    const videoElement = videoRef.current as HTMLVideoElement;
+  async function toggleVideos() {
+    // const videoElement = videoRef.current as HTMLVideoElement;
+    const videoElement = document.querySelector(
+      "#video-preview"
+    ) as HTMLVideoElement;
     if (
       deviceController["activeDevices"].video &&
       deviceController["activeDevices"].video.groupId.length > 1
     ) {
+      console.log(deviceController["activeDevices"]);
+      deviceController.stopVideoPreviewForVideoInput(videoElement);
       await deviceController.stopVideoInput();
-      videoStatus = false;
     } else {
       const videoList = await deviceController.listVideoInputDevices();
       await deviceController.startVideoInput(videoList[0].deviceId);
       deviceController.startVideoPreviewForVideoInput(videoElement);
-      videoStatus = true;
     }
+    console.log(deviceController["activeDevices"]);
   }
+
   return (
     <>
       {loggedIn !== null && (
         // <main className="pb-7 md:pb-10 pt-7 md:pt-10">
         <main className="lg:pb-20 pt-6 lg:pt-10 w-full flex items-center flex-col ">
           <Header />
-
           <div className="md:grid px-6 gap-x-16 items-center grid-cols-2 mt-2 bg-cs-bg py-4 max-auto w-full max-w-[1392px]">
             <div className="basis-full col-start-2 col-span-3">
               <h3 className=" text-2xl font-medium text-cs-grey-dark mb-1 text-center py-2 md:hidden">
@@ -129,7 +157,10 @@ export default function PreviewComponent() {
               </h3>
               {/* <Image src={avatar} alt="hero" height={490} width={600} className="w-[600px] h-[490px]" /> */}
               <div className=" relative">
-                <div className=" relative bg-cs-black-200 rounded-[4px] md:rounded-[31px]">
+                <div
+                  className=" relative bg-cs-black-200 rounded-[4px] md:rounded-[31px]"
+                  id="preview-container"
+                >
                   <video
                     id="video-preview"
                     autoPlay
@@ -143,7 +174,7 @@ export default function PreviewComponent() {
                 <div className=" flex justify-center my-6">
                   <div className=" flex gap-x-6">
                     <ToggleAudio audioLevelDisplayRef={audioLevelDisplayRef} />
-                    <ToggleVideoButton toggleVideo={toggleVideo} />
+                    <ToggleVideoButton toggleVideo={toggleVideos} />
                     <div
                       className=" bg-cs-red text-center rounded-lg py-3 md:py-4 px-5 md:px-6 text-white font-bold text-sm h-fit cursor-pointer"
                       onClick={() => navigate.push("/")}

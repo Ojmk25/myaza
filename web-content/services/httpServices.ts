@@ -111,8 +111,8 @@ export const refreshToken = async () => {
         refresh_token: parsedAccessToken,
       });
       const { access_token } = response?.data.body.data;
-
-      localStorage.setItem("cecureStreamAcToken", access_token);
+      localStorage.setItem("cecureStreamAcToken", JSON.stringify(access_token));
+      // localStorage.setItem("cecureStreamAcToken", access_token);
       sessionStorage.setItem("cecureStreamAcToken", access_token);
       console.log("Token refreshed successfully");
     }

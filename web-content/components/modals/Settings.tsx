@@ -142,6 +142,7 @@ const Settings = ({ onClose }: { onClose: () => void }) => {
       setTimeout(() => {
         setSuccessRes("");
         setOpenModal(false);
+        onClose();
       }, 2000);
     };
     try {
@@ -158,13 +159,14 @@ const Settings = ({ onClose }: { onClose: () => void }) => {
     }
   };
 
-  console.log(openModal, successRes?.status === "Success");
-
   if (loggedIn !== null && loggedIn) {
     return (
       <div className="fixed inset-0 z-10 overflow-y-auto modal">
         <div className="flex items-center justify-center min-h-screen pt-4 pb-20 text-center">
-          <div className="fixed inset-0 transition-opacity bg-cs-modal-100"></div>
+          <div
+            className="fixed inset-0 transition-opacity bg-cs-modal-100 cursor-pointer"
+            onClick={onClose}
+          ></div>
           <span className="hidden sm:inline-block sm:align-middle sm:h-screen"></span>
           <div className="inline-block pt-5 pb-4 text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:align-middle sm:w-full sm:max-w-[606px]">
             <div className=" flex justify-between border-b border-solid border-cs-grey-55 mx-6 pb-4">

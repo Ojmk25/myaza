@@ -117,12 +117,7 @@ export default function MeetingControl({
   const [audioStatus] = useSessionStorage("audioStatus", "no");
   const [setupDone, setSetupDone] = useState(false);
   const { appState, setAppState } = useAppContext();
-
-  console.log(videoStatus);
-  console.log(audioStatus);
-  console.log(setupDone);
-  console.log(muted);
-  console.log(isVideoEnabled);
+  const hasRunRef = useRef(false);
 
   useEffect(() => {
     if (otherViews.includes("Raise-Hand")) {
@@ -157,36 +152,13 @@ export default function MeetingControl({
     updateCurrentTime();
 
     // Update the time every minute
-    const intervalId = setInterval(updateCurrentTime, 60000);
+    const intervalId = setInterval(updateCurrentTime, 1000);
 
     // Clear the interval when the component unmounts
     return () => {
       clearInterval(intervalId);
     };
   }, []);
-
-  // useEffect(() => {
-  //   if (!setupDone) {
-  //     const setupDevices = () => {
-  //       const cameraOn = videoStatus === "yes";
-  //       const microphoneOn = audioStatus === "yes";
-  //       // if (cameraOn && !isVideoEnabled) {
-  //       //   toggleVideo();
-  //       // }
-
-  //       // if (microphoneOn && muted) {
-  //       //   toggleMute();
-  //       // }
-
-  //       setSetupDone(true);
-  //     };
-
-  //     const timeoutId = setTimeout(setupDevices, 5000); // Delay of 2 seconds
-
-  //     // Cleanup function to clear timeout
-  //     return () => clearTimeout(timeoutId);
-  //   }
-  // }, [isVideoEnabled, muted, setupDone, toggleVideo, toggleMute]);
 
   const handleLocalSideView = (value: string) => {
     if (value === sideView) {
@@ -260,27 +232,36 @@ export default function MeetingControl({
     const handleAttendeePresence = (attendeeId: string, present: boolean) => {
       if (present) {
         console.log(`Attendee ${attendeeId} joined the meeting`);
-        if (!setupDone) {
+        if (!setupDone && !hasRunRef.current) {
+          hasRunRef.current = true;
           const cameraOn = videoStatus === "yes";
           const microphoneOn = audioStatus === "yes";
           if (cameraOn && !isVideoEnabled) {
             toggleVideo();
           }
 
-          if (microphoneOn && muted) {
+          if (!microphoneOn && !muted) {
             toggleMute();
           }
 
           setSetupDone(true);
 
           console.log(videoStatus);
-          console.log(audioStatus);
+          console.log(audioStatus, microphoneOn, "This is microphone");
           console.log(setupDone);
           console.log(muted);
           console.log(isVideoEnabled);
         }
       } else {
-        console.log(`Attendee ${attendeeId} left the meeting`);
+        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
+        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
+        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
+        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
+        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
+        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
+        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
+        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
+        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
       }
     };
 

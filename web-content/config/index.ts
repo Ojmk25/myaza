@@ -44,13 +44,13 @@ const updateApiBase = () => {
       apiBase = "https://api.dev.cecurestream.com"; // Adjust port if necessary
       break;
     case "pprod":
-      apiBase = "https://pprod.cecurestream.com";
+      apiBase = "https://api.pprod.cecurestream.com";
       break;
     case "prod":
-      apiBase = "https://cecurestream.com";
+      apiBase = "https://api.cecurestream.com";
       break;
     default:
-      apiBase = "https://cecurestream.com"; // Default to production if nothing else matches
+      apiBase = "https://api.cecurestream.com"; // Default to production if nothing else matches
   }
 };
 

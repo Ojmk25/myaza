@@ -46,7 +46,7 @@ export default function Header() {
     updateCurrentTime();
 
     // Update the time every minute
-    const intervalId = setInterval(updateCurrentTime, 60000);
+    const intervalId = setInterval(updateCurrentTime, 1000);
 
     // Clear the interval when the component unmounts
     return () => {
@@ -73,7 +73,7 @@ export default function Header() {
     updateCurrentTime();
 
     // Update the time every minute
-    const intervalId = setInterval(updateCurrentTime, 60000);
+    const intervalId = setInterval(updateCurrentTime, 1000);
 
     // Clear the interval when the component unmounts
     return () => {

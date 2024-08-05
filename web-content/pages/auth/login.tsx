@@ -185,14 +185,30 @@ export default function Login() {
 
       <SuccessSlideIn
         openModal={openModal}
-        response={successRes && successRes?.response.statusCode === 200}
-        successActionResponse={successRes && successRes?.response.body.message}
+        response={
+          successRes &&
+          successRes?.response &&
+          successRes?.response.statusCode === 200
+        }
+        successActionResponse={
+          successRes &&
+          successRes?.response &&
+          successRes?.response.body.message
+        }
         closeModal={() => {}}
       />
       <FailureSlideIn
         openModal={openModal}
-        response={successRes && successRes?.response.statusCode !== 200}
-        errResponse={successRes && successRes?.response.body.message}
+        response={
+          successRes &&
+          successRes?.response &&
+          successRes?.response.statusCode !== 200
+        }
+        errResponse={
+          successRes &&
+          successRes?.response &&
+          successRes?.response.body.message
+        }
         closeModal={() => {}}
       />
       {loading && <LoadingScreen />}

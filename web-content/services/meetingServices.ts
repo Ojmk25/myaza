@@ -19,14 +19,12 @@ export const setInstantMeeting = (meetingID: string, meetingData: any) => {
 };
 
 export const createInstantMeeting = async (data: any) => {
-  const authToken = localStorage.getItem("cecureStreamAuthToken");
+  const token = localStorage.getItem("cecureStreamAcToken");
   try {
-    if (true) {
-      const parsedAuthToken = JSON.parse(authToken as string);
-      const accessToken = parsedAuthToken?.cecureStreamAcToken;
+    if (token) {
       return await http.apiCall.api.post(apiInstantMeeting, data, {
         headers: {
-          Authorization: accessToken,
+          Authorization: token,
         },
       });
     }
@@ -36,12 +34,10 @@ export const createInstantMeeting = async (data: any) => {
 };
 
 export const joinMeetingAuth = async (data: any) => {
-  const authToken = localStorage.getItem("cecureStreamAuthToken");
+  const accessToken = localStorage.getItem("cecureStreamAcToken");
   try {
-    if (true) {
-      const parsedAuthToken = JSON.parse(authToken as string);
-      const accessToken = parsedAuthToken?.cecureStreamAcToken;
-      return await http.apiCall.post(apiJoinMeeting, data, {
+    if (accessToken) {
+      return await http.apiCall.api.post(apiJoinMeeting, data, {
         headers: {
           Authorization: accessToken,
         },
@@ -53,13 +49,11 @@ export const joinMeetingAuth = async (data: any) => {
 };
 
 export const listAttendees = async (data: any) => {
-  const authToken = localStorage?.getItem("cecureStreamAuthToken");
+  // const token = localStorage.getItem("cecureStreamAcToken");
   try {
-    if (true) {
-      const parsedAuthToken = JSON.parse(authToken as string);
-      const accessToken = parsedAuthToken?.cecureStreamAcToken;
-      return await http.apiCall.post(listAttendeesPath, data);
-    }
+    // if (token) {
+    return await http.apiCall.post(listAttendeesPath, data);
+    // }
   } catch (error) {
     console.error("Error fetching data:", error);
   }
@@ -88,14 +82,12 @@ export const listAttendees = async (data: any) => {
 // };
 
 export const createScheduleMeeting = async (data: any) => {
-  const authToken = sessionStorage.getItem("cecureStreamAuthToken");
+  const token = localStorage.getItem("cecureStreamAcToken");
   try {
-    if (authToken) {
-      const parsedAuthToken = JSON.parse(authToken);
-      const accessToken = parsedAuthToken?.cecureStreamAcToken;
-      return await http.apiCall.post(apiScheduleMeeting, data, {
+    if (token) {
+      return await http.apiCall.api.post(apiScheduleMeeting, data, {
         headers: {
-          Authorization: accessToken,
+          Authorization: token,
         },
       });
     }

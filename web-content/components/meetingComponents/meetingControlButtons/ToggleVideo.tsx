@@ -26,16 +26,6 @@ export const ToggleVideoButton = ({
     }
   }, [video]);
 
-  // useEffect(() => {
-  //   setAppState((prevState) => ({
-  //     ...prevState,
-  //     sessionState: {
-  //       ...prevState.sessionState,
-  //       previewVideo: video,
-  //     },
-  //   }));
-  // }, [video]);
-
   return (
     <>
       <div className="text-center cursor-pointer" onClick={handleClick}>

@@ -39,6 +39,7 @@ export const ToggleAudio = ({
   //     },
   //   }));
   // }, [audioEnabled]);
+  console.log(audioStatus);
 
   const toggleAudio = async () => {
     if (audioEnabled && audioStream) {
@@ -64,9 +65,12 @@ export const ToggleAudio = ({
           setAudioStream(stream);
           const newAudioContext = new AudioContext();
           setAudioContext(newAudioContext);
+
+          console.log("Audio input started successfully");
+        })
+        .then(() => {
           setAudioEnabled(true);
           setAudioStatus("yes");
-          console.log("Audio input started successfully");
         })
         .catch((error) => {
           console.error("Error starting audio input:", error);

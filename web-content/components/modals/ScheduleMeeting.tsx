@@ -388,7 +388,7 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
                   invalid email address
                 </p>
               )}
-              <div className=" my-5">
+              <div className=" my-5 max-h-[170px] overflow-y-auto customScrollBar pr-1">
                 {formData.emailList.map((email) => (
                   <div
                     className=" flex items-center justify-between mb-4"

@@ -67,6 +67,22 @@
     -moz-appearance: textfield;
     appearance: none;
   }
+
+  .customScrollBar::-webkit-scrollbar {
+    width: 10px;
+  }
+  .customScrollBar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    box-shadow: inset 0 0 5px grey;
+    border-radius: 10px;
+  }
+  .customScrollBar::-webkit-scrollbar-thumb {
+    background: #adacac;
+    border-radius: 6px;
+  }
+  .customScrollBar::-webkit-scrollbar-thumb:hover {
+    background: #919191;
+  }
 }
 
 .remote-video video {
