@@ -1,61 +1,61 @@
-import { subDomain } from "@/utils/getDomain";
+// import { subDomain } from "@/utils/getDomain";
+import { getApiBaseURL } from "@/utils/getDomain";
 
 export const init = () => {
   localStorage.removeItem("regPath");
 };
-export let apiBase = process.env.API_BASE_URL;
+export let apiBase = getApiBaseURL();
 
 const VERSION = "v1";
 
-const subdomain = subDomain();
+// const subdomain = subDomain();
 
 const ENV_CECURESTREAM = "env-cecure-stream";
 
-export const envFn = (): string | null => {
-  let environment;
-  if (subdomain?.includes("dev.")) {
-    environment = "dev";
-  } else if (subdomain?.includes("test.")) {
-    environment = "test";
-  } else if (subdomain === "cecurestream.com") {
-    environment = "prod";
-  } else if (subdomain?.includes("pprod.")) {
-    environment = "pprod";
-  } else {
-    environment = "localhost"; // Fallback to localhost for any other cases
-  }
+// export const envFn = (): string | null => {
+//   let environment;
+//   if (subdomain?.includes("dev.")) {
+//     environment = "dev";
+//   } else if (subdomain?.includes("test.")) {
+//     environment = "test";
+//   } else if (subdomain === "cecurestream.com") {
+//     environment = "prod";
+//   } else if (subdomain?.includes("pprod.")) {
+//     environment = "pprod";
+//   } else {
+//     environment = "localhost"; // Fallback to localhost for any other cases
+//   }
 
-  if (typeof window !== "undefined") {
-    sessionStorage.setItem(ENV_CECURESTREAM, environment);
-  }
-  return environment;
-};
+//   if (typeof window !== "undefined") {
+//     sessionStorage.setItem(ENV_CECURESTREAM, environment);
+//   }
+//   return environment;
+// };
 
-export const env = envFn();
-const updateApiBase = () => {
-  switch (env) {
-    case "dev":
-      apiBase = "https://api.dev.cecurestream.com";
-      break;
-    case "test":
-      apiBase = "https://api.test.cecurestream.com";
-      break;
-    case "localhost":
-      apiBase = "https://api.dev.cecurestream.com"; // Adjust port if necessary
-      break;
-    case "pprod":
-      apiBase = "https://api.pprod.cecurestream.com";
-      break;
-    case "prod":
-      apiBase = "https://api.cecurestream.com";
-      break;
-    default:
-      apiBase = "https://api.cecurestream.com"; // Default to production if nothing else matches
-  }
-};
+// export const env = envFn();
+// const updateApiBase = () => {
+//   switch (env) {
+//     case "dev":
+//       apiBase = "https://api.dev.cecurestream.com";
+//       break;
+//     case "test":
+//       apiBase = "https://api.test.cecurestream.com";
+//       break;
+//     case "localhost":
+//       apiBase = "https://api.dev.cecurestream.com"; // Adjust port if necessary
+//       break;
+//     case "pprod":
+//       apiBase = "https://api.pprod.cecurestream.com";
+//       break;
+//     case "prod":
+//       apiBase = "https://api.cecurestream.com";
+//       break;
+//     default:
+//       apiBase = "https://api.cecurestream.com"; // Default to production if nothing else matches
+//   }
+// };
 
-updateApiBase();
-console.log(env, apiBase);
+// updateApiBase();
 
 export const getApiPath = (pathRoot: string, path: string) => {
   return `${apiBase}/${pathRoot}/${VERSION}/${path}`;
