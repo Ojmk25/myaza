@@ -26,6 +26,7 @@ export const getApiBaseURL = () => {
   let apiUrl = "https://api.dev.cecurestream.com";
 
   if (typeof window !== "undefined") {
+    sessionStorage.setItem("cecurestream_meetingJoiner", "no");
     const host = window.location.host;
 
     console.log(host, "host");

@@ -13,8 +13,8 @@ import {
   activateButton,
 } from "@/utils/Validators";
 import { registerUser } from "@/services/authService";
-import { subDomain } from "@/utils/getDomain";
-import { envFn, updateSignUpUser } from "@/config";
+// import { subDomain } from "@/utils/getDomain";
+import { updateSignUpUser } from "@/config";
 import { SuccessSlideIn } from "@/components/SuccessSlideIn";
 import { FailureSlideIn } from "@/components/FailureSlideIn";
 import { useRouter } from "next/router";
@@ -44,12 +44,12 @@ export default function Signup() {
   const navigate = useRouter();
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const subdomainString = subDomain();
-    const setEnv = envFn();
-    setSubdomainLink(subdomainString);
-    console.log(setEnv);
-  }, []);
+  // useEffect(() => {
+  //   const subdomainString = subDomain();
+  //   const setEnv = envFn();
+  //   setSubdomainLink(subdomainString);
+  //   console.log(setEnv);
+  // }, []);
 
   const [openModal, setOpenModal] = useState(false);
   const [successRes, setSuccessRes] = useState<any>();
