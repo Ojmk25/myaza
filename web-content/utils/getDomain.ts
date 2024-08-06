@@ -33,8 +33,15 @@ export const getApiBaseURL = () => {
 
     if (!host.includes("localhost") && !host.includes("dev")) {
       apiUrl = "https://api.cecurestream.com";
+      if (host.includes("test")) {
+        apiUrl = "https://api.test.cecurestream.com";
+      }
+      if (host.includes("pprod")) {
+        apiUrl = "https://api.pprod.cecurestream.com";
+      }
     }
   }
 
   return apiUrl;
 };
+
