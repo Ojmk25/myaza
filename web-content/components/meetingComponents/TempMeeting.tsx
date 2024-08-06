@@ -9,6 +9,9 @@ import {
   DeviceLabels,
 } from "amazon-chime-sdk-component-library-react";
 import {
+  AudioVideoObserver,
+  ClientMetricReport,
+  ConnectionHealthData,
   ConsoleLogger,
   DefaultDeviceController,
   DefaultMeetingSession,
@@ -71,6 +74,7 @@ export default function TempMeeting({
   >([]);
   const { roster } = useRosterState();
   const attendees = Object.values(roster);
+  const [noNetwork, setNoNetwork] = useState(false);
 
   const handleShowModal = (type: string) => {
     setShowModal(type);
@@ -155,7 +159,6 @@ export default function TempMeeting({
           setAttendeeDetails(attend);
           setSuccessRes(response?.data);
           setMeetingDetails(response?.data.body.data);
-          console.log(response?.data.body.data.meeting_info);
 
           const logger = new ConsoleLogger("MyLogger", LogLevel.INFO);
           const deviceController = new DefaultDeviceController(logger);
@@ -211,9 +214,6 @@ export default function TempMeeting({
     getAttendeesList(query.link as string);
     const handleAudioVideoDidStart = async () => {
       console.log("User has joined the meeting");
-      console.log("User has joined the meeting");
-      console.log("User has joined the meeting");
-      console.log("User has joined the meeting");
       return await getAttendeesList(query.link as string);
     };
     meetingManager?.audioVideo?.addObserver({
@@ -232,32 +232,6 @@ export default function TempMeeting({
     // router.asPath,
     // appState.sessionState.meetingAttendees,
   ]);
-
-  useEffect(() => {
-    const handleAttendeePresence = async (attendeeId: any, present: any) => {
-      if (present) {
-        console.log(
-          `User with attendee ID: ${attendeeId} has joined the meeting.`
-        );
-      } else {
-        console.log(
-          `User with attendee ID: ${attendeeId} has left the meeting.`
-        );
-      }
-      return await getAttendeesList(router.query.link as string);
-    };
-
-    meetingManager?.audioVideo?.realtimeSubscribeToAttendeeIdPresence(
-      handleAttendeePresence
-    );
-
-    // Clean up the subscription when the component is unmounted
-    return () => {
-      meetingManager.audioVideo?.realtimeUnsubscribeToAttendeeIdPresence(
-        handleAttendeePresence
-      );
-    };
-  }, [meetingManager]);
 
   // useLayoutEffect(() => {
   //   const videoElement = document.getElementById(
@@ -285,13 +259,11 @@ export default function TempMeeting({
       const videoContainer = document.getElementById(
         "localvideo-1"
       ) as HTMLDivElement;
-      console.log(videoContainer);
 
       if (videoContainer) {
         const videoElement = videoContainer.querySelector<HTMLVideoElement>(
           "video"
         ) as HTMLVideoElement;
-        console.log(videoElement);
 
         if (videoElement) {
           meetingManager.meetingSession?.audioVideo.stopVideoInput();
@@ -310,12 +282,10 @@ export default function TempMeeting({
       const videoContainer = document.getElementById(
         dynamicElementId
       ) as HTMLDivElement;
-      console.log(videoContainer);
 
       if (videoContainer) {
         const videoElement =
           videoContainer.querySelector<HTMLVideoElement>("video");
-        console.log(videoElement);
 
         if (videoElement) {
           meetingManager.meetingSession?.audioVideo.stopVideoInput();
@@ -357,7 +327,7 @@ export default function TempMeeting({
         if (videoElement) {
           // Perform any operations with the dynamically added video element
           // videoElement.play(); // Example operation
-          console.log("Video element found and played:", videoElement);
+          console.log("Video element found and played:");
         } else {
           console.log("Video element not found");
         }
@@ -377,6 +347,28 @@ export default function TempMeeting({
       return () => observer.disconnect();
     }
   }, [meetingSession, dynamicElementId]);
+
+  useEffect(() => {
+    const observer: AudioVideoObserver = {
+      connectionHealthDidChange: (
+        connectionHealthData: ConnectionHealthData
+      ) => {
+        const missedPongsThreshold = 10;
+        if (
+          connectionHealthData.consecutiveMissedPongs >= missedPongsThreshold
+        ) {
+          setNoNetwork(true);
+        } else {
+          setNoNetwork(false);
+        }
+      },
+    };
+    meetingManager?.audioVideo?.addObserver(observer);
+
+    return () => {
+      meetingManager?.audioVideo?.removeObserver(observer);
+    };
+  }, [meetingManager.audioVideo]);
 
   return (
     <div className="w-full flex items-center flex-col">
@@ -522,8 +514,10 @@ export default function TempMeeting({
             closeModal={() => {}}
           /> */}
           {loading && <LoadingScreen />}
+          {noNetwork && <LoadingScreen />}
         </main>
       </div>
     </div>
   );
 }
+

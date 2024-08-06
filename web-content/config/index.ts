@@ -55,6 +55,7 @@ const updateApiBase = () => {
 };
 
 updateApiBase();
+console.log(env, apiBase);
 
 export const getApiPath = (pathRoot: string, path: string) => {
   return `${apiBase}/${pathRoot}/${VERSION}/${path}`;

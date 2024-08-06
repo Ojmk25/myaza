@@ -19,12 +19,14 @@ import { ToggleAudio } from "@/components/meetingComponents/meetingControlButton
 import { getNameAbbreviation, IsAuthenticated } from "@/services/authService";
 import GuestNameInput from "./GuestNameInput";
 import Header from "../Header";
+import LoadingScreen from "../modals/LoadingScreen";
 
 export default function PreviewComponent() {
   const [loggedIn, setLoggedIn] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const navigate = useRouter();
   const meetingManager = useMeetingManager();
+  const [loading, setLoading] = useState(true);
 
   const audioLevelDisplayRef = useRef(null);
 
@@ -47,6 +49,7 @@ export default function PreviewComponent() {
       const unMountCamera = async () => {
         deviceController.stopVideoPreviewForVideoInput(videoElement);
         await deviceController.stopVideoInput();
+        await deviceController.stopAudioInput();
       };
       if (videoElement) {
         // deviceController.stopVideoPreviewForVideoInput(videoElement);
@@ -89,6 +92,7 @@ export default function PreviewComponent() {
       //Start video/audio preview
       if (videoElement) {
         deviceController?.startVideoPreviewForVideoInput(videoElement);
+        setLoading(false);
       }
       deviceController.chooseAudioOutput(audioList[0].deviceId);
     };
@@ -189,6 +193,7 @@ export default function PreviewComponent() {
           </div>
         </main>
       )}
+      {loading && <LoadingScreen />}
     </>
   );
 }
@@ -196,3 +201,4 @@ export default function PreviewComponent() {
 {
   /* <video id="video-preview" className="w-[400px] h-[400px]"></video> */
 }
+
