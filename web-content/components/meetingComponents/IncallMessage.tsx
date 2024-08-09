@@ -146,7 +146,7 @@ const Chat = ({
                           }
                           width={20}
                           height={20}
-                          className=" rounded-full w-5 h-5 object-cover"
+                          className=" rounded-full w-5 h-5 min-w-5 object-cover"
                         />
                       ) : (
                         <div className=" bg-cs-grey-800 w-5 h-5 rounded-full flex justify-center items-center text-cs-grey-50 uppercase text-[10px] min-w-5">
@@ -169,7 +169,7 @@ const Chat = ({
                         alt={returName(message.externalID)?.full_name as string}
                         width={20}
                         height={20}
-                        className=" rounded-full w-5 h-5 object-cover"
+                        className=" rounded-full w-5 h-5 min-w-5 object-cover"
                       />
                     ) : (
                       <div className=" bg-cs-grey-800 w-5 h-5 rounded-full flex justify-center items-center text-cs-grey-50 uppercase text-[10px] min-w-5">

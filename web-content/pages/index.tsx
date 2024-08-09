@@ -117,8 +117,6 @@ export default function Home() {
     };
     try {
       const data = await createInstantMeeting({});
-      console.log(data);
-
       // sessionStorage.setItem("meetingJoiner", "no");
       setExpressJoin("yes");
       const extractedLink = extractAfterLastSlashOrFull(

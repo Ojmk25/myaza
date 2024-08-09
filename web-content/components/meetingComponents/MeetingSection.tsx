@@ -236,7 +236,6 @@ export default function MeetingSection({
   const attendeeItems = attendees.map((attendee, i) => {
     const tilerId = attendeeIdToTileId[attendee.chimeAttendeeId];
     const { externalUserId } = attendee;
-    console.log(attendee.chimeAttendeeId);
 
     if (i === 0) {
       return (

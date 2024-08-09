@@ -1,23 +1,17 @@
 "use client";
 import {
   useAudioVideo,
-  useLocalVideo,
   useMeetingManager,
-  useRemoteVideoTileState,
   useRosterState,
-  useToggleLocalMute,
-  DeviceLabels,
 } from "amazon-chime-sdk-component-library-react";
 import {
   AudioVideoObserver,
-  ClientMetricReport,
   ConnectionHealthData,
   ConsoleLogger,
   DefaultDeviceController,
   DefaultMeetingSession,
   LogLevel,
   MeetingSessionConfiguration,
-  VideoTileState,
 } from "amazon-chime-sdk-js";
 import MeetingSection from "@/components/meetingComponents/MeetingSection";
 import MeetingControl from "@/components/meetingComponents/MeetingControl";
@@ -50,10 +44,6 @@ export default function TempMeeting({
 }) {
   const meetingManager = useMeetingManager();
   const [showModal, setShowModal] = useState("");
-  const { tiles, tileIdToAttendeeId, attendeeIdToTileId, size } =
-    useRemoteVideoTileState();
-  const { muted, toggleMute } = useToggleLocalMute();
-  const { isVideoEnabled, toggleVideo } = useLocalVideo();
   const [sideView, setSideView] = useState("");
   const router = useRouter();
   const [meetingDetails, setMeetingDetails] = useState<any>();
@@ -500,7 +490,11 @@ export default function TempMeeting({
                 ?.attendeeId
             }
             sendEmoji={sendReaction}
-            meetingName={meetingDetails && meetingDetails.meeting_name}
+            meetingDetails={meetingDetails}
+            externalID={
+              meetingManager.meetingSessionConfiguration?.credentials
+                ?.externalUserId
+            }
           />
           {showModal === "shareScreen" && (
             <ShareScreen onClose={handleCloseModal} />
@@ -520,4 +514,3 @@ export default function TempMeeting({
     </div>
   );
 }
-

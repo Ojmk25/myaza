@@ -16,7 +16,10 @@ export default function MeetingDetailsModal({
     <>
       <div className="fixed inset-0 z-10 overflow-y-auto modal no-scrollbar">
         <div className="flex items-center justify-center min-h-screen pt-4 pb-20 text-center">
-          <div className="fixed inset-0 transition-opacity bg-[#ffffffa3]"></div>
+          <div
+            className="fixed inset-0 transition-opacity bg-[#ffffffa3] cursor-pointer"
+            onClick={onClose}
+          ></div>
           <span className="hidden sm:inline-block sm:align-middle sm:h-screen"></span>
           <div className="inline-block align-bottom transition-all transform  bg-white rounded-lg shadow-xl sm:align-middle sm:w-full sm:max-w-[406px] border-cs-grey-300 border-solid border">
             <div className=" flex justify-between border-b border-solid border-cs-grey-55 px-6 py-4">
@@ -46,7 +49,8 @@ export default function MeetingDetailsModal({
                   }`}
                   className="text-cs-purple-650"
                 >
-                  {meetDetails !== undefined && meetDetails.meeting_link}
+                  {meetDetails !== undefined &&
+                    `${window?.location.href}${meetDetails.meeting_link}`}
                 </Link>
               </h3>
               <h3 className=" text-left my-2 ">

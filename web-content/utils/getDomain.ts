@@ -22,26 +22,44 @@
 //   return null;
 // };
 
+export function getSubdomain(host: string) {
+  // Split the hostname into parts
+  const hostnameParts = host.split(".");
+
+  // If the hostname has more than two parts, return the first part (the subdomain)
+  if (hostnameParts.length > 2) {
+    return hostnameParts[0];
+  }
+
+  // If there is no subdomain, return an empty string
+  return "";
+}
+
 export const getApiBaseURL = () => {
   let apiUrl = "https://api.dev.cecurestream.com";
 
   if (typeof window !== "undefined") {
     sessionStorage.setItem("cecurestream_meetingJoiner", "no");
     const host = window.location.host;
+    const subDomain = getSubdomain(host);
 
-    console.log(host, "host");
+    // if (!host.includes("localhost") && !host.includes("dev")) {
+    //   apiUrl = "https://api.cecurestream.com";
+    //   if (host.includes("test")) {
+    //     apiUrl = "https://api.test.cecurestream.com";
+    //   }
+    //   if (host.includes("pprod")) {
+    //     apiUrl = "https://api.pprod.cecurestream.com";
+    //   }
+    // }
 
-    if (!host.includes("localhost") && !host.includes("dev")) {
+    if (!host.includes("localhost")) {
       apiUrl = "https://api.cecurestream.com";
-      if (host.includes("test")) {
-        apiUrl = "https://api.test.cecurestream.com";
-      }
-      if (host.includes("pprod")) {
-        apiUrl = "https://api.pprod.cecurestream.com";
+      if (subDomain !== "") {
+        apiUrl = `https://api.${getSubdomain(host)}.cecurestream.com`;
       }
     }
   }
 
   return apiUrl;
 };
-

@@ -128,7 +128,7 @@ export default function Header() {
                   src={picture}
                   width={32}
                   height={32}
-                  alt="logo"
+                  alt="avatar"
                   className="rounded-full w-8 h-8 md:w-10 md:h-10 object-cover"
                   onClick={() => setProfileModal(!profileModal)}
                 />

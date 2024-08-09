@@ -1,18 +1,17 @@
-
 export const ValidateEmail = (email: string) => {
-  if (!email && email.length >= 4) return false
+  if (!email && email.length >= 4) return false;
   // let regex = /^\w+([\W]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
   let regex =
-    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,3}))$/
-  return regex.test(email)
-}
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,3}))$/;
+  return regex.test(email);
+};
 /**
  * Validates if the input string meets the following criteria:
  * - At least 8 characters long
  * - Contains at least one special character
  * - Contains at least one capital letter
  * - Contains at least one number
- * 
+ *
  * @param input - The string to validate
  * @returns A boolean indicating whether the input meets the criteria
  */
@@ -22,21 +21,28 @@ export const ValidatePassword = (input: string): boolean => {
   const capitalLetterRegex = /[A-Z]/; // At least one capital letter
   const numberRegex = /[0-9]/; // At least one number
 
-  return lengthRegex.test(input) &&
+  return (
+    lengthRegex.test(input) &&
     specialCharRegex.test(input) &&
     capitalLetterRegex.test(input) &&
-    numberRegex.test(input);
-}
+    numberRegex.test(input)
+  );
+};
 
+export const ValidateText = (name: string) => {
+  // Regular expression to check if the string contains only alphabetic characters
+  const alphaRegex = /^[A-Za-z\s]+$/;
 
-
-export const ValidateText = (text: string) => {
-  if (text && text.length >= 3) {
-    return text;
+  // Check if name is a string, has more than 3 characters, and matches the regex
+  if (
+    typeof name === "string" &&
+    name.trim().length > 3 &&
+    alphaRegex.test(name)
+  ) {
+    return true;
   }
   return false;
 };
-
 
 /**
  * Validates if the input string matches the pattern 'pub-ldj-ftsg'.
@@ -49,8 +55,7 @@ export const ValidateLink = (str: string): boolean => {
 
   // Test the string against the pattern
   return pattern.test(str);
-}
-
+};
 
 /**
  * Checks if all values in an object are true.
@@ -58,26 +63,23 @@ export const ValidateLink = (str: string): boolean => {
  * @returns `true` if all values are true, otherwise `false`.
  */
 export const activateButton = (obj: Record<string, boolean>): boolean => {
-  return Object.values(obj).every(value => value === true);
-}
-
+  return Object.values(obj).every((value) => value === true);
+};
 
 export function isValidUUID(uuid: string): boolean {
-  const uuidRegex = /^[0-9a-z]{8}-[0-9a-z]{4}-[1-5][0-9a-z]{3}-[89ab][0-9a-z]{3}-[0-9a-z]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-z]{8}-[0-9a-z]{4}-[1-5][0-9a-z]{3}-[89ab][0-9a-z]{3}-[0-9a-z]{12}$/i;
   // /^[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}$/i
   return uuidRegex.test(uuid);
 }
 
 export function extractAfterLastSlashOrFull(input: string): string {
-  const lastSlashIndex = input.lastIndexOf('/');
+  const lastSlashIndex = input.lastIndexOf("/");
   if (lastSlashIndex !== -1) {
     return input.substring(lastSlashIndex + 1);
   }
   return input;
 }
-
-
-
 
 //  const fetchData = async () => {
 //   try {

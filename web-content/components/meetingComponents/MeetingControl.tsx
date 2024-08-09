@@ -42,6 +42,7 @@ import { useRouter } from "next/router";
 import { useAppContext } from "@/context/StoreContext";
 import { useSessionStorage } from "@/hooks/useStorage";
 import { useMeetingManager } from "amazon-chime-sdk-component-library-react";
+import { log } from "console";
 // import image from require(`../../public/assets/images/Joy.svg`)
 
 const image = require(`../../public/assets/images/Joy.svg`);
@@ -93,7 +94,8 @@ export default function MeetingControl({
   meetingManager,
   attendeIDString,
   sendEmoji,
-  meetingName,
+  meetingDetails,
+  externalID,
 }: {
   bgColor: boolean;
   onOpen: () => void;
@@ -102,7 +104,8 @@ export default function MeetingControl({
   meetingManager: MeetingManager;
   attendeIDString: string | null | undefined;
   sendEmoji: (sender: string, emoji: string) => void;
-  meetingName: any;
+  meetingDetails: any;
+  externalID: string | null | undefined;
 }) {
   const currentTimeRef = useRef<HTMLDivElement>(null);
   const { muted, toggleMute } = useToggleLocalMute();
@@ -122,6 +125,8 @@ export default function MeetingControl({
   useEffect(() => {
     if (otherViews.includes("Raise-Hand")) {
       setRaiseHandAdded(true);
+    } else {
+      setRaiseHandAdded(false);
     }
   }, [otherViews]);
 
@@ -180,24 +185,33 @@ export default function MeetingControl({
 
   const sendRaiseHand = (timestamp: string, attendee: string) => {
     handleOtherViews("Raise-Hand");
+    let timestampVar = timestamp;
+    let attendeeVar = attendee;
+    if (otherViews.includes("Raise-Hand")) {
+      timestampVar = "";
+      attendeeVar = "";
+    }
     // Update local state immediately
     setAppState((prevState) => ({
       ...prevState,
       sessionState: {
         ...prevState.sessionState,
-        raisedHand: { timestamp: timestamp, message: attendee },
+        raisedHand: { timestamp: timestampVar, message: attendee },
       },
     }));
 
     // Check if audioVideo is available
     if (!audioVideo) return;
-    const message = JSON.stringify({ timestamp: timestamp, message: attendee });
+    const message = JSON.stringify({
+      timestamp: timestampVar,
+      message: attendee,
+    });
 
     // Send the message
     audioVideo.realtimeSendDataMessage("raise-hand", message);
   };
 
-  const handleEndMeeting = async () => {
+  const handleLeaveMeeting = async () => {
     // await meetingManager.stopVideoInputDevice();
     // meetingManager.audioVideo?.stopLocalVideoTile();
     // meetingManager.audioVideo?.stopVideoInput();
@@ -208,6 +222,49 @@ export default function MeetingControl({
     // meetingManager.audioVideo?.stopVideoPreviewForVideoInput()
     // meetingManager.audioVideo?.stop();
     // navigate.push("/");
+    if (meetingManager) {
+      meetingManager.leave().then(() => {
+        meetingManager.meetingSession?.audioVideo.stopVideoInput();
+        meetingManager.meetingSession?.audioVideo.stopLocalVideoTile();
+        // meetingManager.meetingSession?.audioVideo.stopVideoPreviewForVideoInput(
+        //   videoElement
+        // );
+        meetingManager.meetingSession?.audioVideo.stop();
+        // router.reload();
+        meetingManager.audioVideo?.stop();
+        navigate.push("/").then(() => window.location.reload());
+      });
+    }
+  };
+
+  // meetingEnded
+  // const observer = {
+  //   eventDidReceive(name, attributes) {
+  //     // Handle a meeting event.
+  //   }
+  // }
+
+  // meetingSession.eventController.addObserver(observer);
+
+  // eventDidReceive(name, attributes) {
+  //   switch (name) {
+  //     case 'audioInputFailed':
+  //       console.error(`Failed to choose microphone: ${attributes.audioInputErrorMessage} in `, attributes);
+  //       break;
+  //     case 'videoInputFailed':
+  //       console.error(`Failed to choose camera: ${attributes.videoInputErrorMessage} in `, attributes);
+  //       break;
+  //     case 'meetingStartFailed':
+  //       console.error(`Failed to start a meeting: ${attributes.meetingErrorMessage} in `, attributes);
+  //       break;
+  //     case 'meetingFailed':
+  //       console.error(`Failed during a meeting: ${attributes.meetingErrorMessage} in `, attributes);
+  //       break;
+  //     default:
+  //       break;
+  // }
+
+  const handleEndMeeting = async () => {
     if (meetingManager) {
       meetingManager.leave().then(() => {
         meetingManager.meetingSession?.audioVideo.stopVideoInput();
@@ -240,8 +297,9 @@ export default function MeetingControl({
             toggleVideo();
           }
 
-          if (!microphoneOn && !muted) {
-            toggleMute();
+          if (!microphoneOn) {
+            // toggleMute();
+            meetingManager.meetingSession?.audioVideo.realtimeMuteLocalAudio();
           }
 
           setSetupDone(true);
@@ -407,25 +465,27 @@ export default function MeetingControl({
                 </div>
                 <h6 className=" text-cs-grey-100 font-medium text-xs">React</h6>
               </div>
-              {otherViews.includes("React") && (
-                <div className=" absolute left-[-145px] top-[-56px] bg-[#A3A3A3CC] shadow-xl shadow-[#0000001C] rounded-[10px]">
-                  <div className=" relative py-2 px-4 flex gap-x-4">
-                    {emojis.map((emoji) => (
-                      <Image
-                        src={emoji.emoji}
-                        alt={emoji.alt}
-                        width={18}
-                        height={18}
-                        className="min-w-6 max-w-5 cursor-pointer"
-                        onClick={() =>
-                          sendEmoji(attendeIDString as string, emoji.emoji)
-                        }
-                        key={emoji.alt}
-                      />
-                    ))}
-                  </div>
+              <div
+                className={` ${
+                  otherViews.includes("React") && "w-auto overflow-visible"
+                } absolute left-[-145px] top-[-56px] bg-[#A3A3A3CC] shadow-xl shadow-[#0000001C] rounded-[10px] w-0 overflow-hidden`}
+              >
+                <div className=" relative py-2 px-4 flex gap-x-4">
+                  {emojis.map((emoji) => (
+                    <Image
+                      src={emoji.emoji}
+                      alt={emoji.alt}
+                      width={18}
+                      height={18}
+                      className="min-w-6 max-w-5 cursor-pointer"
+                      onClick={() =>
+                        sendEmoji(attendeIDString as string, emoji.emoji)
+                      }
+                      key={emoji.alt}
+                    />
+                  ))}
                 </div>
-              )}
+              </div>
             </div>
 
             <div
@@ -461,12 +521,22 @@ export default function MeetingControl({
               </h6>
             </div>
 
-            <div
-              className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer"
-              onClick={handleEndMeeting}
-            >
-              <span>End</span>
-            </div>
+            {meetingDetails?.meeting_info.MeetingHostId === externalID &&
+            externalID ? (
+              <div
+                className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer"
+                onClick={handleLeaveMeeting}
+              >
+                <span>End</span>
+              </div>
+            ) : (
+              <div
+                className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer"
+                onClick={handleLeaveMeeting}
+              >
+                <span>End</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -618,27 +688,29 @@ export default function MeetingControl({
                 )}
               </div>
             </div>
-            {otherViews.includes("React") && (
-              <div className="absolute left-0 right-0 top-[-56px] flex justify-center overflow-x-hidden px-6">
-                <div className="  bg-[#A3A3A3CC] shadow-xl shadow-[#0000001C] rounded-[10px] relative w-fit overflow-x-scroll no-scrollbar">
-                  <div className=" relative py-2 px-4 flex gap-x-4">
-                    {emojis.map((emoji) => (
-                      <Image
-                        src={emoji.emoji}
-                        alt={emoji.alt}
-                        width={18}
-                        height={18}
-                        className="min-w-6 max-w-5 cursor-pointer"
-                        onClick={() =>
-                          sendEmoji(attendeIDString as string, emoji.emoji)
-                        }
-                        key={emoji.alt}
-                      />
-                    ))}
-                  </div>
+            <div className="absolute left-0 right-0 top-[-56px] flex justify-center overflow-x-hidden px-6">
+              <div
+                className={` ${
+                  otherViews.includes("React") ? "w-fit" : "w-0 overflow-hidden"
+                } bg-[#A3A3A3CC] shadow-xl shadow-[#0000001C] rounded-[10px] relative  overflow-x-scroll no-scrollbar`}
+              >
+                <div className=" relative py-2 px-4 flex gap-x-4">
+                  {emojis.map((emoji) => (
+                    <Image
+                      src={emoji.emoji}
+                      alt={emoji.alt}
+                      width={18}
+                      height={18}
+                      className="min-w-6 max-w-5 cursor-pointer"
+                      onClick={() =>
+                        sendEmoji(attendeIDString as string, emoji.emoji)
+                      }
+                      key={emoji.alt}
+                    />
+                  ))}
                 </div>
               </div>
-            )}
+            </div>
 
             <div
               className="text-center cursor-pointer"
@@ -851,12 +923,42 @@ export default function MeetingControl({
               </div>
             )}
 
-            <div
-              className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer"
-              onClick={handleEndMeeting}
-            >
-              <span>End</span>
-            </div>
+            {meetingDetails?.meeting_info.MeetingHostId === externalID &&
+            externalID ? (
+              <>
+                {/* <div className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer group relative min-w-[86px] transition-all hover:bg-[#E1C6FF4D] text-nowrap">
+                  <span className="group-hover:hidden transition-all">End</span>
+                  <span className="hidden group-hover:inline transition-all text-cs-grey-800">
+                    Cancel
+                  </span>
+
+                  <div className="bg-white absolute hidden group-hover:block shadow-1xl bottom-11 -right-2 py-3 px-4 rounded-lg z-10">
+                    <div className=" text-cs-grey-50 bg-cs-red text-sm font-semibold py-3 px-4 rounded-lg mb-2">
+                      End meeting for all
+                    </div>
+                    <div
+                      className=" text-cs-grey-800 text-sm font-semibold py-3 px-4 rounded-lg hover:bg-[#E1C6FF4D]"
+                      onClick={handleLeaveMeeting}
+                    >
+                      Leave meeting
+                    </div>
+                  </div>
+                </div> */}
+                <div
+                  className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer"
+                  onClick={handleLeaveMeeting}
+                >
+                  <span>End</span>
+                </div>
+              </>
+            ) : (
+              <div
+                className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer"
+                onClick={handleLeaveMeeting}
+              >
+                <span>End</span>
+              </div>
+            )}
           </div>
         </div>
       </div>

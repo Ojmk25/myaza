@@ -201,4 +201,3 @@ export default function PreviewComponent() {
 {
   /* <video id="video-preview" className="w-[400px] h-[400px]"></video> */
 }
-

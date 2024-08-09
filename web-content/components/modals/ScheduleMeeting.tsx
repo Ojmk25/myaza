@@ -1,8 +1,7 @@
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import closeIcon from "@/public/assets/images/closeIcon.svg";
-import { Calendar, Clock, UserAdd, Video, Copy } from "iconsax-react";
-import { AuthInput } from "../auth/AuthInput";
+import { Calendar, Clock, UserAdd } from "iconsax-react";
 
 import style from "./style.module.css";
 
@@ -15,6 +14,7 @@ import { FailureSlideIn } from "../FailureSlideIn";
 import MeetingDetailsModal from "./MeetingDetailsModal";
 import { ValidateEmail } from "@/utils/Validators";
 import { timeToUnixTimestamp } from "@/utils/meetingFunctions";
+import moment from "moment-timezone";
 
 interface FormData {
   meetingName: string;
@@ -48,6 +48,9 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
     date: formatDate(new Date()),
     emailList: [],
   });
+
+  const timezoneName = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timezoneAbbreviation = moment.tz(timezoneName).format("z");
 
   const handleInput = (input: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = input.target;
@@ -148,6 +151,7 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
       meeting_date: formData.date,
       start_time: timeToUnixTimestamp(formData.startTime),
       end_time: timeToUnixTimestamp(formData.endTime),
+      timezone: timezoneAbbreviation,
       attendees: formData.emailList,
     };
     setLoading(true);
@@ -164,7 +168,6 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
       setSuccessRes(data?.data.body);
       setOpenModal(true);
       setMeetDetails(data?.data.body.data);
-      console.log(data);
 
       setTimeout(() => {
         if (data?.data.statusCode === 200) {
@@ -183,8 +186,6 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
     setOpenMeetingDetails(false);
     onClose();
   };
-
-  console.log(meetDetails);
 
   return (
     <>

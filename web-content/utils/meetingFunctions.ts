@@ -2,12 +2,14 @@ export const getRemoteInitials = (input: string): string => {
   if (!input) {
     return "";
   }
+
   const words = input.split(" ");
 
-  // Get the first letter of each word and join them into a single string
-  const initials = words.map((word) => word.charAt(0)).join("");
+  // Get the first letter of the first word and the first letter of the last word
+  const firstInitial = words[0].charAt(0);
+  const lastInitial = words[words.length - 1].charAt(0);
 
-  return initials;
+  return `${firstInitial}${lastInitial}`;
 };
 
 export function timeToUnixTimestamp(time: string): number {

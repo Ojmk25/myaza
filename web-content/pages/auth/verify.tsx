@@ -135,6 +135,7 @@ export default function Verify() {
             }}
             inputFocusStyle={{ borderColor: "blue" }}
             onComplete={(value, index) => {
+              setSignUpCode(value);
               value.length === 6 && setAllowSubmit(true);
             }}
             autoSelect={false}

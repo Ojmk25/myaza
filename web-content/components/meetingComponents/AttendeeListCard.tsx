@@ -27,7 +27,7 @@ export const AttendeeListCard = ({
             alt={attendeeDetailItems.full_name}
             width={32}
             height={32}
-            className=" rounded-full w-8 h-8 object-cover"
+            className=" rounded-full w-8 h-8 min-w-8 object-cover"
           />
         ) : (
           <div className=" bg-cs-grey-800 w-[30px] h-[30px] min-w-[30px] rounded-full flex justify-center items-center text-cs-grey-50 uppercase">
@@ -40,7 +40,7 @@ export const AttendeeListCard = ({
         </h4>
       </div>
       <div className=" flex items-center gap-x-1">
-        <RaisedHand attendeeId={attendeeId} />
+        <RaisedHand attendeeId={attendeeId} noBackground />
         {audioState}
       </div>
     </div>
