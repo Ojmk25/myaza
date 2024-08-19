@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import {
   ValidateLink,
@@ -23,6 +23,7 @@ import {
 import LoadingScreen from "@/components/modals/LoadingScreen";
 import {
   createInstantMeeting,
+  getMeeting,
   setInstantMeeting,
 } from "@/services/meetingServices";
 import Header from "@/components/Header";
@@ -77,7 +78,7 @@ export default function Home() {
     };
   }, [navigate]);
 
-  const handleInput = (input: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInput = async (input: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = input.target;
     const extractedLink = extractAfterLastSlashOrFull(value);
     if (value.length === 0) {
@@ -88,6 +89,22 @@ export default function Home() {
       setErrorColour(true);
       setDisableButton(true);
       setErrMessage("Invalid meeting link");
+    } else if (extractedLink.length === 8) {
+      try {
+        await getMeeting({ meeting_id: extractedLink }).then((data) => {
+          if (data?.data.statusCode !== 200) {
+            setErrorColour(true);
+            setDisableButton(true);
+            setErrMessage("Invalid meeting link");
+          } else {
+            setErrorColour(false);
+            setDisableButton(false);
+            setErrMessage("");
+          }
+        });
+      } catch (error) {
+        console.log(error);
+      }
     } else {
       setErrorColour(false);
       setDisableButton(false);
@@ -150,7 +167,7 @@ export default function Home() {
   return (
     <div className=" ">
       {loggedIn !== null && (
-        <main className=" pt-6 lg:pt-7 w-full flex items-center justify-center flex-col mx-auto ">
+        <main className=" pt-6 w-full flex items-center justify-center flex-col mx-auto ">
           <Header />
 
           <div className="flex justify-center items-center ">

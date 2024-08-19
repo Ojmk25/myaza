@@ -8,10 +8,20 @@ const apiScheduleMeeting = getApiPath("meeting", "schedule-meeting");
 const apiJoinMeeting = getApiPath("meeting", "join-meeting");
 const apiStartTranscription = getApiPath("meeting", "start-transcription");
 const listAttendeesPath = getApiPath("meeting", "list-attendees");
+const checkMeetingPath = getApiPath("meeting", "get-meeting");
+const endMeetingPath = getApiPath("meeting", "end-call");
 
 export interface TranscriptionPayload {
   meeting_id: string;
   attendee_id: string;
+}
+
+export interface GetMeetingPayload {
+  meeting_id: string;
+}
+
+export interface EndMeetingPayload {
+  chime_meeting_id: string;
 }
 
 export const setInstantMeeting = (meetingID: string, meetingData: any) => {
@@ -110,6 +120,22 @@ export const joinMeetingFnc = async (data: any) => {
 export const startTranscription = async (data: TranscriptionPayload) => {
   try {
     return await http.apiCall.post(apiStartTranscription, data);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getMeeting = async (data: GetMeetingPayload) => {
+  try {
+    return await http.apiCall.post(checkMeetingPath, data);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const endMeetingForAll = async (data: EndMeetingPayload) => {
+  try {
+    return await http.apiCall.api.post(endMeetingPath, data);
   } catch (error) {
     console.log(error);
   }

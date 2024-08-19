@@ -33,7 +33,26 @@ export function timeToUnixTimestamp(time: string): number {
   return Math.floor(now.getTime() / 1000);
 }
 
-export const validateMeetingIdString = (str: string) => {
+// export const validateMeetingIdString = (str: string) => {
+//   const hexPattern = /^[0-9a-fA-F]{8}$/;
+//   return hexPattern.test(str);
+// };
+
+export const validateMeetingIdString = (input: string) => {
   const hexPattern = /^[0-9a-fA-F]{8}$/;
-  return hexPattern.test(str);
+
+  // Check if the input is a URL containing "/meet/hexPattern"
+  const urlPattern = /\/meet\/([0-9a-fA-F]{8})/;
+
+  if (input.includes("http") && input.includes("/meet/")) {
+    // Try to extract the hex pattern from the URL
+    const match = input.match(urlPattern);
+    if (match && match[1]) {
+      return hexPattern.test(match[1]);
+    }
+    return false;
+  } else {
+    // Validate the string directly as a meeting ID
+    return hexPattern.test(input);
+  }
 };

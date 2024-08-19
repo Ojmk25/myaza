@@ -83,6 +83,22 @@
   .customScrollBar::-webkit-scrollbar-thumb:hover {
     background: #919191;
   }
+
+  /* Hide the default jira widget button injected from script */
+  .atlwdg-trigger.atlwdg-TOP {
+    top: 0;
+    left: 0;
+  }
+  .atlwdg-trigger {
+    top: 0;
+    left: 0;
+    position: absolute !important;
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+  }
 }
 
 .remote-video video {

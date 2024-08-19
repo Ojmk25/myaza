@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import DateTimeDisplay from "@/utils/getDate";
-import { Profile, LoginCurve } from "iconsax-react";
+import { Profile, LoginCurve, MessageQuestion } from "iconsax-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import cecureStream from "@/public/assets/images/cecurestream.svg";
@@ -13,6 +13,7 @@ import {
   logOutUser,
 } from "@/services/authService";
 import Settings from "@/components/modals/Settings";
+import WidgetButton from "./WidgetButton";
 
 export default function Header() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -24,10 +25,30 @@ export default function Header() {
   const [profileModal, setProfileModal] = useState(false);
   const [showModal, setShowModal] = useState("");
   const { picture } = getClientInfo();
+  const widgetRef = useRef<HTMLDivElement>(null);
+  const [screenWidth, setScreenWidth] = useState<number>();
 
   useEffect(() => {
     setLoggedIn(IsAuthenticated());
     getNameAbbreviation();
+  }, []);
+
+  useEffect(() => {
+    // Function to update screenWidth state when the window is resized
+    const handleResize = () => {
+      setScreenWidth(window.innerWidth);
+    };
+
+    // Initial width when component mounts
+    setScreenWidth(window.innerWidth);
+    handleResize();
+    // Add event listener to window resize event
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup function to remove event listener when component unmounts
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   useEffect(() => {
@@ -80,6 +101,33 @@ export default function Header() {
       clearInterval(intervalId);
     };
   }, []);
+
+  useEffect(() => {
+    const appendWidget = () => {
+      const widgetElement = document?.querySelector(
+        "#atlwdg-trigger"
+      ) as HTMLElement;
+
+      widgetElement?.classList.add("w-full", "inset-0");
+      if (widgetElement) {
+        widgetElement.style.inset = "0";
+        widgetElement.style.width = "100%";
+      }
+      if (widgetElement?.parentNode) {
+        widgetElement.parentNode.removeChild(widgetElement);
+      }
+      if (widgetRef && widgetElement) {
+        widgetRef.current?.append(widgetElement as Node);
+      }
+    };
+    const timerId = setTimeout(() => {
+      appendWidget();
+    }, 3000);
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [screenWidth]);
+
   const handleShowModal = (type: string) => {
     setShowModal(type);
     document.body.classList.add("overflow-hidden");
@@ -99,7 +147,7 @@ export default function Header() {
   return (
     <>
       {loggedIn !== null && (
-        <div className="flex justify-between items-center w-full  px-6 pb-6 md:pb-7 shadow-1xl">
+        <div className="flex justify-between items-center w-full  px-6 pb-6 shadow-1xl">
           <Link href={"/"} className=" md:hidden">
             <Image src={cecureStreamSmall} alt="logo" />
           </Link>
@@ -248,6 +296,21 @@ export default function Header() {
         </div>
       )}
       {showModal === "settings" && <Settings onClose={handleCloseModal} />}
+
+      {/* <div className=" w-fit relative overflow-hidden">
+              <div className="bg-cs-purple-650 p-[10px] rounded-lg flex items-center cursor-pointer">
+                <MessageQuestion size="18" color="#FAF0FF" />
+              </div>
+            </div> */}
+      <div
+        className=" w-fit fixed bottom-10 right-4 z-50 text-white"
+        ref={widgetRef}
+      >
+        <div className="bg-cs-purple-650 text-cs-grey-60-light p-[10px] rounded-lg font-semibold flex items-center md:gap-x-2 cursor-pointer">
+          <MessageQuestion size="20" color="#FAF0FF" className="m-auto" />
+          <p className="hidden md:block">Need Help?</p>
+        </div>
+      </div>
     </>
   );
 }

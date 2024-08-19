@@ -247,12 +247,13 @@ export default function MeetingSection({
           nameID={attendee.externalUserId as string}
           audioState={
             <ShowVisualizer
-              meetingManager={meetingManager}
               attendee={attendee}
+              meetingManager={meetingManager}
             />
           }
           // attendeeDetails={attendeeDetailItems}
           meetingManager={meetingManager}
+          sideView={sideView}
         />
       );
     } else {
@@ -265,8 +266,8 @@ export default function MeetingSection({
           nameID={attendee.externalUserId as string}
           audioState={
             <ShowVisualizer
-              meetingManager={meetingManager}
               attendee={attendee}
+              meetingManager={meetingManager}
             />
           }
           // attendeeDetails={attendeeDetailItems}

@@ -7,10 +7,11 @@ import { useEffect, useState } from "react";
 
 export const ToggleVideoButton = ({
   toggleVideo,
+  showVideo,
 }: {
   toggleVideo: () => {};
+  showVideo: boolean;
 }) => {
-  const { setAppState } = useAppContext();
   const [video, setVideo] = useState(true);
   const handleClick = () => {
     setVideo(!video);
@@ -34,7 +35,7 @@ export const ToggleVideoButton = ({
             video ? "bg-cs-purple-650" : "bg-[#E1C6FF4D]"
           } rounded-md max-w-12 mx-auto`}
         >
-          {video ? (
+          {video && showVideo ? (
             <Video size="24" color="#FAFAFA" className="mx-auto" />
           ) : (
             <VideoSlash size="24" color="#5E29B7" className="mx-auto" />

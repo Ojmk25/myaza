@@ -1,7 +1,11 @@
+"use client";
 import { getRemoteInitials } from "@/utils/meetingFunctions";
 import RaisedHand from "./RaisedHand";
 import { useAppContext } from "@/context/StoreContext";
 import Image from "next/image";
+import { useAttendeeStatus } from "amazon-chime-sdk-component-library-react";
+import { VisualizerComp } from "./MeetingCardAudio";
+import { useEffect } from "react";
 
 export const AttendeeListCard = ({
   attendeeId,
@@ -17,6 +21,16 @@ export const AttendeeListCard = ({
   const attendeeDetailItems = meetingAttendees.find(
     (att) => att.user_id === externalID
   );
+  const { videoEnabled, sharingContent, muted } = useAttendeeStatus(attendeeId);
+  useEffect(() => {
+    console.log(
+      attendeeId,
+      "this person's audiomute status is",
+      muted,
+      "and video is ",
+      videoEnabled
+    );
+  }, [appState.sessionState.audioState]);
 
   return (
     <div className=" flex justify-between items-center py-3 border-b border-solid border-b-[#EFEDED]">
@@ -41,7 +55,8 @@ export const AttendeeListCard = ({
       </div>
       <div className=" flex items-center gap-x-1">
         <RaisedHand attendeeId={attendeeId} noBackground />
-        {audioState}
+        {/* {audioState} */}
+        <VisualizerComp attendeeId={attendeeId} noBackground />
       </div>
     </div>
   );

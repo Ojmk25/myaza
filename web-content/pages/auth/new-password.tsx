@@ -9,7 +9,7 @@ import { useCountdown } from "@/hooks/useTimeCountDown";
 import { AppCtx } from "@/context/StoreContext";
 import { SuccessSlideIn } from "@/components/SuccessSlideIn";
 import { FailureSlideIn } from "@/components/FailureSlideIn";
-import { resetPassword } from "@/services/authService";
+import { forgotPassword, resetPassword } from "@/services/authService";
 import { useRouter } from "next/router";
 import { getSignUpUser } from "@/config";
 import LoadingScreen from "@/components/modals/LoadingScreen";
@@ -67,7 +67,7 @@ export default function NewPassword() {
         }));
         setErrMessage((prevState) => ({
           ...prevState,
-          [name]: `password should be 8 characters with atleast a capital letter, number, and special character`,
+          [name]: `password should be 8 characters with at least a capital letter, number, and special character`,
         }));
       } else {
         setValidateSuccess((prevState) => ({
@@ -177,18 +177,41 @@ export default function NewPassword() {
       clearAll();
     }
   };
-  const closeSlider = () => {
-    setSuccessRes("");
-    setOpenModal(false);
-  };
 
+  const handleForgotPassword = async (e: any) => {
+    e.preventDefault();
+    const email = getSignUpUser();
+    const forgotPasswordPayload = {
+      email: email as string,
+    };
+    setLoading(true);
+    const clearAll = () => {
+      setLoading(false);
+      setTimeout(() => {
+        setSuccessRes("");
+        setOpenModal(false);
+      }, 2000);
+    };
+    try {
+      const data = await forgotPassword(forgotPasswordPayload);
+      setLoading(true);
+      setSuccessRes(data?.data);
+      setOpenModal(true);
+    } catch (error) {
+      console.log(error);
+      setLoading(true);
+      setOpenModal(true);
+    } finally {
+      clearAll();
+    }
+  };
   return (
     <AuthLayout>
       <h3 className=" text-2xl font-semibold text-cs-grey-dark mb-1 metro-medium">
         New password
       </h3>
       <p className=" text-cs-grey-100 text-sm">Set up your new password</p>
-      <form>
+      <form onSubmit={handleForgotPassword}>
         <AuthInput
           label="Code"
           action={handleInput}
@@ -218,13 +241,20 @@ export default function NewPassword() {
           action={handleResetPassword}
           activate={activateButton(validateSuccess)}
         />
-        <div className="text-center  mt-8">
+        <div className="text-center  mt-8 ">
           <Link
             href={"/auth/login"}
             className=" text-cs-purple-650 text-sm font-medium"
           >
             Back to sign in
           </Link>
+
+          <button
+            className=" text-cs-purple-650 text-sm font-medium ml-5"
+            type="submit"
+          >
+            Back to sign in
+          </button>
         </div>
       </form>
       <SuccessSlideIn

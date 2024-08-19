@@ -27,6 +27,7 @@ export default function PreviewComponent() {
   const navigate = useRouter();
   const meetingManager = useMeetingManager();
   const [loading, setLoading] = useState(true);
+  const videoCameraRef = useRef(true);
 
   const audioLevelDisplayRef = useRef(null);
 
@@ -137,22 +138,22 @@ export default function PreviewComponent() {
       deviceController["activeDevices"].video &&
       deviceController["activeDevices"].video.groupId.length > 1
     ) {
-      console.log(deviceController["activeDevices"]);
       deviceController.stopVideoPreviewForVideoInput(videoElement);
       await deviceController.stopVideoInput();
+      videoCameraRef.current = false;
     } else {
       const videoList = await deviceController.listVideoInputDevices();
       await deviceController.startVideoInput(videoList[0].deviceId);
       deviceController.startVideoPreviewForVideoInput(videoElement);
+      videoCameraRef.current = true;
     }
-    console.log(deviceController["activeDevices"]);
   }
 
   return (
     <>
       {loggedIn !== null && (
         // <main className="pb-7 md:pb-10 pt-7 md:pt-10">
-        <main className="lg:pb-20 pt-6 lg:pt-10 w-full flex items-center flex-col ">
+        <main className=" pt-6 w-full flex items-center flex-col ">
           <Header />
           <div className="md:grid px-6 gap-x-16 items-center grid-cols-2 mt-2 bg-cs-bg py-4 max-auto w-full max-w-[1392px]">
             <div className="basis-full col-start-2 col-span-3">
@@ -168,7 +169,7 @@ export default function PreviewComponent() {
                   <video
                     id="video-preview"
                     autoPlay
-                    className="rounded-[4px] md:rounded-[31px] w-full object-cover h-[302px] sm:h-[342px] md:h-[200px] lg:h-[261px] xl:h-[378px] "
+                    className="rounded-[4px] md:rounded-[31px] w-full object-cover h-[302px] sm:h-[342px] md:h-[200px] lg:h-[261px] xl:h-[358px] "
                     ref={videoRef}
                   ></video>
                   <div className="" ref={audioLevelDisplayRef}></div>
@@ -178,7 +179,10 @@ export default function PreviewComponent() {
                 <div className=" flex justify-center my-6">
                   <div className=" flex gap-x-6">
                     <ToggleAudio audioLevelDisplayRef={audioLevelDisplayRef} />
-                    <ToggleVideoButton toggleVideo={toggleVideos} />
+                    <ToggleVideoButton
+                      toggleVideo={toggleVideos}
+                      showVideo={videoCameraRef.current}
+                    />
                     <div
                       className=" bg-cs-red text-center rounded-lg py-3 md:py-4 px-5 md:px-6 text-white font-bold text-sm h-fit cursor-pointer"
                       onClick={() => navigate.push("/")}

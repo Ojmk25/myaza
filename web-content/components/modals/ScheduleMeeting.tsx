@@ -49,8 +49,7 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
     emailList: [],
   });
 
-  const timezoneName = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const timezoneAbbreviation = moment.tz(timezoneName).format("z");
+  const timeZone = moment.tz.guess(true);
 
   const handleInput = (input: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = input.target;
@@ -151,7 +150,7 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
       meeting_date: formData.date,
       start_time: timeToUnixTimestamp(formData.startTime),
       end_time: timeToUnixTimestamp(formData.endTime),
-      timezone: timezoneAbbreviation,
+      timezone: timeZone,
       attendees: formData.emailList,
     };
     setLoading(true);

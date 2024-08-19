@@ -94,6 +94,7 @@
 
 // export default ShowVisualizer;
 
+import { useAppContext } from "@/context/StoreContext";
 import {
   MeetingManager,
   RosterAttendeeType,
@@ -115,7 +116,9 @@ const ShowVisualizer = ({
   const [audioState, setAudioState] = useState({
     volume: 0,
     mute: true,
+    attendeeId: attendee.chimeAttendeeId,
   });
+  const { appState, setAppState } = useAppContext();
 
   const meetingM = useMeetingManager();
 
@@ -129,6 +132,60 @@ const ShowVisualizer = ({
         setAudioState({
           volume: volume || 0,
           mute: muted || false,
+          attendeeId: attendeeId,
+        });
+        // setAppState((prevState) => ({
+        //   ...prevState,
+        //   sessionState: {
+        //     ...prevState.sessionState,
+        //     sessionLink: window.location.href,
+        //     audioState: [...prevState.sessionState.audioState, audioState],
+        //   },
+        // }));
+
+        let newAudioState = {
+          volume: volume || 0,
+          mute: muted || false,
+          attendeeId: attendeeId,
+        };
+        setAppState((prevState) => {
+          const existingAttendeeIndex =
+            prevState.sessionState.audioState.findIndex(
+              (state) => state.attendeeId === attendee.chimeAttendeeId
+            );
+
+          if (existingAttendeeIndex === -1) {
+            // Attendee not in the list, so add them
+            return {
+              ...prevState,
+              sessionState: {
+                ...prevState.sessionState,
+                audioState: [...prevState.sessionState.audioState, audioState],
+              },
+            };
+          }
+
+          return prevState;
+        });
+
+        setAppState((prevState) => {
+          const updatedAudioState = prevState.sessionState.audioState.map(
+            (state) => (state.attendeeId === attendeeId ? newAudioState : state)
+          );
+
+          return {
+            ...prevState,
+            sessionState: {
+              ...prevState.sessionState,
+              audioState: updatedAudioState,
+            },
+          };
+        });
+
+        setAudioState({
+          volume: volume || 0,
+          mute: muted || false,
+          attendeeId: attendeeId,
         });
       }
     };

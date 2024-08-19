@@ -4,9 +4,7 @@ import {
   RosterAttendeeType,
 } from "amazon-chime-sdk-component-library-react";
 import closeIconPurple from "@/public/assets/images/closeIconPurple.svg";
-import { SearchNormal1 } from "iconsax-react";
 import { AttendeeListCard } from "./AttendeeListCard";
-import ShowVisualizer from "./ShowVisualizer";
 
 const Participants = ({
   attendees,
@@ -57,11 +55,17 @@ const Participants = ({
             key={attendee.chimeAttendeeId}
             externalID={attendee.externalUserId}
             audioState={
-              <ShowVisualizer
-                meetingManager={meetingManager}
-                attendee={attendee}
-                noBackground={true}
-              />
+              // <></>
+              // <ShowVisualizer
+              //   meetingManager={meetingManager}
+              //   attendeeId={attendee.chimeAttendeeId}
+              //   noBackground={true}
+              // />
+              // <VisualizerComp
+              //   attendeeId={attendee.chimeAttendeeId}
+              //   noBackground
+              // />
+              <></>
             }
           />
         ))}

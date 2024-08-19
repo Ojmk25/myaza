@@ -36,7 +36,7 @@ export const ValidateText = (name: string) => {
   // Check if name is a string, has more than 3 characters, and matches the regex
   if (
     typeof name === "string" &&
-    name.trim().length > 3 &&
+    name.trim().length > 1 &&
     alphaRegex.test(name)
   ) {
     return true;

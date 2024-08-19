@@ -23,6 +23,7 @@ import {
   useToggleLocalMute,
   MeetingManager,
   useAudioVideo,
+  useMeetingStatus,
 } from "amazon-chime-sdk-component-library-react";
 import raisedHand from "@/public/assets/images/raisedHand.svg";
 import raisedHandWhite from "@/public/assets/images/raisedHandWhite.svg";
@@ -42,7 +43,7 @@ import { useRouter } from "next/router";
 import { useAppContext } from "@/context/StoreContext";
 import { useSessionStorage } from "@/hooks/useStorage";
 import { useMeetingManager } from "amazon-chime-sdk-component-library-react";
-import { log } from "console";
+import { endMeetingForAll } from "@/services/meetingServices";
 // import image from require(`../../public/assets/images/Joy.svg`)
 
 const image = require(`../../public/assets/images/Joy.svg`);
@@ -121,6 +122,8 @@ export default function MeetingControl({
   const [setupDone, setSetupDone] = useState(false);
   const { appState, setAppState } = useAppContext();
   const hasRunRef = useRef(false);
+  const meetingStatus = useMeetingStatus();
+  const meetingM = useMeetingManager();
 
   useEffect(() => {
     if (otherViews.includes("Raise-Hand")) {
@@ -265,6 +268,14 @@ export default function MeetingControl({
   // }
 
   const handleEndMeeting = async () => {
+    try {
+      await endMeetingForAll({
+        chime_meeting_id: meetingDetails?.meeting_info?.MeetingId,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+
     if (meetingManager) {
       meetingManager.leave().then(() => {
         meetingManager.meetingSession?.audioVideo.stopVideoInput();
@@ -311,14 +322,6 @@ export default function MeetingControl({
           console.log(isVideoEnabled);
         }
       } else {
-        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
-        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
-        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
-        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
-        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
-        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
-        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
-        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
         console.log(`Attendee ${attendeeId} left the meeting ${present}`);
       }
     };
@@ -521,15 +524,36 @@ export default function MeetingControl({
               </h6>
             </div>
 
-            {meetingDetails?.meeting_info.MeetingHostId === externalID &&
+            {meetingDetails?.meeting_info?.MeetingHostId === externalID &&
             externalID ? (
-              <div
-                className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer"
-                onClick={handleLeaveMeeting}
-              >
-                <span>End</span>
+              <div className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer group relative min-w-[86px] transition-all hover:bg-[#E1C6FF4D] text-nowrap">
+                <span className="group-hover:hidden transition-all">End</span>
+                <span className="hidden group-hover:inline transition-all text-cs-grey-800">
+                  Cancel
+                </span>
+
+                <div className="bg-white absolute hidden group-hover:block shadow-1xl bottom-11 -right-2 py-3 px-4 rounded-lg z-10">
+                  <div
+                    className=" text-cs-grey-50 bg-cs-red text-sm font-semibold py-3 px-4 rounded-lg mb-2"
+                    onClick={handleEndMeeting}
+                  >
+                    End meeting for all
+                  </div>
+                  <div
+                    className=" text-cs-grey-800 text-sm font-semibold py-3 px-4 rounded-lg hover:bg-[#E1C6FF4D]"
+                    onClick={handleLeaveMeeting}
+                  >
+                    Leave meeting
+                  </div>
+                </div>
               </div>
             ) : (
+              // <div
+              //   className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer"
+              //   onClick={handleLeaveMeeting}
+              // >
+              //   <span>End</span>
+              // </div>
               <div
                 className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer"
                 onClick={handleLeaveMeeting}
@@ -923,17 +947,20 @@ export default function MeetingControl({
               </div>
             )}
 
-            {meetingDetails?.meeting_info.MeetingHostId === externalID &&
+            {meetingDetails?.meeting_info?.MeetingHostId === externalID &&
             externalID ? (
               <>
-                {/* <div className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer group relative min-w-[86px] transition-all hover:bg-[#E1C6FF4D] text-nowrap">
+                <div className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer group relative min-w-[86px] transition-all hover:bg-[#E1C6FF4D] text-nowrap">
                   <span className="group-hover:hidden transition-all">End</span>
                   <span className="hidden group-hover:inline transition-all text-cs-grey-800">
                     Cancel
                   </span>
 
                   <div className="bg-white absolute hidden group-hover:block shadow-1xl bottom-11 -right-2 py-3 px-4 rounded-lg z-10">
-                    <div className=" text-cs-grey-50 bg-cs-red text-sm font-semibold py-3 px-4 rounded-lg mb-2">
+                    <div
+                      className=" text-cs-grey-50 bg-cs-red text-sm font-semibold py-3 px-4 rounded-lg mb-2"
+                      onClick={handleEndMeeting}
+                    >
                       End meeting for all
                     </div>
                     <div
@@ -943,13 +970,13 @@ export default function MeetingControl({
                       Leave meeting
                     </div>
                   </div>
-                </div> */}
-                <div
+                </div>
+                {/* <div
                   className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer"
                   onClick={handleLeaveMeeting}
                 >
                   <span>End</span>
-                </div>
+                </div> */}
               </>
             ) : (
               <div

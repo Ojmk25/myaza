@@ -15,6 +15,10 @@ import { getRemoteInitials } from "@/utils/meetingFunctions";
 import ReactionEmoji from "./ReactionEmoji";
 import { useAppContext } from "@/context/StoreContext";
 import RaisedHand from "./RaisedHand";
+import ShowVisualizer from "./ShowVisualizer";
+import useVolumeIndicator from "@/hooks/useSubscribeToVolume";
+
+// import MeetingCardAudio from "./MeetingCardAudio";
 
 type AtteendeeDetailsProp = {
   full_name: string;
@@ -29,6 +33,7 @@ export const LocalAttendeeCard = ({
   nameID,
   audioState,
   meetingManager,
+  sideView,
 }: // attendeeDetails,
 {
   name: string | undefined;
@@ -37,6 +42,7 @@ export const LocalAttendeeCard = ({
   nameID: string;
   audioState: JSX.Element;
   meetingManager?: MeetingManager;
+  sideView: string | undefined;
   // attendeeDetails: AtteendeeDetailsProp | undefined;
 }) => {
   const { isVideoEnabled } = useLocalVideo();
@@ -45,8 +51,7 @@ export const LocalAttendeeCard = ({
 
   useEffect(() => {
     getNameAbbreviation();
-    console.log("");
-  }, [appState.sessionState.meetingAttendees]);
+  }, [appState.sessionState.meetingAttendees, sideView, meetingManager, muted]);
   const attendeeDetailItems = appState.sessionState.meetingAttendees.find(
     (att) => att.user_id === nameID
   );

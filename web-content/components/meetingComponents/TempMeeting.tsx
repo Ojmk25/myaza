@@ -2,6 +2,7 @@
 import {
   useAudioVideo,
   useMeetingManager,
+  useMeetingStatus,
   useRosterState,
 } from "amazon-chime-sdk-component-library-react";
 import {
@@ -16,7 +17,13 @@ import {
 import MeetingSection from "@/components/meetingComponents/MeetingSection";
 import MeetingControl from "@/components/meetingComponents/MeetingControl";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { ArrowLeft, Coffee, InfoCircle, Setting2 } from "iconsax-react";
+import {
+  ArrowLeft,
+  Coffee,
+  InfoCircle,
+  MessageQuestion,
+  Setting2,
+} from "iconsax-react";
 import ShareScreen from "@/components/modals/ShareScreen";
 import Settings from "@/components/modals/Settings";
 import { useRouter } from "next/router";
@@ -30,6 +37,7 @@ import { SuccessSlideIn } from "../SuccessSlideIn";
 import { FailureSlideIn } from "../FailureSlideIn";
 import LoadingScreen from "../modals/LoadingScreen";
 import { useAppContext } from "@/context/StoreContext";
+import EndedMeetingModal from "../modals/EndedMeeting";
 
 type AtteendeeDetailsProp = {
   full_name: string;
@@ -54,6 +62,8 @@ export default function TempMeeting({
   const [inputMessage, setInputMessage] = useState({ sender: "", emoji: "" });
   const { appState, setAppState } = useAppContext();
   const hasRunRef = useRef(false);
+  const bigScreenWidgetRef = useRef<HTMLDivElement>(null);
+  const smallScreenWidgetRef = useRef<HTMLDivElement>(null);
   const [meetingSession, setMeetingSession] =
     useState<DefaultMeetingSession | null>(null);
   const [dynamicElementId, setDynamicElementId] =
@@ -65,6 +75,9 @@ export default function TempMeeting({
   const { roster } = useRosterState();
   const attendees = Object.values(roster);
   const [noNetwork, setNoNetwork] = useState(false);
+  const [screenWidth, setScreenWidth] = useState<number>();
+  const meetingStatus = useMeetingStatus();
+  const endeMeetingRef = useRef(false);
 
   const handleShowModal = (type: string) => {
     setShowModal(type);
@@ -87,6 +100,62 @@ export default function TempMeeting({
       setSideView(value);
     }
   };
+
+  useEffect(() => {
+    const appendWidget = () => {
+      const widgetElement = document.querySelector(
+        "#atlwdg-trigger"
+      ) as HTMLElement;
+      widgetElement?.classList.add("opacity-0", "inset-0", "absolute");
+
+      if (widgetElement) {
+        widgetElement.style.position = "absolute";
+        widgetElement.style.inset = "0";
+        widgetElement.style.width = "100%";
+      }
+
+      if (widgetElement?.parentNode) {
+        widgetElement.parentNode.removeChild(widgetElement);
+      }
+      if (
+        bigScreenWidgetRef &&
+        smallScreenWidgetRef &&
+        screenWidth &&
+        screenWidth > 767
+      ) {
+        if (widgetElement)
+          bigScreenWidgetRef.current?.append(widgetElement as Node);
+      } else {
+        if (widgetElement)
+          smallScreenWidgetRef.current?.append(widgetElement as Node);
+      }
+    };
+
+    const timerId = setTimeout(() => {
+      appendWidget();
+    }, 5000);
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [screenWidth]);
+
+  useEffect(() => {
+    // Function to update screenWidth state when the window is resized
+    const handleResize = () => {
+      setScreenWidth(window.innerWidth);
+    };
+
+    // Initial width when component mounts
+    setScreenWidth(window.innerWidth);
+    handleResize();
+    // Add event listener to window resize event
+    window.addEventListener("resize", handleResize);
+
+    // Cleanup function to remove event listener when component unmounts
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     const handleAttendee = async () => {
@@ -179,6 +248,24 @@ export default function TempMeeting({
     }
   }, [router.isReady, router.asPath]);
 
+  const checkStatus = () => {
+    const handleLeaveMeeting = async () => {
+      if (meetingManager) {
+        meetingManager.leave().then(() => {
+          meetingManager.meetingSession?.audioVideo.stopVideoInput();
+          meetingManager.meetingSession?.audioVideo.stopLocalVideoTile();
+          meetingManager.meetingSession?.audioVideo.stop();
+          meetingManager.audioVideo?.stop();
+          // router.push("/").then(() => window.location.reload());
+        });
+      }
+    };
+    if (meetingStatus === 3) {
+      endeMeetingRef.current = true;
+      handleLeaveMeeting();
+    }
+    return "";
+  };
   const getAttendeesList = async (meetingId: string) => {
     try {
       const response = await listAttendees({
@@ -223,26 +310,20 @@ export default function TempMeeting({
     // appState.sessionState.meetingAttendees,
   ]);
 
-  // useLayoutEffect(() => {
-  //   const videoElement = document.getElementById(
-  //     "localvideo-1"
-  //   ) as HTMLVideoElement;
-  //   return () => {
-  //     // if (meetingManager !== null) {
-  //     // sessionStorage.setItem("meetingJoiner", "yes")
-  //     console.log(videoElement);
+  useEffect(() => {
+    const { query } = router;
+    getAttendeesList(query.link as string);
+    const handleAudioVideoDidStart = async () => {};
+    meetingManager?.audioVideo?.addObserver({
+      audioVideoDidStart: handleAudioVideoDidStart,
+    });
 
-  //     if (videoElement) {
-  //       meetingManager.meetingSession?.audioVideo.stopVideoInput();
-  //       meetingManager.meetingSession?.audioVideo.stopLocalVideoTile();
-  //       meetingManager.meetingSession?.audioVideo.stopVideoPreviewForVideoInput(
-  //         videoElement
-  //       );
-  //       meetingManager.meetingSession?.audioVideo.stop();
-  //       meetingManager.leave();
-  //     }
-  //   };
-  // }, []);
+    return () => {
+      meetingManager?.audioVideo?.removeObserver({
+        audioVideoDidStart: handleAudioVideoDidStart,
+      });
+    };
+  }, [meetingManager]);
 
   useLayoutEffect(() => {
     return () => {
@@ -364,13 +445,20 @@ export default function TempMeeting({
     <div className="w-full flex items-center flex-col">
       <div className="max-auto w-full ">
         <main className=" flex flex-col md:px-6 h-dvh w-full relative">
+          {/* header for small screen */}
           <div className="md:hidden px-4">
             <div className="flex  justify-between items-center py-4 bg-[#FEFDFF] border-solid border-b border-b-[#FAFAFA]">
-              <Link href={"/"} className=" md:hidden">
-                <Image src={cecureStreamSmall} alt="logo" />
-              </Link>
+              <Image src={cecureStreamSmall} alt="logo" />
 
               <div className="flex justify-between gap-x-2 items-center">
+                <div
+                  ref={smallScreenWidgetRef}
+                  className=" w-fit relative overflow-hidden"
+                >
+                  <div className="bg-cs-purple-650 p-[10px] rounded-lg flex items-center cursor-pointer">
+                    <MessageQuestion size="18" color="#FAF0FF" />
+                  </div>
+                </div>
                 <div
                   className={` ${
                     sideView === "Conference Info"
@@ -422,12 +510,18 @@ export default function TempMeeting({
             </div>
           </div>
 
+          {/* header for big screen */}
           <div className=" hidden md:flex justify-between items-center py-4 ">
-            <Link href={"/"} className="hidden md:block">
-              <Image src={cecureStream} alt="logo" />
-            </Link>
-
+            <Image src={cecureStream} alt="logo" />
+            {checkStatus()}
             <div className="flex justify-between gap-x-4 items-center">
+              <div ref={bigScreenWidgetRef} className=" w-fit relative">
+                <div className="bg-cs-purple-650 text-cs-grey-60-light p-[10px] rounded-lg font-semibold flex items-center gap-x-2 cursor-pointer">
+                  <MessageQuestion size="20" color="#FAF0FF" />
+                  <p>Need Help?</p>
+                </div>
+              </div>
+
               <div
                 className={` flex ${
                   sideView === "Conference Info"
@@ -509,6 +603,7 @@ export default function TempMeeting({
           /> */}
           {loading && <LoadingScreen />}
           {noNetwork && <LoadingScreen />}
+          {endeMeetingRef.current && <EndedMeetingModal />}
         </main>
       </div>
     </div>

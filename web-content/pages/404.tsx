@@ -4,6 +4,7 @@ import { isDynamicRoute } from "next/dist/shared/lib/router/utils";
 import { getRouteRegex } from "next/dist/shared/lib/router/utils/route-regex";
 import { getClientBuildManifest } from "next/dist/client/route-loader";
 import LoadingScreen from "@/components/modals/LoadingScreen";
+import ErrorPage from "@/components/ErrorPage";
 
 async function pageExists(location: string) {
   const { sortedPages } = await getClientBuildManifest();
@@ -41,7 +42,7 @@ const Custom404 = () => {
     );
   }
 
-  return <div>Custom404 page</div>;
+  return <ErrorPage />;
 };
 
 export default Custom404;
