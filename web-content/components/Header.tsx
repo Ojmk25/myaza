@@ -26,30 +26,29 @@ export default function Header() {
   const [showModal, setShowModal] = useState("");
   const { picture } = getClientInfo();
   const widgetRef = useRef<HTMLDivElement>(null);
-  const [screenWidth, setScreenWidth] = useState<number>();
 
   useEffect(() => {
     setLoggedIn(IsAuthenticated());
     getNameAbbreviation();
   }, []);
 
-  useEffect(() => {
-    // Function to update screenWidth state when the window is resized
-    const handleResize = () => {
-      setScreenWidth(window.innerWidth);
-    };
+  // useEffect(() => {
+  //   // Function to update screenWidth state when the window is resized
+  //   const handleResize = () => {
+  //     setScreenWidth(window.innerWidth);
+  //   };
 
-    // Initial width when component mounts
-    setScreenWidth(window.innerWidth);
-    handleResize();
-    // Add event listener to window resize event
-    window.addEventListener("resize", handleResize);
+  //   // Initial width when component mounts
+  //   setScreenWidth(window.innerWidth);
+  //   handleResize();
+  //   // Add event listener to window resize event
+  //   window.addEventListener("resize", handleResize);
 
-    // Cleanup function to remove event listener when component unmounts
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+  //   // Cleanup function to remove event listener when component unmounts
+  //   return () => {
+  //     window.removeEventListener("resize", handleResize);
+  //   };
+  // }, []);
 
   useEffect(() => {
     const updateCurrentTime = () => {
@@ -102,31 +101,71 @@ export default function Header() {
     };
   }, []);
 
-  useEffect(() => {
-    const appendWidget = () => {
-      const widgetElement = document?.querySelector(
-        "#atlwdg-trigger"
-      ) as HTMLElement;
+  // useEffect(() => {
+  //   const appendWidget = () => {
+  //     const widgetElement = document?.querySelector(
+  //       "#atlwdg-trigger"
+  //     ) as HTMLElement;
 
-      widgetElement?.classList.add("w-full", "inset-0");
-      if (widgetElement) {
-        widgetElement.style.inset = "0";
-        widgetElement.style.width = "100%";
-      }
-      if (widgetElement?.parentNode) {
-        widgetElement.parentNode.removeChild(widgetElement);
-      }
-      if (widgetRef && widgetElement) {
-        widgetRef.current?.append(widgetElement as Node);
+  //     widgetElement?.classList.add("w-full", "inset-0");
+  //     if (widgetElement) {
+  //       widgetElement.style.inset = "0";
+  //       widgetElement.style.width = "100%";
+  //     }
+  //     if (widgetElement?.parentNode) {
+  //       widgetElement.parentNode.removeChild(widgetElement);
+  //     }
+  //     if (widgetRef && widgetElement) {
+  //       widgetRef.current?.append(widgetElement as Node);
+  //     }
+  //   };
+  //   const timerId = setTimeout(() => {
+  //     appendWidget();
+  //   }, 3000);
+  //   return () => {
+  //     clearTimeout(timerId);
+  //   };
+  // }, [screenWidth]);
+
+  useEffect(() => {
+    const callback: MutationCallback = (mutationsList, observer) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type === "childList") {
+          const scriptElement = document.querySelector("#atlwdg-trigger");
+          if (scriptElement) {
+            handleScriptLoaded();
+            observer.disconnect(); // Stop observing once the script is found
+            break;
+          }
+        }
       }
     };
-    const timerId = setTimeout(() => {
-      appendWidget();
-    }, 3000);
+
+    const observer = new MutationObserver(callback);
+    observer.observe(document.body, { childList: true, subtree: true });
+
     return () => {
-      clearTimeout(timerId);
+      observer.disconnect(); // Clean up the observer when the component unmounts
     };
-  }, [screenWidth]);
+  }, []);
+
+  const handleScriptLoaded = () => {
+    const widgetElement = document?.querySelector(
+      "#atlwdg-trigger"
+    ) as HTMLElement;
+
+    widgetElement?.classList.add("w-full", "inset-0");
+    if (widgetElement) {
+      widgetElement.style.inset = "0";
+      widgetElement.style.width = "100%";
+    }
+    if (widgetElement?.parentNode) {
+      widgetElement.parentNode.removeChild(widgetElement);
+    }
+    if (widgetRef && widgetElement) {
+      widgetRef.current?.append(widgetElement as Node);
+    }
+  };
 
   const handleShowModal = (type: string) => {
     setShowModal(type);
@@ -308,7 +347,7 @@ export default function Header() {
       >
         <div className="bg-cs-purple-650 text-cs-grey-60-light p-[10px] rounded-lg font-semibold flex items-center md:gap-x-2 cursor-pointer">
           <MessageQuestion size="20" color="#FAF0FF" className="m-auto" />
-          <p className="hidden md:block">Need Help?</p>
+          <p className="hidden md:block">Feedback?</p>
         </div>
       </div>
     </>

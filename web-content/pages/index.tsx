@@ -135,13 +135,14 @@ export default function Home() {
     try {
       const data = await createInstantMeeting({});
       // sessionStorage.setItem("meetingJoiner", "no");
-      setExpressJoin("yes");
-      const extractedLink = extractAfterLastSlashOrFull(
-        data?.data.body.data.meeting_link
-      );
       setMeetingData(data);
       setLoading(true);
       setOpenModal(true);
+      setExpressJoin("yes");
+      const extractedLink = extractAfterLastSlashOrFull(
+        data?.data?.body?.data?.meeting_link
+      );
+
       data?.data.body &&
         data?.data.body.status === "Success" &&
         navigate.push(`/meet/${extractedLink}`);

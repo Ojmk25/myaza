@@ -31,6 +31,7 @@ import joySvg from "@/public/assets/images/Joy.svg";
 import redHeartSvg from "@/public/assets/images/Red Heart.svg";
 import partyPopSvg from "@/public/assets/images/Party Popper.svg";
 import clappingSvg from "@/public/assets/images/Clapping Hands.svg";
+import thumbsUpSvg from "@/public/assets/images/thumbsUp.svg";
 import smirkSvg from "@/public/assets/images/Smirking With Starry Eyes.svg";
 import smileTearSvg from "@/public/assets/images/Smiling face with tear.svg";
 import thumbsDownSvg from "@/public/assets/images/Thumbs Down.svg";
@@ -64,6 +65,11 @@ const emojis = [
     emoji: clappingSvg,
     alt: "clapping-hands",
     url: "@/public/assets/images/Clapping Hands.svg",
+  },
+  {
+    emoji: thumbsUpSvg,
+    alt: "thumbs-up",
+    url: "@/public/assets/images/thumbsUp.svg",
   },
   {
     emoji: smirkSvg,
@@ -235,7 +241,8 @@ export default function MeetingControl({
         meetingManager.meetingSession?.audioVideo.stop();
         // router.reload();
         meetingManager.audioVideo?.stop();
-        navigate.push("/").then(() => window.location.reload());
+        navigate.push("/");
+        // .then(() => window.location.reload());
       });
     }
   };
@@ -286,7 +293,8 @@ export default function MeetingControl({
         meetingManager.meetingSession?.audioVideo.stop();
         // router.reload();
         meetingManager.audioVideo?.stop();
-        navigate.push("/").then(() => window.location.reload());
+        navigate.push("/");
+        // .then(() => window.location.reload());
       });
     }
   };

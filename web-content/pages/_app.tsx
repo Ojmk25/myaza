@@ -3,9 +3,8 @@ import type { AppProps } from "next/app";
 import localFont from "next/font/local";
 import { useEffect } from "react";
 import Script from "next/script";
-
+import { useRouter } from "next/router";
 import { MeetingProviderComponent } from "../context/StoreContext";
-import { refreshToken } from "@/services/httpServices";
 
 const metropolis_Font = localFont({
   src: [
@@ -35,6 +34,7 @@ interface Window {
 declare var window: Window;
 
 export default function App({ Component, pageProps }: AppProps) {
+  const router = useRouter();
   useEffect(() => {
     // Insert the Clarity script
     const script = document.createElement("script");
@@ -57,26 +57,32 @@ export default function App({ Component, pageProps }: AppProps) {
     }
     gtag("js", new Date());
     gtag("config", "G-7E1NXDF3X1");
-
-    // Load Jira Service Desk Widget
-    const script1 = document.createElement("script");
-    script1.setAttribute("data-jsd-embedded", "true");
-    script1.setAttribute("data-key", "9d24ca79-7b09-44b7-9288-d551d44f19f1");
-    script1.setAttribute("data-base-url", "https://jsd-widget.atlassian.com");
-    script1.src = "https://jsd-widget.atlassian.com/assets/embed.js";
-    document.body.appendChild(script1);
-
-    // Load Jira Issue Collector
-    const script2 = document.createElement("script");
-    script2.src =
-      "https://cil.atlassian.net/s/d41d8cd98f00b204e9800998ecf8427e-T/278rlr/b/8/c95134bc67d3a521bb3f4331beb9b804/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?locale=en-GB&collectorId=09cb9927";
-    document.body.appendChild(script2);
-    // Cleanup script tags on component unmount
-    return () => {
-      document.body.removeChild(script1);
-      document.body.removeChild(script2);
-    };
   }, []);
+  useEffect(() => {
+    const injectJira = () => {
+      // Load Jira Service Desk Widget
+      const script1 = document.createElement("script");
+      script1.setAttribute("data-jsd-embedded", "true");
+      script1.setAttribute("data-key", "9d24ca79-7b09-44b7-9288-d551d44f19f1");
+      script1.setAttribute("data-base-url", "https://jsd-widget.atlassian.com");
+      script1.src = "https://jsd-widget.atlassian.com/assets/embed.js";
+      document.body.appendChild(script1);
+
+      // Load Jira Issue Collector
+      const script2 = document.createElement("script");
+      script2.src =
+        "https://cil.atlassian.net/s/d41d8cd98f00b204e9800998ecf8427e-T/278rlr/b/8/c95134bc67d3a521bb3f4331beb9b804/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector.js?locale=en-GB&collectorId=09cb9927";
+      document.body.appendChild(script2);
+    };
+    // Cleanup script tags on component unmount
+    injectJira();
+
+    router.events.on("routeChangeComplete", injectJira);
+
+    return () => {
+      router.events.off("routeChangeComplete", injectJira);
+    };
+  }, [router.events]);
   return (
     <>
       <Script

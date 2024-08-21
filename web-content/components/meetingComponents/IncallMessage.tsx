@@ -35,6 +35,29 @@ const Chat = ({
   const [timeAgo, setTimeAgo] = useState<string>("");
   const { meetingAttendees } = appState.sessionState;
 
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+  function makeLinksClickable(message: any) {
+    const parts = message.split(urlRegex);
+    return parts.map((part: string, index: number) => {
+      if (part.match(urlRegex)) {
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 underline"
+          >
+            {part}
+          </a>
+        );
+      } else {
+        return part;
+      }
+    });
+  }
+
   useEffect(() => {
     if (!audioVideo) return;
 
@@ -49,7 +72,8 @@ const Chat = ({
         {
           sender,
           attendeeId: dataMessage.senderAttendeeId,
-          message,
+          // message,
+          message: makeLinksClickable(message),
           timeStamp: new Date(),
           externalID: dataMessage.senderExternalUserId,
         },
@@ -74,7 +98,8 @@ const Chat = ({
       {
         sender: "Local User",
         attendeeId: attendeeIDProp || "",
-        message: inputMessage,
+        // message: inputMessage,
+        message: makeLinksClickable(inputMessage),
         timeStamp: new Date(),
         externalID,
       },
@@ -86,8 +111,15 @@ const Chat = ({
     event: React.KeyboardEvent<HTMLInputElement>
   ) => {
     if (event.key === "Enter") {
-      sendMessage();
-      event.preventDefault();
+      if (event.shiftKey) {
+        // Allow Shift + Enter to insert a new line
+
+        event.currentTarget.value += "\n";
+      } else {
+        // Send message on Enter key
+        sendMessage();
+        event.preventDefault(); // Prevents the default action of submitting the form or focusing on the next field
+      }
     }
   };
 

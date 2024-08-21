@@ -78,6 +78,7 @@ export default function TempMeeting({
   const [screenWidth, setScreenWidth] = useState<number>();
   const meetingStatus = useMeetingStatus();
   const endeMeetingRef = useRef(false);
+  const [hostExternalId, setHostExternalId] = useState<string>("");
 
   const handleShowModal = (type: string) => {
     setShowModal(type);
@@ -101,43 +102,43 @@ export default function TempMeeting({
     }
   };
 
-  useEffect(() => {
-    const appendWidget = () => {
-      const widgetElement = document.querySelector(
-        "#atlwdg-trigger"
-      ) as HTMLElement;
-      widgetElement?.classList.add("opacity-0", "inset-0", "absolute");
+  // useEffect(() => {
+  //   const appendWidget = () => {
+  //     const widgetElement = document.querySelector(
+  //       "#atlwdg-trigger"
+  //     ) as HTMLElement;
+  //     widgetElement?.classList.add("opacity-0", "inset-0", "absolute");
 
-      if (widgetElement) {
-        widgetElement.style.position = "absolute";
-        widgetElement.style.inset = "0";
-        widgetElement.style.width = "100%";
-      }
+  //     if (widgetElement) {
+  //       widgetElement.style.position = "absolute";
+  //       widgetElement.style.inset = "0";
+  //       widgetElement.style.width = "100%";
+  //     }
 
-      if (widgetElement?.parentNode) {
-        widgetElement.parentNode.removeChild(widgetElement);
-      }
-      if (
-        bigScreenWidgetRef &&
-        smallScreenWidgetRef &&
-        screenWidth &&
-        screenWidth > 767
-      ) {
-        if (widgetElement)
-          bigScreenWidgetRef.current?.append(widgetElement as Node);
-      } else {
-        if (widgetElement)
-          smallScreenWidgetRef.current?.append(widgetElement as Node);
-      }
-    };
+  //     if (widgetElement?.parentNode) {
+  //       widgetElement.parentNode.removeChild(widgetElement);
+  //     }
+  //     if (
+  //       bigScreenWidgetRef &&
+  //       smallScreenWidgetRef &&
+  //       screenWidth &&
+  //       screenWidth > 767
+  //     ) {
+  //       if (widgetElement)
+  //         bigScreenWidgetRef.current?.append(widgetElement as Node);
+  //     } else {
+  //       if (widgetElement)
+  //         smallScreenWidgetRef.current?.append(widgetElement as Node);
+  //     }
+  //   };
 
-    const timerId = setTimeout(() => {
-      appendWidget();
-    }, 5000);
-    return () => {
-      clearTimeout(timerId);
-    };
-  }, [screenWidth]);
+  //   const timerId = setTimeout(() => {
+  //     appendWidget();
+  //   }, 5000);
+  //   return () => {
+  //     clearTimeout(timerId);
+  //   };
+  // }, [screenWidth]);
 
   useEffect(() => {
     // Function to update screenWidth state when the window is resized
@@ -150,7 +151,6 @@ export default function TempMeeting({
     handleResize();
     // Add event listener to window resize event
     window.addEventListener("resize", handleResize);
-
     // Cleanup function to remove event listener when component unmounts
     return () => {
       window.removeEventListener("resize", handleResize);
@@ -233,9 +233,12 @@ export default function TempMeeting({
           );
 
           setMeetingSession(meetingSession);
-
           await meetingManager.join(meetingSessionConfiguration);
           await meetingManager.start();
+          setHostExternalId(
+            meetingManager.meetingSessionConfiguration?.credentials
+              ?.externalUserId as string
+          );
         } catch (error) {
           console.log(error);
           setLoading(true);
@@ -260,7 +263,10 @@ export default function TempMeeting({
         });
       }
     };
-    if (meetingStatus === 3) {
+    if (
+      meetingStatus === 3 &&
+      hostExternalId !== meetingDetails?.meeting_info?.MeetingHostId
+    ) {
       endeMeetingRef.current = true;
       handleLeaveMeeting();
     }
@@ -389,35 +395,81 @@ export default function TempMeeting({
     meetingManager.audioVideo?.realtimeSendDataMessage("reaction", message);
   };
 
+  // useEffect(() => {
+  //   const handleElement = () => {
+  //     const parentElement = document.getElementById(dynamicElementId);
+  //     if (parentElement) {
+  //       const videoElement =
+  //         parentElement.querySelector<HTMLVideoElement>("video");
+  //       if (videoElement) {
+  //         // Perform any operations with the dynamically added video element
+  //         // videoElement.play(); // Example operation
+  //         console.log("Video element found and played:");
+  //       } else {
+  //         console.log("Video element not found");
+  //       }
+  //     } else {
+  //       console.log("Parent element not found");
+  //     }
+  //   };
+
+  //   if (meetingSession) {
+  //     const observer = new MutationObserver(() => {
+  //       handleElement();
+  //     });
+
+  //     observer.observe(document.body, { childList: true, subtree: true });
+
+  //     // Cleanup observer on component unmount
+  //     return () => observer.disconnect();
+  //   }
+  // }, [meetingSession, dynamicElementId]);
+
   useEffect(() => {
-    const handleElement = () => {
-      const parentElement = document.getElementById(dynamicElementId);
-      if (parentElement) {
-        const videoElement =
-          parentElement.querySelector<HTMLVideoElement>("video");
-        if (videoElement) {
-          // Perform any operations with the dynamically added video element
-          // videoElement.play(); // Example operation
-          console.log("Video element found and played:");
-        } else {
-          console.log("Video element not found");
+    const callback: MutationCallback = (mutationsList, observer) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type === "childList") {
+          const scriptElement = document.querySelector("#atlwdg-trigger");
+          if (scriptElement) {
+            handleScriptLoaded();
+            observer.disconnect(); // Stop observing once the script is found
+            break;
+          }
         }
-      } else {
-        console.log("Parent element not found");
       }
     };
 
-    if (meetingSession) {
-      const observer = new MutationObserver(() => {
-        handleElement();
-      });
+    const observer = new MutationObserver(callback);
+    observer.observe(document.body, { childList: true, subtree: true });
 
-      observer.observe(document.body, { childList: true, subtree: true });
+    return () => {
+      observer.disconnect(); // Clean up the observer when the component unmounts
+    };
+  }, [screenWidth]);
 
-      // Cleanup observer on component unmount
-      return () => observer.disconnect();
+  const handleScriptLoaded = () => {
+    const widgetElement = document.querySelector(
+      "#atlwdg-trigger"
+    ) as HTMLElement;
+    widgetElement?.classList.add("opacity-0", "inset-0", "absolute");
+
+    if (widgetElement) {
+      widgetElement.style.position = "absolute";
+      widgetElement.style.inset = "0";
+      widgetElement.style.width = "100%";
     }
-  }, [meetingSession, dynamicElementId]);
+
+    if (widgetElement?.parentNode) {
+      widgetElement.parentNode.removeChild(widgetElement);
+    }
+    if (screenWidth && screenWidth > 767) {
+      if (widgetElement)
+        bigScreenWidgetRef.current?.append(widgetElement as Node);
+    } else {
+      if (widgetElement)
+        smallScreenWidgetRef.current?.append(widgetElement as Node);
+    }
+  };
 
   useEffect(() => {
     const observer: AudioVideoObserver = {
@@ -518,7 +570,7 @@ export default function TempMeeting({
               <div ref={bigScreenWidgetRef} className=" w-fit relative">
                 <div className="bg-cs-purple-650 text-cs-grey-60-light p-[10px] rounded-lg font-semibold flex items-center gap-x-2 cursor-pointer">
                   <MessageQuestion size="20" color="#FAF0FF" />
-                  <p>Need Help?</p>
+                  <p>Feedback?</p>
                 </div>
               </div>
 

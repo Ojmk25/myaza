@@ -18,7 +18,7 @@ export const ToggleAudio = ({
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [audioLevel, setAudioLevel] = useState<number>(0);
   const { setAppState } = useAppContext();
-  const [audioStatus, setAudioStatus] = useSessionStorage("audioStatus", "yes");
+  const [audioStatus, setAudioStatus] = useSessionStorage("audioStatus", "no");
 
   const logger = new ConsoleLogger("MyLogger");
   const deviceController = new DefaultDeviceController(logger, {

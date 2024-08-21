@@ -424,21 +424,21 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
         </div>
         <SuccessSlideIn
           openModal={openModal}
-          response={successRes?.status === "Success"}
+          response={successRes && successRes?.status === "Success"}
           successActionResponse="Meeting Scheduled"
           closeModal={() => {}}
         />
         <FailureSlideIn
           openModal={openModal}
-          response={successRes?.status === "Error"}
-          errResponse={successRes?.message}
+          response={successRes && successRes?.status === "Error"}
+          errResponse={successRes && successRes?.message}
           closeModal={() => {}}
         />
       </div>
       {loading && <LoadingScreen />}
       {openMeetingDetails && (
         <MeetingDetailsModal
-          meetDetails={meetDetails}
+          meetDetails={meetDetails && meetDetails}
           onClose={handleCloseMeetingDetails}
         />
       )}

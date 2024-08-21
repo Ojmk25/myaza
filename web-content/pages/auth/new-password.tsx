@@ -253,7 +253,7 @@ export default function NewPassword() {
             className=" text-cs-purple-650 text-sm font-medium ml-5"
             type="submit"
           >
-            Back to sign in
+            Resend code
           </button>
         </div>
       </form>
