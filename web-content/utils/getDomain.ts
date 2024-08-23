@@ -22,13 +22,14 @@
 //   return null;
 // };
 
-export function getSubdomain(host: string) {
-  // Split the hostname into parts
-  const hostnameParts = host.split(".");
 
-  // If the hostname has more than two parts, return the first part (the subdomain)
+export function getSubdomain(host: string) {
+  // Split the hostname into parts in array
+  const hostnameParts = host.split(".");
+  // If the hostname has more than two parts, take out "www" if it's in the array return the first part (the subdomain)
   if (hostnameParts.length > 2) {
-    return hostnameParts[0];
+    const filterOut = hostnameParts.filter((item) => item !== "www");
+    return filterOut[0];
   }
 
   // If there is no subdomain, return an empty string
