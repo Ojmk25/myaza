@@ -23,7 +23,12 @@ type SessionState = {
   sessionName: string;
   sessionCategory: string;
   sessionId: string;
-  reaction: { sender: string; message: string };
+  reaction: {
+    sender: string;
+    message: string;
+    senderExternalId: string;
+    lottieCode: string;
+  };
   raisedHand: { timestamp: string; message: string };
   guestFirstName: string;
   guestLastName: string;
@@ -46,7 +51,12 @@ export const AppCtx = createContext<AppContextType>({
       sessionName: "",
       sessionCategory: "",
       sessionId: "",
-      reaction: { sender: "", message: "" },
+      reaction: {
+        sender: "",
+        message: "",
+        senderExternalId: "",
+        lottieCode: "",
+      },
       raisedHand: { timestamp: "", message: "" },
       guestFirstName: "",
       guestLastName: "",
@@ -66,7 +76,12 @@ export const StoreContext: React.FC<{ children: React.ReactNode }> = ({
       sessionName: "",
       sessionCategory: "",
       sessionId: "",
-      reaction: { sender: "", message: "" },
+      reaction: {
+        sender: "",
+        message: "",
+        senderExternalId: "",
+        lottieCode: "",
+      },
       raisedHand: { timestamp: "", message: "" },
       guestFirstName: "",
       guestLastName: "",

@@ -6,7 +6,6 @@ import {
   useRemoteVideoTileState,
 } from "amazon-chime-sdk-component-library-react";
 import Image from "next/image";
-import avatar from "@/public/assets/images/avatar.png";
 import dottedLine from "@/public/assets/images/dottedLine.svg";
 import { useEffect } from "react";
 import { getNameAbbreviation } from "@/services/authService";

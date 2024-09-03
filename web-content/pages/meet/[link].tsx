@@ -7,7 +7,12 @@ import { useEffect, useState } from "react";
 const Meet = () => {
   const router = useRouter();
   const [updateRoute, setUpdateRoute] = useState("");
-  const [expressJoin, setExpressJoin] = useSessionStorage("meetingJoiner", "");
+  const [expressJoin, setExpressJoin] = useSessionStorage(
+    "meetingJoiner",
+    "no"
+  );
+
+  console.log(expressJoin);
 
   let joinStatus;
   useEffect(() => {

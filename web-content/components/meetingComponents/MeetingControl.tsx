@@ -27,71 +27,16 @@ import {
 } from "amazon-chime-sdk-component-library-react";
 import raisedHand from "@/public/assets/images/raisedHand.svg";
 import raisedHandWhite from "@/public/assets/images/raisedHandWhite.svg";
-import joySvg from "@/public/assets/images/Joy.svg";
-import redHeartSvg from "@/public/assets/images/Red Heart.svg";
-import partyPopSvg from "@/public/assets/images/Party Popper.svg";
-import clappingSvg from "@/public/assets/images/Clapping Hands.svg";
-import thumbsUpSvg from "@/public/assets/images/thumbsUp.svg";
-import smirkSvg from "@/public/assets/images/Smirking With Starry Eyes.svg";
-import smileTearSvg from "@/public/assets/images/Smiling face with tear.svg";
-import thumbsDownSvg from "@/public/assets/images/Thumbs Down.svg";
-import horrorSvg from "@/public/assets/images/Horror-stricken face.svg";
-import captureWhite from "@/public/assets/images/captureWhite.svg";
-import capturePurple from "@/public/assets/images/capturePurple.svg";
 import captureGray from "@/public/assets/images/captureGray.svg";
 
 import { useRouter } from "next/router";
 import { useAppContext } from "@/context/StoreContext";
 import { useSessionStorage } from "@/hooks/useStorage";
 import { useMeetingManager } from "amazon-chime-sdk-component-library-react";
-import { endMeetingForAll } from "@/services/meetingServices";
-// import image from require(`../../public/assets/images/Joy.svg`)
-
-const image = require(`../../public/assets/images/Joy.svg`);
-
-const emojis = [
-  { emoji: joySvg, alt: "joy", url: image },
-  {
-    emoji: redHeartSvg,
-    alt: "red-heart",
-    url: "@/public/assets/images/Red Heart.svg",
-  },
-  {
-    emoji: partyPopSvg,
-    alt: "party-popper",
-    url: "@/public/assets/images/Party Popper.svg",
-  },
-  {
-    emoji: clappingSvg,
-    alt: "clapping-hands",
-    url: "@/public/assets/images/Clapping Hands.svg",
-  },
-  {
-    emoji: thumbsUpSvg,
-    alt: "thumbs-up",
-    url: "@/public/assets/images/thumbsUp.svg",
-  },
-  {
-    emoji: smirkSvg,
-    alt: "smirk",
-    url: "@/public/assets/images/Smirking With Starry Eyes.svg",
-  },
-  {
-    emoji: smileTearSvg,
-    alt: "smile-tear",
-    url: "@/public/assets/images/Smiling face with tear.svg",
-  },
-  {
-    emoji: thumbsDownSvg,
-    alt: "thumbs-down",
-    url: "@/public/assets/images/Thumbs Down.svg",
-  },
-  {
-    emoji: horrorSvg,
-    alt: "horrified-face",
-    url: "@/public/assets/images/Horror-stricken face.svg",
-  },
-];
+import { endMeetingForAll, listAttendees } from "@/services/meetingServices";
+import { emojis } from "@/constants/emojis";
+import ReactDOM from "react-dom/client";
+import * as LottiePlayer from "@lottiefiles/lottie-player";
 
 export default function MeetingControl({
   bgColor,
@@ -100,7 +45,6 @@ export default function MeetingControl({
   sideViewFunc,
   meetingManager,
   attendeIDString,
-  sendEmoji,
   meetingDetails,
   externalID,
 }: {
@@ -110,7 +54,6 @@ export default function MeetingControl({
   sideViewFunc: (value: string) => void;
   meetingManager: MeetingManager;
   attendeIDString: string | null | undefined;
-  sendEmoji: (sender: string, emoji: string) => void;
   meetingDetails: any;
   externalID: string | null | undefined;
 }) {
@@ -128,8 +71,12 @@ export default function MeetingControl({
   const [setupDone, setSetupDone] = useState(false);
   const { appState, setAppState } = useAppContext();
   const hasRunRef = useRef(false);
-  const meetingStatus = useMeetingStatus();
-  const meetingM = useMeetingManager();
+  const raiseHandSoundRef = useRef<HTMLAudioElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    import("@lottiefiles/lottie-player");
+  });
 
   useEffect(() => {
     if (otherViews.includes("Raise-Hand")) {
@@ -221,28 +168,13 @@ export default function MeetingControl({
   };
 
   const handleLeaveMeeting = async () => {
-    // await meetingManager.stopVideoInputDevice();
-    // meetingManager.audioVideo?.stopLocalVideoTile();
-    // meetingManager.audioVideo?.stopVideoInput();
-    // meetingManager.audioVideo?.stop();
-
-    // meetingManager.audioVideo?.stopVideoPreviewForVideoInput
-    // meetingManager.audioVideo?.stopLocalVideoTile()
-    // meetingManager.audioVideo?.stopVideoPreviewForVideoInput()
-    // meetingManager.audioVideo?.stop();
-    // navigate.push("/");
     if (meetingManager) {
       meetingManager.leave().then(() => {
         meetingManager.meetingSession?.audioVideo.stopVideoInput();
         meetingManager.meetingSession?.audioVideo.stopLocalVideoTile();
-        // meetingManager.meetingSession?.audioVideo.stopVideoPreviewForVideoInput(
-        //   videoElement
-        // );
         meetingManager.meetingSession?.audioVideo.stop();
-        // router.reload();
         meetingManager.audioVideo?.stop();
         navigate.push("/");
-        // .then(() => window.location.reload());
       });
     }
   };
@@ -287,14 +219,9 @@ export default function MeetingControl({
       meetingManager.leave().then(() => {
         meetingManager.meetingSession?.audioVideo.stopVideoInput();
         meetingManager.meetingSession?.audioVideo.stopLocalVideoTile();
-        // meetingManager.meetingSession?.audioVideo.stopVideoPreviewForVideoInput(
-        //   videoElement
-        // );
         meetingManager.meetingSession?.audioVideo.stop();
-        // router.reload();
         meetingManager.audioVideo?.stop();
         navigate.push("/");
-        // .then(() => window.location.reload());
       });
     }
   };
@@ -305,9 +232,16 @@ export default function MeetingControl({
     }
 
     // Callback function to handle attendee presence changes
-    const handleAttendeePresence = (attendeeId: string, present: boolean) => {
+    const handleAttendeePresence = async (
+      attendeeId: string,
+      present: boolean
+    ) => {
       if (present) {
         console.log(`Attendee ${attendeeId} joined the meeting`);
+
+        if (raiseHandSoundRef.current)
+          raiseHandSoundRef.current.src = "/assets/sounds/ding-126626.mp3";
+        raiseHandSoundRef.current?.play();
         if (!setupDone && !hasRunRef.current) {
           hasRunRef.current = true;
           const cameraOn = videoStatus === "yes";
@@ -322,13 +256,8 @@ export default function MeetingControl({
           }
 
           setSetupDone(true);
-
-          console.log(videoStatus);
-          console.log(audioStatus, microphoneOn, "This is microphone");
-          console.log(setupDone);
-          console.log(muted);
-          console.log(isVideoEnabled);
         }
+        await getAttendeesList(router.query.link as string);
       } else {
         console.log(`Attendee ${attendeeId} left the meeting ${present}`);
       }
@@ -342,6 +271,180 @@ export default function MeetingControl({
       audioVideo.realtimeUnsubscribeToAttendeeIdPresence(
         handleAttendeePresence
       );
+    };
+  }, [audioVideo, router.isReady]);
+
+  const getAttendeesList = async (meetingId: string) => {
+    try {
+      const response = await listAttendees({
+        meeting_id: meetingId,
+      });
+      if (response) {
+        const { data } = response.data.body;
+        const attendee = response.data.body;
+        setAppState((prevState) => ({
+          ...prevState,
+          sessionState: {
+            ...prevState.sessionState,
+            meetingAttendees: data,
+          },
+        }));
+        return data;
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+    }
+  };
+
+  useEffect(() => {
+    // Cleanup the audio when the component unmounts
+    if (
+      appState.sessionState.raisedHand.message !== "" &&
+      appState.sessionState.raisedHand.timestamp !== "" &&
+      raiseHandSoundRef.current
+    ) {
+      raiseHandSoundRef.current.src =
+        "/assets/sounds/message-incoming-2-199577.mp3";
+      raiseHandSoundRef.current.play();
+    }
+    return () => {
+      if (raiseHandSoundRef.current) {
+        raiseHandSoundRef.current.pause();
+      }
+    };
+  }, [appState.sessionState.raisedHand.timestamp, audioVideo]);
+
+  const sendReaction = (
+    sender: string,
+    emoji: string,
+    externalUserID: string,
+    lottiecode: string
+  ) => {
+    // Update local state immediately
+    setAppState((prevState) => ({
+      ...prevState,
+      sessionState: {
+        ...prevState.sessionState,
+        reaction: {
+          message: emoji,
+          sender: sender,
+          senderExternalId: externalUserID,
+          lottieCode: lottiecode,
+        },
+      },
+    }));
+
+    // Check if audioVideo is available
+    if (!audioVideo) return;
+
+    // Create and send the message
+    const message = JSON.stringify({
+      sender: sender,
+      emoji: emoji,
+      senderExternalId: externalUserID,
+      lottieCode: lottiecode,
+    });
+
+    meetingManager.audioVideo?.realtimeSendDataMessage("reaction", message);
+  };
+
+  useEffect(() => {
+    const emojis = document.querySelectorAll<HTMLButtonElement>(".emoji-list");
+    const container = document.querySelector<HTMLDivElement>(".meetingScreen");
+    if (!container || emojis.length === 0) return;
+
+    const handleEmojiClick = () => {
+      const lottieEl = document.createElement("div");
+      lottieEl.classList.add("emoji-animate");
+      const root = ReactDOM.createRoot(lottieEl);
+      const attendeeDetailItems = appState.sessionState.meetingAttendees.find(
+        (att) => att.user_id === appState.sessionState.reaction.senderExternalId
+      );
+
+      root.render(
+        <div className=" flex flex-col justify-center items-center">
+          {appState.sessionState.reaction.lottieCode && (
+            <div>
+              <div>
+                <lottie-player
+                  id={`${appState.sessionState.reaction.lottieCode}`}
+                  autoplay
+                  loop={false}
+                  mode="normal"
+                  src={`https://fonts.gstatic.com/s/e/notoemoji/latest/${appState.sessionState.reaction.lottieCode}/lottie.json`}
+                  style={{ width: "30px", height: "30px", margin: "auto" }}
+                />
+              </div>
+              <div className="text-cs-grey-50 rounded-lg text-xs font-medium px-2 py-1 bg-cs-purple-650 mt-2">
+                {attendeeDetailItems?.full_name}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+      container.appendChild(lottieEl);
+
+      // Get dynamic positions
+      const { bottom, top, width } = container.getBoundingClientRect();
+
+      const lottieAnimation = lottieEl.animate(
+        [
+          {
+            // transform: `translate(${left}px, ${bottom}px)`,
+
+            transform: `translate3d(${300}px, ${bottom - 180}px, 0)`,
+            opacity: 1,
+          },
+          {
+            // transform: `translate(${width / 2}px, ${top}px)`,
+
+            transform: `translate3d(${300 / 2}px, ${top}px, 50rem)`,
+            opacity: 0.9,
+          },
+        ],
+        {
+          duration: 9000,
+          easing: "cubic-bezier(.47,.48,.44,.86)",
+        }
+      );
+      // Remove element once finished animating
+      lottieAnimation.onfinish = () => lottieEl.remove();
+    };
+    handleEmojiClick();
+    // }, [appState.sessionState.reaction, audioVideo]);
+  }, [appState.sessionState.reaction]);
+
+  useEffect(() => {
+    if (!audioVideo) return;
+
+    const handleDataMessage = (dataMessage: {
+      data: AllowSharedBufferSource | undefined;
+    }) => {
+      const message = new TextDecoder().decode(dataMessage.data);
+      const parsedMessage = JSON.parse(message);
+
+      setAppState((prevState) => ({
+        ...prevState,
+        sessionState: {
+          ...prevState.sessionState,
+          reaction: {
+            sender: parsedMessage.sender,
+            message: parsedMessage.emoji,
+            senderExternalId: parsedMessage.senderExternalId,
+            lottieCode: parsedMessage.lottieCode,
+          },
+        },
+      }));
+    };
+
+    audioVideo?.realtimeSubscribeToReceiveDataMessage(
+      "reaction",
+      handleDataMessage
+    );
+
+    return () => {
+      audioVideo?.realtimeUnsubscribeFromReceiveDataMessage("reaction");
     };
   }, [audioVideo]);
 
@@ -477,20 +580,25 @@ export default function MeetingControl({
                 <h6 className=" text-cs-grey-100 font-medium text-xs">React</h6>
               </div>
               <div
-                className={` ${
-                  otherViews.includes("React") && "w-auto overflow-visible"
-                } absolute left-[-145px] top-[-56px] bg-[#A3A3A3CC] shadow-xl shadow-[#0000001C] rounded-[10px] w-0 overflow-hidden`}
+                className={`  absolute left-[-145px] top-[-56px] bg-[#A3A3A3CC] shadow-xl shadow-[#0000001C] rounded-[10px] w-0 overflow-hidden -z-10 ${
+                  otherViews.includes("React") && "w-auto overflow-visible z-10"
+                }`}
               >
-                <div className=" relative py-2 px-4 flex gap-x-4">
+                <div className=" relative py-2 px-4 flex gap-x-4 emoji-list">
                   {emojis.map((emoji) => (
                     <Image
                       src={emoji.emoji}
                       alt={emoji.alt}
                       width={18}
                       height={18}
-                      className="min-w-6 max-w-5 cursor-pointer"
+                      className="min-w-6 max-w-5 cursor-pointer emoji"
                       onClick={() =>
-                        sendEmoji(attendeIDString as string, emoji.emoji)
+                        sendReaction(
+                          attendeIDString as string,
+                          emoji.emoji,
+                          externalID as string,
+                          emoji.lottieCode
+                        )
                       }
                       key={emoji.alt}
                     />
@@ -720,22 +828,31 @@ export default function MeetingControl({
                 )}
               </div>
             </div>
-            <div className="absolute left-0 right-0 top-[-56px] flex justify-center overflow-x-hidden px-6">
+            <div
+              className={`absolute left-0 right-0 top-[-56px] flex justify-center overflow-x-hidden px-6 ${
+                otherViews.includes("React") ? " " : "-z-10"
+              }`}
+            >
               <div
                 className={` ${
                   otherViews.includes("React") ? "w-fit" : "w-0 overflow-hidden"
                 } bg-[#A3A3A3CC] shadow-xl shadow-[#0000001C] rounded-[10px] relative  overflow-x-scroll no-scrollbar`}
               >
-                <div className=" relative py-2 px-4 flex gap-x-4">
+                <div className=" relative py-2 px-4 flex gap-x-4 emoji-list">
                   {emojis.map((emoji) => (
                     <Image
                       src={emoji.emoji}
                       alt={emoji.alt}
                       width={18}
                       height={18}
-                      className="min-w-6 max-w-5 cursor-pointer"
+                      className="min-w-6 max-w-5 cursor-pointer emoji"
                       onClick={() =>
-                        sendEmoji(attendeIDString as string, emoji.emoji)
+                        sendReaction(
+                          attendeIDString as string,
+                          emoji.emoji,
+                          externalID as string,
+                          emoji.lottieCode
+                        )
                       }
                       key={emoji.alt}
                     />
@@ -997,6 +1114,10 @@ export default function MeetingControl({
           </div>
         </div>
       </div>
+      <audio ref={raiseHandSoundRef}>
+        <source src="" type="audio/mpeg" />
+        Your browser does not support the audio element.
+      </audio>
     </>
   );
 }

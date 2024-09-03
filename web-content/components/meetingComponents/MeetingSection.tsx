@@ -249,6 +249,8 @@ export default function MeetingSection({
             <ShowVisualizer
               attendee={attendee}
               meetingManager={meetingManager}
+              // attendeeId={attendee.chimeAttendeeId}
+              // audioVideo={audioVideo}
             />
           }
           // attendeeDetails={attendeeDetailItems}
@@ -450,7 +452,7 @@ export default function MeetingSection({
 
   return (
     <>
-      <div className=" flex-4 overflow-hidden hidden md:flex metro-medium">
+      <div className=" flex-4 overflow-hidden hidden md:flex metro-medium meetingSection">
         {tileId && (
           <div className=" flex-5 bg-cs-black-200 px-10 py-5 rounded-[4px] mr-4">
             <div className=" h-full flex flex-col">

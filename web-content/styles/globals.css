@@ -105,6 +105,24 @@
   transform: rotateY(180deg);
 }
 
+::selection {
+  background: transparent;
+}
+
+.emoji-container {
+  border-radius: 10px;
+  height: calc(100dvh - 115px);
+  overflow: hidden;
+  position: relative;
+}
+
+.emoji-animate {
+  font-size: 3em;
+  position: absolute;
+  will-change: transform;
+  z-index: 10000;
+}
+
 /* @font-face {
   font-family: Metropolis;
   font-weight: 400;

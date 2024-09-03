@@ -3,7 +3,12 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useAudioVideo } from "amazon-chime-sdk-component-library-react";
 const ReactionEmoji = ({ attendeeId }: { attendeeId: any }) => {
-  const [emoji, setEmoji] = useState<{ sender: string; message: any }>();
+  const [emoji, setEmoji] = useState<{
+    sender: string;
+    message: any;
+    senderExternalId: string;
+    lottieCode: string;
+  }>();
   const { appState, setAppState } = useAppContext();
   const audioVideo = useAudioVideo();
 
@@ -23,6 +28,8 @@ const ReactionEmoji = ({ attendeeId }: { attendeeId: any }) => {
           reaction: {
             sender: parsedMessage.sender,
             message: parsedMessage.emoji,
+            senderExternalId: parsedMessage.senderExternalId,
+            lottieCode: parsedMessage.lottieCode,
           },
         },
       }));
@@ -43,13 +50,17 @@ const ReactionEmoji = ({ attendeeId }: { attendeeId: any }) => {
 
     if (reaction.sender && reaction.sender === attendeeId) {
       setEmoji(reaction);
-
-      const timeout = setTimeout(() => {
-        setEmoji({ sender: "", message: "" });
-      }, 4000);
-
-      return () => clearTimeout(timeout);
     }
+    const timeout = setTimeout(() => {
+      setEmoji({
+        sender: "",
+        message: "",
+        senderExternalId: "",
+        lottieCode: "",
+      });
+    }, 4000);
+
+    return () => clearTimeout(timeout);
   }, [appState.sessionState.reaction, audioVideo]);
 
   return (

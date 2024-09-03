@@ -1,9 +1,11 @@
+"use client";
 import { useAppContext } from "@/context/StoreContext";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAudioVideo } from "amazon-chime-sdk-component-library-react";
 import raisedHandWhite from "@/public/assets/images/raisedHandWhite.svg";
 import raisedHandPurple from "@/public/assets/images/raisedHand.svg";
+// import raisedHandSound from "@/public/assets/sounds/raisedHand.mp3";
 
 const RaisedHand = ({
   attendeeId,

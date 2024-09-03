@@ -4,13 +4,7 @@ import {
   DefaultDeviceController,
   MediaStreamBrokerObserver,
 } from "amazon-chime-sdk-js";
-import {
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useMeetingManager } from "amazon-chime-sdk-component-library-react";
 import { useRouter } from "next/navigation";
 import { ToggleVideoButton } from "@/components/meetingComponents/meetingControlButtons/ToggleVideo";
@@ -132,7 +126,6 @@ export default function PreviewComponent() {
       unMount();
       deviceController.stopVideoInput();
       deviceController.stopAudioInput();
-      // window.location.reload();
     };
   }, [deviceController]);
 
@@ -141,14 +134,6 @@ export default function PreviewComponent() {
       //List the device list
       const deviceList = await deviceController.listVideoInputDevices();
       const audioList = await deviceController.listAudioInputDevices();
-
-      // if (!deviceList[0].deviceId || !audioList[0].deviceId) {
-      //   setLoading(false);
-      //   setErrMessage("We could not detect your microphone or camera!");
-      //   setTimeout(() => {
-      //     setErrMessage("");
-      //   }, 2000);
-      // }
 
       // Choose video/audio device
       await deviceController.startVideoInput(deviceList[0].deviceId);

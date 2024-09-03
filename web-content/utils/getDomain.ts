@@ -22,7 +22,6 @@
 //   return null;
 // };
 
-
 export function getSubdomain(host: string) {
   // Split the hostname into parts in array
   const hostnameParts = host.split(".");

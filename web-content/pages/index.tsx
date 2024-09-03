@@ -1,33 +1,24 @@
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
-import {
-  ValidateLink,
-  extractAfterLastSlashOrFull,
-  isValidUUID,
-} from "../utils/Validators";
+import { extractAfterLastSlashOrFull } from "../utils/Validators";
 import heroImage from "@/public/assets/images/hero_shrink_one.svg";
 import { Add, Calendar } from "iconsax-react";
 import ScheduleMeeting from "../components/modals/ScheduleMeeting";
-
+// import ReactDOM from "react-dom";
+import ReactDOM from "react-dom/client";
 // import 'react-datetime-picker/dist/DateTimePicker.css';
 // import 'react-calendar/dist/Calendar.css';
 // import 'react-clock/dist/Clock.css';
 
-import {
-  IsAuthenticated,
-  getNameAbbreviation,
-  logOutUser,
-} from "@/services/authService";
+import { IsAuthenticated, getNameAbbreviation } from "@/services/authService";
+
+import * as LottiePlayer from "@lottiefiles/lottie-player";
+import ConfettiExplosion from "react-confetti-explosion";
 
 import LoadingScreen from "@/components/modals/LoadingScreen";
-import {
-  createInstantMeeting,
-  getMeeting,
-  setInstantMeeting,
-} from "@/services/meetingServices";
+import { createInstantMeeting, getMeeting } from "@/services/meetingServices";
 import Header from "@/components/Header";
-// import { subDomain } from "@/utils/getDomain";
 import { SuccessSlideIn } from "@/components/SuccessSlideIn";
 import { FailureSlideIn } from "@/components/FailureSlideIn";
 import { validateMeetingIdString } from "@/utils/meetingFunctions";
@@ -43,12 +34,10 @@ export default function Home() {
   const [disableButton, setDisableButton] = useState(true);
   const [meetingData, setMeetingData] = useState<any>();
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
-  const [profilePic, setProfilePic] = useState(false);
-  const [profileModal, setProfileModal] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [expressJoin, setExpressJoin] = useSessionStorage(
     "meetingJoiner",
-    "yes"
+    "no"
   );
 
   useEffect(() => {
@@ -165,13 +154,25 @@ export default function Home() {
     navigate.push(`/meet/${extractedLink}`);
   };
 
+  function Apppps() {
+    const [isExploding, setIsExploding] = useState(false);
+    const exploder = () => {
+      setIsExploding(!isExploding);
+    };
+    return (
+      <>
+        <button onClick={exploder}>Make confeeti explode</button>
+        {isExploding && <ConfettiExplosion />}
+      </>
+    );
+  }
+
   return (
-    <div className=" ">
+    <div className="homepage ">
       {loggedIn !== null && (
         <main className=" pt-6 w-full flex items-center justify-center flex-col mx-auto ">
           <Header />
-
-          <div className="flex justify-center items-center ">
+          <div className="flex justify-center items-center tester relative">
             <div className="block lg:grid px-6 gap-x-16 items-center grid-cols-2  bg-cs-bg max-auto w-full max-w-[1392px]">
               <div className="basis-full">
                 <h3 className=" text-[40px] md:text-[64px] text-cs-black-100 leading-[44px] md:leading-[70px] text-center lg:text-left font-medium metro-medium">
@@ -277,7 +278,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-
           {showModal === "schedule" && (
             <ScheduleMeeting onClose={handleCloseModal} />
           )}
@@ -289,14 +289,12 @@ export default function Home() {
             }
             closeModal={() => {}}
           />
-
           <FailureSlideIn
             openModal={openModal}
             response={meetingData && meetingData?.data.statusCode !== 200}
             errResponse={meetingData && meetingData?.data.body.message}
             closeModal={() => {}}
           />
-
           {loading && <LoadingScreen />}
         </main>
       )}

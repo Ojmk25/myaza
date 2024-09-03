@@ -1,13 +1,10 @@
 import {
   LocalVideo,
-  RemoteVideo,
   useAttendeeStatus,
   useLocalVideo,
   MeetingManager,
 } from "amazon-chime-sdk-component-library-react";
 import Image from "next/image";
-import { MicrophoneSlash1, Microphone } from "iconsax-react";
-import avatar from "@/public/assets/images/avatar.png";
 import dottedLine from "@/public/assets/images/dottedLine.svg";
 import { useEffect } from "react";
 import { getNameAbbreviation } from "@/services/authService";
@@ -15,8 +12,6 @@ import { getRemoteInitials } from "@/utils/meetingFunctions";
 import ReactionEmoji from "./ReactionEmoji";
 import { useAppContext } from "@/context/StoreContext";
 import RaisedHand from "./RaisedHand";
-import ShowVisualizer from "./ShowVisualizer";
-import useVolumeIndicator from "@/hooks/useSubscribeToVolume";
 
 // import MeetingCardAudio from "./MeetingCardAudio";
 

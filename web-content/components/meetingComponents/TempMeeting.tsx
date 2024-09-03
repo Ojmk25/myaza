@@ -102,44 +102,6 @@ export default function TempMeeting({
     }
   };
 
-  // useEffect(() => {
-  //   const appendWidget = () => {
-  //     const widgetElement = document.querySelector(
-  //       "#atlwdg-trigger"
-  //     ) as HTMLElement;
-  //     widgetElement?.classList.add("opacity-0", "inset-0", "absolute");
-
-  //     if (widgetElement) {
-  //       widgetElement.style.position = "absolute";
-  //       widgetElement.style.inset = "0";
-  //       widgetElement.style.width = "100%";
-  //     }
-
-  //     if (widgetElement?.parentNode) {
-  //       widgetElement.parentNode.removeChild(widgetElement);
-  //     }
-  //     if (
-  //       bigScreenWidgetRef &&
-  //       smallScreenWidgetRef &&
-  //       screenWidth &&
-  //       screenWidth > 767
-  //     ) {
-  //       if (widgetElement)
-  //         bigScreenWidgetRef.current?.append(widgetElement as Node);
-  //     } else {
-  //       if (widgetElement)
-  //         smallScreenWidgetRef.current?.append(widgetElement as Node);
-  //     }
-  //   };
-
-  //   const timerId = setTimeout(() => {
-  //     appendWidget();
-  //   }, 5000);
-  //   return () => {
-  //     clearTimeout(timerId);
-  //   };
-  // }, [screenWidth]);
-
   useEffect(() => {
     // Function to update screenWidth state when the window is resized
     const handleResize = () => {
@@ -156,23 +118,6 @@ export default function TempMeeting({
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-
-  useEffect(() => {
-    const handleAttendee = async () => {
-      const attend: AtteendeeDetailsProp[] = await getAttendeesList(
-        router.query.link as string
-      );
-      setAppState((prevState) => ({
-        ...prevState,
-        sessionState: {
-          ...prevState.sessionState,
-          sessionLink: window.location.href,
-          meetingAttendees: attend,
-        },
-      }));
-    };
-    handleAttendee();
-  }, [attendees.length]);
 
   useEffect(() => {
     if (router.isReady && !hasRunRef.current) {
@@ -199,9 +144,9 @@ export default function TempMeeting({
           const { meeting_info, attendee_info, meeting_name } =
             response?.data.body.data;
 
-          const attend: AtteendeeDetailsProp[] = await getAttendeesList(
-            query.link as string
-          );
+          // const attend: AtteendeeDetailsProp[] = await getAttendeesList(
+          //   query.link as string
+          // );
 
           // setTimeout(() => {
           //   response?.data && response?.data?.data?.statusCode !== 200 && router.push("/");
@@ -211,11 +156,11 @@ export default function TempMeeting({
             sessionState: {
               ...prevState.sessionState,
               sessionLink: window.location.href,
-              meetingAttendees: attend,
+              // meetingAttendees: attend,
               sessionName: meeting_name,
             },
           }));
-          setAttendeeDetails(attend);
+          // setAttendeeDetails(attend);
           setSuccessRes(response?.data);
           setMeetingDetails(response?.data.body.data);
 
@@ -272,64 +217,6 @@ export default function TempMeeting({
     }
     return "";
   };
-  const getAttendeesList = async (meetingId: string) => {
-    try {
-      const response = await listAttendees({
-        meeting_id: meetingId,
-      });
-      if (response) {
-        const { data } = response.data.body;
-        const attendee = response.data.body;
-        // setAttendeeDetails(data);
-        // console.log(data);
-        // console.log(attendeeDetails);
-        // console.log(attendee);
-        return data;
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-    }
-  };
-
-  useEffect(() => {
-    const { query } = router;
-    getAttendeesList(query.link as string);
-    const handleAudioVideoDidStart = async () => {
-      console.log("User has joined the meeting");
-      return await getAttendeesList(query.link as string);
-    };
-    meetingManager?.audioVideo?.addObserver({
-      audioVideoDidStart: handleAudioVideoDidStart,
-    });
-
-    return () => {
-      meetingManager?.audioVideo?.removeObserver({
-        audioVideoDidStart: handleAudioVideoDidStart,
-      });
-    };
-  }, [
-    meetingManager.audioVideo,
-    // attendeeDetails,
-    // router.isReady,
-    // router.asPath,
-    // appState.sessionState.meetingAttendees,
-  ]);
-
-  useEffect(() => {
-    const { query } = router;
-    getAttendeesList(query.link as string);
-    const handleAudioVideoDidStart = async () => {};
-    meetingManager?.audioVideo?.addObserver({
-      audioVideoDidStart: handleAudioVideoDidStart,
-    });
-
-    return () => {
-      meetingManager?.audioVideo?.removeObserver({
-        audioVideoDidStart: handleAudioVideoDidStart,
-      });
-    };
-  }, [meetingManager]);
 
   useLayoutEffect(() => {
     return () => {
@@ -375,25 +262,6 @@ export default function TempMeeting({
       }
     };
   }, [meetingSession]);
-
-  const sendReaction = (sender: string, emoji: string) => {
-    // Update local state immediately
-    setAppState((prevState) => ({
-      ...prevState,
-      sessionState: {
-        ...prevState.sessionState,
-        reaction: { message: emoji, sender: sender },
-      },
-    }));
-
-    // Check if audioVideo is available
-    if (!audioVideo) return;
-
-    // Create and send the message
-    const message = JSON.stringify({ sender: sender, emoji: emoji });
-
-    meetingManager.audioVideo?.realtimeSendDataMessage("reaction", message);
-  };
 
   // useEffect(() => {
   //   const handleElement = () => {
@@ -496,7 +364,7 @@ export default function TempMeeting({
   return (
     <div className="w-full flex items-center flex-col">
       <div className="max-auto w-full ">
-        <main className=" flex flex-col md:px-6 h-dvh w-full relative">
+        <main className=" flex flex-col md:px-6 h-dvh w-full relative meetingScreen">
           {/* header for small screen */}
           <div className="md:hidden px-4">
             <div className="flex  justify-between items-center py-4 bg-[#FEFDFF] border-solid border-b border-b-[#FAFAFA]">
@@ -635,7 +503,6 @@ export default function TempMeeting({
               meetingManager.meetingSessionConfiguration?.credentials
                 ?.attendeeId
             }
-            sendEmoji={sendReaction}
             meetingDetails={meetingDetails}
             externalID={
               meetingManager.meetingSessionConfiguration?.credentials
