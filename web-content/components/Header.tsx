@@ -276,7 +276,7 @@ export default function Header() {
               </div>
             )}
             {profileModal && (
-              <div className=" bg-white border border-solid border-cs-grey-50 rounded-[10px] overflow-hidden absolute md:hidden right-0">
+              <div className=" bg-white border border-solid border-cs-grey-50 rounded-[10px] overflow-hidden absolute md:hidden right-0 z-10">
                 <div
                   className=" text-cs-grey-dark flex gap-x-2 items-center hover:bg-cs-grey-55 p-2 font-normal"
                   onClick={() => {

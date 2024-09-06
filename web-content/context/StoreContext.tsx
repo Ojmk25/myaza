@@ -29,7 +29,7 @@ type SessionState = {
     senderExternalId: string;
     lottieCode: string;
   };
-  raisedHand: { timestamp: string; message: string };
+  raisedHand: { timestamp: string; message: string; externalUserID: string };
   guestFirstName: string;
   guestLastName: string;
   meetingAttendees: AtteendeeDetailsProp[];
@@ -57,7 +57,7 @@ export const AppCtx = createContext<AppContextType>({
         senderExternalId: "",
         lottieCode: "",
       },
-      raisedHand: { timestamp: "", message: "" },
+      raisedHand: { timestamp: "", message: "", externalUserID: "" },
       guestFirstName: "",
       guestLastName: "",
       meetingAttendees: [],
@@ -82,7 +82,7 @@ export const StoreContext: React.FC<{ children: React.ReactNode }> = ({
         senderExternalId: "",
         lottieCode: "",
       },
-      raisedHand: { timestamp: "", message: "" },
+      raisedHand: { timestamp: "", message: "", externalUserID: "" },
       guestFirstName: "",
       guestLastName: "",
       meetingAttendees: [],

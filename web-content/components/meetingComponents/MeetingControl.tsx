@@ -139,20 +139,31 @@ export default function MeetingControl({
     });
   };
 
-  const sendRaiseHand = (timestamp: string, attendee: string) => {
+  const sendRaiseHand = (
+    timestamp: string,
+    attendee: string,
+    externalUserID: string
+  ) => {
     handleOtherViews("Raise-Hand");
     let timestampVar = timestamp;
     let attendeeVar = attendee;
+    let raiseHandExternalUserID = externalUserID;
     if (otherViews.includes("Raise-Hand")) {
       timestampVar = "";
       attendeeVar = "";
+      raiseHandExternalUserID = externalUserID;
     }
+
     // Update local state immediately
     setAppState((prevState) => ({
       ...prevState,
       sessionState: {
         ...prevState.sessionState,
-        raisedHand: { timestamp: timestampVar, message: attendee },
+        raisedHand: {
+          timestamp: timestampVar,
+          message: attendee,
+          externalUserID: raiseHandExternalUserID,
+        },
       },
     }));
 
@@ -161,6 +172,7 @@ export default function MeetingControl({
     const message = JSON.stringify({
       timestamp: timestampVar,
       message: attendee,
+      externalUserID: raiseHandExternalUserID,
     });
 
     // Send the message
@@ -612,7 +624,8 @@ export default function MeetingControl({
               onClick={() =>
                 sendRaiseHand(
                   new Date().toLocaleString(),
-                  attendeIDString as string
+                  attendeIDString as string,
+                  externalID as string
                 )
               }
             >
@@ -866,7 +879,8 @@ export default function MeetingControl({
               onClick={() =>
                 sendRaiseHand(
                   new Date().toLocaleString(),
-                  attendeIDString as string
+                  attendeIDString as string,
+                  externalID as string
                 )
               }
             >

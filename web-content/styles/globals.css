@@ -117,7 +117,6 @@
 }
 
 .emoji-animate {
-  font-size: 3em;
   position: absolute;
   will-change: transform;
   z-index: 10000;

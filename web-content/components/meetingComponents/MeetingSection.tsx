@@ -31,6 +31,7 @@ import Participants from "./Participants";
 import Conference from "./Conference";
 import { listAttendees, startTranscription } from "@/services/meetingServices";
 import { useAppContext } from "@/context/StoreContext";
+import RaisedHandQueue from "./RaisedHandQueue";
 
 type DynamicWidth = {
   width: number | string;
@@ -452,7 +453,7 @@ export default function MeetingSection({
 
   return (
     <>
-      <div className=" flex-4 overflow-hidden hidden md:flex metro-medium meetingSection">
+      <div className=" flex-4 overflow-hidden hidden md:flex metro-medium meetingSection relative">
         {tileId && (
           <div className=" flex-5 bg-cs-black-200 px-10 py-5 rounded-[4px] mr-4">
             <div className=" h-full flex flex-col">
@@ -754,6 +755,7 @@ export default function MeetingSection({
             )}
           </div>
         </div>
+        <RaisedHandQueue />
       </div>
 
       {/* small screen */}
@@ -1078,6 +1080,7 @@ export default function MeetingSection({
               ></div>
             )
           )}
+        <RaisedHandQueue />
       </div>
     </>
   );

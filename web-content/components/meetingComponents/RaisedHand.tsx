@@ -17,7 +17,8 @@ const RaisedHand = ({
   const [raisedHand, setRaisedHand] = useState<{
     timestamp: string;
     message: any;
-  }>({ timestamp: "", message: "" });
+    externalUserID: string;
+  }>({ timestamp: "", message: "", externalUserID: "" });
   const { appState, setAppState } = useAppContext();
   const audioVideo = useAudioVideo();
 
@@ -37,6 +38,7 @@ const RaisedHand = ({
           raisedHand: {
             timestamp: parsedMessage.timestamp,
             message: parsedMessage.message,
+            externalUserID: parsedMessage.externalUserID,
           },
         },
       }));
@@ -50,29 +52,33 @@ const RaisedHand = ({
     return () => {
       audioVideo.realtimeUnsubscribeFromReceiveDataMessage("raise-hand");
     };
-  }, [audioVideo]);
+  }, [appState.sessionState.raisedHand]);
 
   useEffect(() => {
     const { raisedHand } = appState.sessionState;
 
     if (raisedHand.message && raisedHand.message === attendeeId) {
       setRaisedHand(raisedHand);
-
       const timeout = setTimeout(() => {
-        setRaisedHand({ timestamp: "", message: "" });
-
         setAppState((prevState) => ({
           ...prevState,
           sessionState: {
             ...prevState.sessionState,
-            raisedHand: { timestamp: "", message: "" },
+            raisedHand: { timestamp: "", message: "", externalUserID: "" },
           },
         }));
+        setRaisedHand({ timestamp: "", message: "", externalUserID: "" });
+      }, 10000);
+
+      return () => clearTimeout(timeout);
+    } else {
+      const timeout = setTimeout(() => {
+        setRaisedHand({ timestamp: "", message: "", externalUserID: "" });
       }, 10000);
 
       return () => clearTimeout(timeout);
     }
-  }, [appState.sessionState.raisedHand, audioVideo]);
+  }, [appState.sessionState.raisedHand, raisedHand]);
 
   return (
     <>

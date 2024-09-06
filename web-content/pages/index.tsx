@@ -172,7 +172,7 @@ export default function Home() {
       {loggedIn !== null && (
         <main className=" pt-6 w-full flex items-center justify-center flex-col mx-auto ">
           <Header />
-          <div className="flex justify-center items-center tester relative">
+          <div className="flex justify-center items-center">
             <div className="block lg:grid px-6 gap-x-16 items-center grid-cols-2  bg-cs-bg max-auto w-full max-w-[1392px]">
               <div className="basis-full">
                 <h3 className=" text-[40px] md:text-[64px] text-cs-black-100 leading-[44px] md:leading-[70px] text-center lg:text-left font-medium metro-medium">
