@@ -14,7 +14,7 @@ import {
   VideoSlash,
 } from "iconsax-react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import DateTimeDisplay from "../../utils/getDate";
 import {
   useContentShareControls,
@@ -37,6 +37,8 @@ import { endMeetingForAll, listAttendees } from "@/services/meetingServices";
 import { emojis } from "@/constants/emojis";
 import ReactDOM from "react-dom/client";
 import * as LottiePlayer from "@lottiefiles/lottie-player";
+import captureWhite from "@/public/assets/images/captureWhite.svg";
+import capturePurple from "@/public/assets/images/capturePurple.svg";
 
 export default function MeetingControl({
   bgColor,
@@ -233,7 +235,7 @@ export default function MeetingControl({
         meetingManager.meetingSession?.audioVideo.stopLocalVideoTile();
         meetingManager.meetingSession?.audioVideo.stop();
         meetingManager.audioVideo?.stop();
-        navigate.push("/");
+        navigate.push("/").then(() => window.location.reload());
       });
     }
   };
@@ -373,26 +375,33 @@ export default function MeetingControl({
       const attendeeDetailItems = appState.sessionState.meetingAttendees.find(
         (att) => att.user_id === appState.sessionState.reaction.senderExternalId
       );
+      function getRandomNumber(): number {
+        const numbers = [0, 150, 300];
+        const randomIndex = Math.floor(Math.random() * numbers.length);
+        return numbers[randomIndex];
+      }
+      console.log(appState.sessionState.reaction.lottieCode);
 
       root.render(
         <div className=" flex flex-col justify-center items-center">
-          {appState.sessionState.reaction.lottieCode && (
-            <div>
+          {appState.sessionState.reaction.lottieCode &&
+            appState.sessionState.reaction.senderExternalId && (
               <div>
-                <lottie-player
-                  id={`${appState.sessionState.reaction.lottieCode}`}
-                  autoplay
-                  loop={false}
-                  mode="normal"
-                  src={`https://fonts.gstatic.com/s/e/notoemoji/latest/${appState.sessionState.reaction.lottieCode}/lottie.json`}
-                  style={{ width: "30px", height: "30px", margin: "auto" }}
-                />
+                <div>
+                  <lottie-player
+                    id={`${appState.sessionState.reaction.lottieCode}`}
+                    autoplay
+                    loop={false}
+                    mode="normal"
+                    src={`https://fonts.gstatic.com/s/e/notoemoji/latest/${appState.sessionState.reaction.lottieCode}/lottie.json`}
+                    style={{ width: "30px", height: "30px", margin: "auto" }}
+                  />
+                </div>
+                <div className="text-cs-grey-50 rounded-lg text-xs font-medium px-2 py-1 bg-cs-purple-650 mt-2">
+                  {attendeeDetailItems?.full_name}
+                </div>
               </div>
-              <div className="text-cs-grey-50 rounded-lg text-xs font-medium px-2 py-1 bg-cs-purple-650 mt-2">
-                {attendeeDetailItems?.full_name}
-              </div>
-            </div>
-          )}
+            )}
         </div>
       );
       container.appendChild(lottieEl);
@@ -405,18 +414,18 @@ export default function MeetingControl({
           {
             // transform: `translate(${left}px, ${bottom}px)`,
 
-            transform: `translate3d(${300}px, ${bottom - 180}px, 0)`,
+            transform: `translate(${getRandomNumber()}px, ${bottom - 180}px)`,
             opacity: 1,
           },
           {
             // transform: `translate(${width / 2}px, ${top}px)`,
 
-            transform: `translate3d(${300 / 2}px, ${top}px, 50rem)`,
-            opacity: 0.9,
+            transform: `translate(${getRandomNumber()}px, ${top - 200}px)`,
+            opacity: 0.6,
           },
         ],
         {
-          duration: 9000,
+          duration: 7000,
           easing: "cubic-bezier(.47,.48,.44,.86)",
         }
       );
@@ -459,6 +468,56 @@ export default function MeetingControl({
       audioVideo?.realtimeUnsubscribeFromReceiveDataMessage("reaction");
     };
   }, [audioVideo]);
+
+  useLayoutEffect(() => {
+    return () => {
+      // setAppState((prevState) => ({
+      //   ...prevState,
+      //   sessionState: {
+      //     ...prevState.sessionState,
+      //     raisedHand: {
+      //       timestamp: timestampVar,
+      //       message: attendee,
+      //       externalUserID: raiseHandExternalUserID,
+      //     },
+      //   },
+      // }));
+      setAppState((prevState) => ({
+        ...prevState,
+        sessionState: {
+          ...prevState.sessionState,
+          raisedHand: {
+            timestamp: "",
+            message: "",
+            externalUserID: "",
+          },
+          reaction: {
+            sender: "",
+            message: "",
+            senderExternalId: "",
+            lottieCode: "",
+          },
+        },
+      }));
+    };
+  }, []);
+
+  useEffect(() => {
+    setAppState((prevState) => ({
+      ...prevState,
+      sessionState: {
+        ...prevState.sessionState,
+        audioState: [
+          ...prevState.sessionState.audioState,
+          {
+            volume: 0,
+            mute: muted,
+            attendeeId: attendeIDString as string,
+          },
+        ],
+      },
+    }));
+  }, [isVideoEnabled, muted]);
 
   return (
     <>
@@ -693,10 +752,10 @@ export default function MeetingControl({
           </div>
         </div>
 
-        <div className=" flex gap-x-4 lg:gap-x-6 flex-2 justify-end">
+        <div className=" flex gap-x-4 lg:gap-x-6 flex-2 justify-end cursor-pointer">
           <div
             className="text-center"
-            // onClick={() => handleLocalSideView("Caption")}
+            onClick={() => handleLocalSideView("Caption")}
           >
             <div
               className={`p-3 ${
@@ -704,16 +763,16 @@ export default function MeetingControl({
               } rounded-md max-w-12  mx-auto`}
             >
               <Image
-                // src={sideView === "Caption" ? captureWhite : capturePurple}
-                src={captureGray}
+                src={sideView === "Caption" ? captureWhite : capturePurple}
+                // src={captureGray}
                 alt="hand"
                 width={18}
                 height={18}
                 className="min-w-6 max-w-5 h-6"
               />
             </div>
-            {/* <h6 className=" text-cs-grey-100 font-medium text-xs">Caption</h6> */}
-            <h6 className=" text-[#e1c6ff] font-medium text-xs">Caption</h6>
+            <h6 className=" text-cs-grey-100 font-medium text-xs">Caption</h6>
+            {/*<h6 className=" text-[#e1c6ff] font-medium text-xs">Caption</h6> */}
           </div>
 
           <div
@@ -1049,8 +1108,8 @@ export default function MeetingControl({
                         </div>
 
                         <div
-                          className="text-center max-w-[215px]"
-                          // onClick={() => handleLocalSideView("Caption")}
+                          className="text-center max-w-[215px] cursor-pointer"
+                          onClick={() => handleLocalSideView("Caption")}
                         >
                           <div
                             className={`p-3 ${
@@ -1059,13 +1118,13 @@ export default function MeetingControl({
                           >
                             <ProfileAdd
                               size="24"
-                              // color={
-                              //   sideView === "Caption" ? "#FAFAFA" : "#333333"
-                              // }
-                              color="#e1c6ff"
+                              color={
+                                sideView === "Caption" ? "#FAFAFA" : "#333333"
+                              }
+                              // color="#e1c6ff"
                               className="max-w-5"
                             />
-                            {/* <h6
+                            <h6
                               className={` ${
                                 sideView === "Caption"
                                   ? "text-cs-grey-50"
@@ -1073,10 +1132,10 @@ export default function MeetingControl({
                               }  font-medium text-xs `}
                             >
                               Caption
-                            </h6> */}
-                            <h6 className=" text-[#e1c6ff] font-medium text-xs">
-                              Caption
                             </h6>
+                            {/* <h6 className=" text-[#e1c6ff] font-medium text-xs">
+                              Caption
+                            </h6> */}
                           </div>
                         </div>
                       </div>

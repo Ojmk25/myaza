@@ -5,6 +5,8 @@ import {
 } from "amazon-chime-sdk-component-library-react";
 import closeIconPurple from "@/public/assets/images/closeIconPurple.svg";
 import { AttendeeListCard } from "./AttendeeListCard";
+import { useAppContext } from "@/context/StoreContext";
+import { useEffect } from "react";
 
 const Participants = ({
   attendees,
@@ -15,6 +17,10 @@ const Participants = ({
   sideViewFunc: (value: string) => void;
   meetingManager: MeetingManager;
 }) => {
+  const { appState } = useAppContext();
+  // useEffect(() => {
+  //   console.log("A participant's audio has changed");
+  // }, [appState.sessionState.audioState]);
   return (
     <div
       className={` h-full bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-2 @[300px]/bigScreenSideCards:px-4 pt-5 overflow-y-scroll no-scrollbar`}

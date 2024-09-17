@@ -1,7 +1,13 @@
 "use client";
 import Image from "next/image";
 import closeIconPurple from "@/public/assets/images/closeIconPurple.svg";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  SetStateAction,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   useToggleLocalMute,
   useRemoteVideoTileState,
@@ -12,6 +18,7 @@ import {
   useAudioVideo,
   MeetingManager,
   useMeetingManager,
+  useAttendeeStatus,
 } from "amazon-chime-sdk-component-library-react";
 import { RemoteAttendeeCard } from "./RemoteAttendeeCard";
 import { LocalAttendeeCard } from "./LocalAttendeeCard";
@@ -22,6 +29,7 @@ import {
   TranscriptEvent,
   TranscriptionStatus,
   Transcript,
+  ConsoleLogger,
 } from "amazon-chime-sdk-js";
 import Chat from "./IncallMessage";
 import { getRemoteInitials } from "@/utils/meetingFunctions";
@@ -32,6 +40,8 @@ import Conference from "./Conference";
 import { listAttendees, startTranscription } from "@/services/meetingServices";
 import { useAppContext } from "@/context/StoreContext";
 import RaisedHandQueue from "./RaisedHandQueue";
+import { useRouter } from "next/router";
+// import AudioVisualizerContainer from "./MeetingCardAudio";
 
 type DynamicWidth = {
   width: number | string;
@@ -64,7 +74,6 @@ export default function MeetingSection({
 }) {
   const { roster } = useRosterState();
   const attendees = Object.values(roster);
-  const { muted, toggleMute } = useToggleLocalMute();
   const { tiles, tileIdToAttendeeId, attendeeIdToTileId, size } =
     useRemoteVideoTileState();
   const { toggleContentShare } = useContentShareControls();
@@ -106,6 +115,9 @@ export default function MeetingSection({
     useState<AtteendeeDetailsProp[]>(attendeeDetailPass);
   const meetingM = useMeetingManager();
   const { appState, setAppState } = useAppContext();
+  const router = useRouter();
+  const logger = new ConsoleLogger("MyLogger");
+  const [attendeeItemsStatus, setAttendeeItems] = useState<any>();
 
   useEffect(() => {
     const audioVideo = meetingM?.audioVideo;
@@ -164,6 +176,8 @@ export default function MeetingSection({
 
   const transcriptionPayload = {
     meeting_id: meetingManager.meetingId as string,
+    // meeting_id: router.query.link as string,
+    // meeting_id: "e3a29246-53b9-4e96-9352-98b195312713",
     attendee_id: attendeIDString as string,
   };
 
@@ -178,6 +192,8 @@ export default function MeetingSection({
     // }
     try {
       const data = await startTranscription(transcriptionPayload);
+      console.log(transcriptionPayload);
+
       // setCaptionOn(true);
       // setLoading(true)
       // setSuccessRes(data.data.body)
@@ -204,6 +220,16 @@ export default function MeetingSection({
   };
 
   const chunkRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const tileRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    // Log the className of each attendee card (local and remote)
+    tileRefs.current.forEach((ref, index) => {
+      if (ref) {
+        console.log(`Class names for tile ${index}:`, ref.className);
+      }
+    });
+  }, [appState.sessionState.audioState]);
 
   useEffect(() => {
     const options = {
@@ -243,17 +269,22 @@ export default function MeetingSection({
         <LocalAttendeeCard
           key={i}
           attendeeId={attendee.chimeAttendeeId}
+          ref={(el: any) => (tileRefs.current[i] = el)}
           name={externalUserId}
           videoTildId={1}
           nameID={attendee.externalUserId as string}
-          audioState={
-            <ShowVisualizer
-              attendee={attendee}
-              meetingManager={meetingManager}
-              // attendeeId={attendee.chimeAttendeeId}
-              // audioVideo={audioVideo}
-            />
-          }
+          // audioState={
+          //   <ShowVisualizer
+          //     attendee={attendee}
+          //     meetingManager={meetingManager}
+          //     // attendeeId={attendee.chimeAttendeeId}
+          //     // audioVideo={audioVideo}
+          //   />
+          //   // <AudioVisualizerContainer
+          //   //   attendee={attendee}
+          //   //   meetingManager={meetingM}
+          //   // />
+          // }
           // attendeeDetails={attendeeDetailItems}
           meetingManager={meetingManager}
           sideView={sideView}
@@ -264,20 +295,27 @@ export default function MeetingSection({
         <RemoteAttendeeCard
           key={attendee.chimeAttendeeId}
           attendeeId={attendee.chimeAttendeeId}
+          ref={(el: any) => (tileRefs.current[i] = el)}
           name={externalUserId}
           videoTildId={tilerId}
           nameID={attendee.externalUserId as string}
-          audioState={
-            <ShowVisualizer
-              attendee={attendee}
-              meetingManager={meetingManager}
-            />
-          }
+          // audioState={
+          //   <ShowVisualizer
+          //     attendee={attendee}
+          //     meetingManager={meetingManager}
+          //   />
+          //   // <AudioVisualizerContainer
+          //   //   attendee={attendee}
+          //   //   meetingManager={meetingM}
+          //   // />
+          // }
+          sideView={sideView}
           // attendeeDetails={attendeeDetailItems}
         />
       );
     }
   });
+  console.log(attendeeItems);
 
   const smallScreenTiles = chunkArray(attendeeItems, tileId ? 2 : 6);
 
@@ -451,6 +489,93 @@ export default function MeetingSection({
     return details?.full_name as string;
   };
 
+  const [sortedAttendeeItems, setSortedAttendeeItems] =
+    useState<JSX.Element[]>(attendeeItems);
+
+  // useEffect(() => {
+  //   // After rendering, we can access the refs and get class names
+  //   const attendeesWithClass = tileRefs.current
+  //     .map((ref, index) => {
+  //       if (ref) {
+  //         const className = ref.className;
+  //         return {
+  //           attendee: attendeeItems[index], // Store the attendee item
+  //           className, // Capture the class name
+  //           index, // Store the index if needed for debugging or other purposes
+  //         };
+  //       }
+  //       return null;
+  //     })
+  //     .filter(Boolean); // Remove any null or undefined items
+
+  //   // Separate the attendees based on their classNames
+  //   const attendeesWithDeviceEnabled = attendeesWithClass.filter((item) =>
+  //     item?.className.includes("device_Enabled")
+  //   );
+  //   const attendeesWithoutDeviceEnabled = attendeesWithClass.filter(
+  //     (item) => !item?.className.includes("device_Enabled")
+  //   );
+
+  //   // Rearrange the array: Keep the first item constant, then move 'device_enabled' attendees to the front
+  //   const reshuffledAttendeeItems = [
+  //     attendeeItems[0], // First item remains the same
+  //     ...attendeesWithDeviceEnabled.map((item) => item?.attendee),
+  //     ...attendeesWithoutDeviceEnabled.map((item) => item?.attendee),
+  //   ];
+
+  //   // Update the sorted state
+  //   setSortedAttendeeItems(
+  //     reshuffledAttendeeItems as SetStateAction<JSX.Element[]>
+  //   );
+  //   console.log(
+  //     "The state changed",
+  //     attendeesWithDeviceEnabled,
+  //     attendeesWithoutDeviceEnabled
+  //   );
+  //   console.log(sortedAttendeeItems);
+  // }, [appState.sessionState.audioState, audioVideo, meetingM]);
+  // console.log(sortedAttendeeItems);
+  useEffect(() => {
+    // After rendering, we can access the refs and get class names
+    const attendeesWithClass = tileRefs.current
+      .map((ref, index) => {
+        if (ref) {
+          const className = ref.className;
+          console.log(ref.className);
+
+          return {
+            attendee: attendeeItems[index], // Store the attendee item
+            className, // Capture the class name
+            index, // Store the index if needed for debugging or other purposes
+          };
+        }
+        return null;
+      })
+      .filter(Boolean); // Remove any null or undefined items
+
+    // Exclude the first attendee (local attendee) from the filtering process
+    const nonLocalAttendees = attendeesWithClass.slice(1);
+
+    // Separate the attendees based on their classNames
+    const attendeesWithDeviceEnabled = nonLocalAttendees.filter((item) =>
+      item?.className.includes("device_Enabled")
+    );
+    const attendeesWithoutDeviceEnabled = nonLocalAttendees.filter(
+      (item) => !item?.className.includes("device_Enabled")
+    );
+
+    // Rearrange the array: Keep the first item constant, then move 'device_Enabled' attendees to the front
+    const reshuffledAttendeeItems = [
+      attendeeItems[0], // First item remains the same (local attendee)
+      ...attendeesWithDeviceEnabled.map((item) => item?.attendee),
+      ...attendeesWithoutDeviceEnabled.map((item) => item?.attendee),
+    ];
+    // Update the sorted state
+    setSortedAttendeeItems(
+      reshuffledAttendeeItems as SetStateAction<JSX.Element[]>
+    );
+  }, [appState.sessionState.audioState, audioVideo, meetingM, sideView]);
+
   return (
     <>
       <div className=" flex-4 overflow-hidden hidden md:flex metro-medium meetingSection relative">
@@ -493,7 +618,7 @@ export default function MeetingSection({
             </div> */}
 
             <div className="flex flex-wrap justify-center overflow-y-auto items-center w-full h-full">
-              {attendeeItems
+              {sortedAttendeeItems
                 .slice(
                   0,
                   displayCards &&
@@ -522,7 +647,7 @@ export default function MeetingSection({
                           .slice(displayCards - 2, attendeeItems.length)
                           .map((item, index) => (
                             <div
-                              className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 border-solid border-[0.5px] border-white -ml-2"
+                              className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 border-solid border-[0.5px] border-white -ml-2 uppercase"
                               key={index}
                             >
                               {returName(item.externalUserId)}
@@ -549,7 +674,7 @@ export default function MeetingSection({
                           .slice(displayCards - 2, displayCards)
                           .map((item, index) => (
                             <div
-                              className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 border-solid border-[0.5px] border-white -ml-2"
+                              className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 border-solid border-[0.5px] border-white -ml-2 uppercase"
                               key={index}
                             >
                               {/* {item.externalUserId} */}
@@ -759,7 +884,7 @@ export default function MeetingSection({
       </div>
 
       {/* small screen */}
-      <div className=" md:hidden h-full metro-medium">
+      <div className=" md:hidden h-full metro-medium relative">
         {tileId &&
           sideView === "" && ( //screen share
             <div className=" bg-cs-black-200 px-4 py-5 rounded-[4px]">
@@ -797,7 +922,7 @@ export default function MeetingSection({
               tileId ? "flex-row" : "flex-col h-full"
             }`}
           >
-            {attendeeItems.map((chunk, index) => (
+            {sortedAttendeeItems.map((chunk, index) => (
               <div
                 className={` flex ${
                   tileId ? "w-1/2" : "h-full"

@@ -37,8 +37,10 @@ export default function Home() {
   const [openModal, setOpenModal] = useState(false);
   const [expressJoin, setExpressJoin] = useSessionStorage(
     "meetingJoiner",
-    "no"
+    "yes"
   );
+  const [_, setVideoStatus] = useSessionStorage("videoStatus", "no");
+  const [, setAudioStatus] = useSessionStorage("audioStatus", "no");
 
   useEffect(() => {
     setLoggedIn(IsAuthenticated());
@@ -124,10 +126,14 @@ export default function Home() {
     try {
       const data = await createInstantMeeting({});
       // sessionStorage.setItem("meetingJoiner", "no");
+
       setMeetingData(data);
       setLoading(true);
       setOpenModal(true);
       setExpressJoin("yes");
+      setAudioStatus("no");
+      setVideoStatus("no");
+
       const extractedLink = extractAfterLastSlashOrFull(
         data?.data?.body?.data?.meeting_link
       );
@@ -150,22 +156,10 @@ export default function Home() {
   };
 
   const joinMeeting = (input: string) => {
+    setExpressJoin("no");
     const extractedLink = extractAfterLastSlashOrFull(input);
     navigate.push(`/meet/${extractedLink}`);
   };
-
-  function Apppps() {
-    const [isExploding, setIsExploding] = useState(false);
-    const exploder = () => {
-      setIsExploding(!isExploding);
-    };
-    return (
-      <>
-        <button onClick={exploder}>Make confeeti explode</button>
-        {isExploding && <ConfettiExplosion />}
-      </>
-    );
-  }
 
   return (
     <div className="homepage ">

@@ -20,7 +20,6 @@ export default function PreviewComponent() {
   const [loggedIn, setLoggedIn] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const navigate = useRouter();
-  const videoCameraRef = useRef(true);
   const audioLevelDisplayRef = useRef(null);
   const meetingManager = useMeetingManager();
 
@@ -186,26 +185,6 @@ export default function PreviewComponent() {
     };
   }, [deviceController]);
 
-  async function toggleVideo() {
-    // const videoElement = videoRef.current as HTMLVideoElement;
-    const videoElement = document.querySelector(
-      "#video-preview"
-    ) as HTMLVideoElement;
-    if (
-      (await deviceController["activeDevices"].video) &&
-      (await deviceController["activeDevices"].video.groupId.length) > 1
-    ) {
-      deviceController.stopVideoPreviewForVideoInput(videoElement);
-      await deviceController.stopVideoInput();
-      videoCameraRef.current = false;
-    } else {
-      const videoList = await deviceController.listVideoInputDevices();
-      await deviceController.startVideoInput(videoList[0].deviceId);
-      deviceController.startVideoPreviewForVideoInput(videoElement);
-      videoCameraRef.current = true;
-    }
-  }
-
   return (
     <>
       {loggedIn !== null && (
@@ -229,6 +208,11 @@ export default function PreviewComponent() {
                     className="rounded-[4px] md:rounded-[31px] w-full object-cover h-[302px] sm:h-[342px] md:h-[200px] lg:h-[261px] xl:h-[358px] "
                     ref={videoRef}
                   ></video>
+                  {/* <video
+                    id="video-preview-two"
+                    autoPlay
+                    className="rounded-[4px] md:rounded-[31px] w-full object-cover h-[302px] sm:h-[342px] md:h-[200px] lg:h-[261px] xl:h-[358px] "
+                  ></video> */}
                   <div className="" ref={audioLevelDisplayRef}></div>
                 </div>
 

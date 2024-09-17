@@ -1,126 +1,35 @@
-// import {
-//   MeetingManager,
-//   RosterAttendeeType,
-//   useToggleLocalMute,
-//   useMeetingManager,
-// } from "amazon-chime-sdk-component-library-react";
-// import { MicrophoneSlash1 } from "iconsax-react";
-// import { useEffect, useState } from "react";
-
-// const ShowVisualizer = ({
-//   attendee,
-//   meetingManager,
-//   noBackground,
-// }: {
-//   attendee: RosterAttendeeType;
-//   meetingManager: MeetingManager;
-//   noBackground?: boolean;
-// }) => {
-//   const [audioState, setAudioState] = useState<{
-//     attendeeId: string;
-//     volume: number;
-//     mute: boolean | null;
-//     signalStrength: number | null;
-//   }>({
-//     attendeeId: "",
-//     volume: 0,
-//     mute: true,
-//     signalStrength: 0,
-//   });
-//   const meetingM = useMeetingManager();
-//   const { muted, toggleMute } = useToggleLocalMute();
-//   useEffect(() => {
-//     const volumeIndicatorCallback = (
-//       attendeeId: string,
-//       volume: number | null,
-//       muted: boolean | null,
-//       signalStrength: number | null
-//     ) => {
-//       setAudioState({
-//         attendeeId: attendeeId,
-//         volume: volume || 0,
-//         mute: muted,
-//         signalStrength: signalStrength || 0,
-//       });
-//     };
-
-//     meetingM.audioVideo?.realtimeSubscribeToVolumeIndicator(
-//       attendee.chimeAttendeeId,
-//       volumeIndicatorCallback
-//     );
-
-//     return () => {
-//       meetingM.audioVideo?.realtimeUnsubscribeFromVolumeIndicator(
-//         attendee.chimeAttendeeId
-//       );
-//     };
-//   }, [meetingManager, attendee, audioState.signalStrength, audioState, muted]);
-//   // }, [meetingM, attendee, audioState.mute, audioState.volume]);
-
-//   const visualizerStyle = (factor: number) => ({
-//     height: `${Math.max(3, audioState.volume * factor)}px`,
-//     width: "4px",
-//   });
-
-//   const audioVisualizer = (
-//     <>
-//       {audioState.mute ? (
-//         <div
-//           className={`flex justify-center items-end p-[6px] ${
-//             noBackground ? " bg-transparent" : "bg-[#333333]"
-//           } rounded-full  w-[30px] h-[30px]`}
-//         >
-//           <MicrophoneSlash1
-//             size="18"
-//             color={noBackground ? "#5E29B7" : "#FAFAFA"}
-//           />
-//           {/* absolute top-[10px] right-[10px] */}
-//         </div>
-//       ) : (
-//         // absolute top-[10px] right-[10px]
-//         <div className="flex justify-center items-center p-[6px] bg-[#6c3ec2] rounded-full  w-[30px] h-[30px] gap-x-[2px]">
-//           <div style={visualizerStyle(6)} className="bg-cs-grey-50"></div>
-//           <div style={visualizerStyle(15)} className="bg-cs-grey-50"></div>
-//           <div style={visualizerStyle(25)} className="bg-cs-grey-50"></div>
-//           <div style={visualizerStyle(15)} className="bg-cs-grey-50"></div>
-//           <div style={visualizerStyle(6)} className="bg-cs-grey-50"></div>
-//         </div>
-//       )}
-//     </>
-//   );
-
-//   return <div>{audioVisualizer}</div>;
-// };
-
-// export default ShowVisualizer;
-
-import { useAppContext } from "@/context/StoreContext";
-import {
-  MeetingManager,
-  RosterAttendeeType,
-  useToggleLocalMute,
-  useMeetingManager,
-} from "amazon-chime-sdk-component-library-react";
+import { useEffect, useRef, useState } from "react";
 import { MicrophoneSlash1 } from "iconsax-react";
-import { useEffect, useState } from "react";
+import {
+  RosterAttendeeType,
+  MeetingManager,
+  useMeetingManager,
+  useAttendeeStatus,
+} from "amazon-chime-sdk-component-library-react";
+import ReactDOM from "react-dom/client";
+import { useAppContext } from "@/context/StoreContext";
 
 const ShowVisualizer = ({
-  attendee,
+  chimeAttendeeId,
   meetingManager,
   noBackground,
 }: {
-  attendee: RosterAttendeeType;
+  chimeAttendeeId: string;
   meetingManager: MeetingManager;
   noBackground?: boolean;
 }) => {
-  const [audioState, setAudioState] = useState({
-    volume: 0,
-    mute: true,
-    attendeeId: attendee.chimeAttendeeId,
-  });
   const { appState, setAppState } = useAppContext();
-
   const meetingM = useMeetingManager();
+  const volumeRef = useRef(0);
+  const muteRef = useRef(true);
+  const [localMute, setLocalMute] = useState(true);
+  const sideVisualizerContainerRef = useRef(false);
+  const { videoEnabled, sharingContent, muted } =
+    useAttendeeStatus(chimeAttendeeId);
+
+  const sideVisualizer = document.querySelector<HTMLDivElement>(
+    `.external-visualizer-${chimeAttendeeId}`
+  ) as HTMLDivElement;
 
   useEffect(() => {
     const volumeIndicatorCallback = (
@@ -128,92 +37,125 @@ const ShowVisualizer = ({
       volume: number | null,
       muted: boolean | null
     ) => {
-      if (volume !== audioState.volume || muted !== audioState.mute) {
-        setAudioState({
-          volume: volume || 0,
-          mute: muted || false,
-          attendeeId: attendeeId,
+      if (attendeeId === chimeAttendeeId) {
+        volumeRef.current = volume || 0;
+        muteRef.current = muted || false;
+        // updateVisualizer();
+        // updateExternalVisualizer();
+        // setLocalMute(muted as boolean);
+        setLocalMute(muteRef.current);
+
+        updateVisualizerTest();
+        updateExternalVisualizerTest();
+      }
+    };
+
+    const updateVisualizer = () => {
+      const factor = [6, 15, 25, 15, 6]; // Visualizer bar height factors
+      const visualizerBars = document.querySelectorAll(
+        `.visualizer-${chimeAttendeeId} .bar`
+      );
+
+      if (visualizerBars) {
+        visualizerBars.forEach((bar, index) => {
+          const barElement = bar as HTMLElement;
+
+          barElement.style.height = `${Math.max(
+            3,
+            volumeRef.current * factor[index]
+          )}px`;
         });
-        // setAppState((prevState) => ({
-        //   ...prevState,
-        //   sessionState: {
-        //     ...prevState.sessionState,
-        //     sessionLink: window.location.href,
-        //     audioState: [...prevState.sessionState.audioState, audioState],
-        //   },
-        // }));
+      }
 
-        let newAudioState = {
-          volume: volume || 0,
-          mute: muted || false,
-          attendeeId: attendeeId,
-        };
-        setAppState((prevState) => {
-          const existingAttendeeIndex =
-            prevState.sessionState.audioState.findIndex(
-              (state) => state.attendeeId === attendee.chimeAttendeeId
-            );
+      // const getAllVisualizerContainer = document.querySelectorAll(
+      //   `.visualizer-${chimeAttendeeId}`
+      // );
+    };
 
-          if (existingAttendeeIndex === -1) {
-            // Attendee not in the list, so add them
-            return {
-              ...prevState,
-              sessionState: {
-                ...prevState.sessionState,
-                audioState: [...prevState.sessionState.audioState, audioState],
-              },
-            };
-          }
+    const updateVisualizerTest = () => {
+      const factor = [6, 15, 25, 15, 6]; // Visualizer bar height factors
+      const visualizerBars = document.querySelectorAll(
+        `.visualizer-${chimeAttendeeId}`
+      );
 
-          return prevState;
-        });
+      visualizerBars.forEach((item) => {
+        const conte = item.querySelectorAll(".bar");
+        if (conte) {
+          conte.forEach((bar, index) => {
+            const barElement = bar as HTMLElement;
 
-        setAppState((prevState) => {
-          const updatedAudioState = prevState.sessionState.audioState.map(
-            (state) => (state.attendeeId === attendeeId ? newAudioState : state)
-          );
+            barElement.style.height = `${Math.max(
+              3,
+              volumeRef.current * factor[index]
+            )}px`;
+          });
+        }
+      });
+    };
 
-          return {
-            ...prevState,
-            sessionState: {
-              ...prevState.sessionState,
-              audioState: updatedAudioState,
-            },
-          };
-        });
+    const updateExternalVisualizerTest = () => {
+      const factor = [6, 15, 25, 15, 6]; // Visualizer bar height factors
+      const visualizerBars = document.querySelectorAll(
+        `.external-visualizer-${chimeAttendeeId}`
+      );
 
-        setAudioState({
-          volume: volume || 0,
-          mute: muted || false,
-          attendeeId: attendeeId,
+      visualizerBars.forEach((item) => {
+        const conte = item.querySelectorAll(".bar");
+        muteRef.current
+          ? item.classList.remove("active")
+          : item.classList.add("active");
+        if (conte) {
+          conte.forEach((bar, index) => {
+            const barElement = bar as HTMLElement;
+
+            barElement.style.height = `${Math.max(
+              3,
+              volumeRef.current * factor[index]
+            )}px`;
+          });
+        }
+      });
+    };
+
+    const updateExternalVisualizer = () => {
+      const factor = [6, 15, 25, 15, 6]; // Visualizer bar height factors
+      const visualizerBars = document.querySelectorAll(
+        `.external-visualizer-${chimeAttendeeId} .bar`
+      );
+
+      if (visualizerBars) {
+        visualizerBars.forEach((bar, index) => {
+          const barElement = bar as HTMLElement;
+
+          barElement.style.height = `${Math.max(
+            3,
+            volumeRef.current * factor[index]
+          )}px`;
         });
       }
     };
 
     meetingM.audioVideo?.realtimeSubscribeToVolumeIndicator(
-      attendee.chimeAttendeeId,
+      chimeAttendeeId,
       volumeIndicatorCallback
     );
 
     return () => {
       meetingM.audioVideo?.realtimeUnsubscribeFromVolumeIndicator(
-        attendee.chimeAttendeeId
+        chimeAttendeeId
       );
     };
-  }, [meetingM, attendee.chimeAttendeeId, audioState.volume, audioState.mute]);
+  }, [meetingM, chimeAttendeeId, muted, muteRef.current]);
 
-  const visualizerStyle = (factor: number) => ({
-    height: `${Math.max(3, audioState.volume * factor)}px`,
-    width: "4px",
-  });
+  console.log(chimeAttendeeId, localMute);
 
-  const audioVisualizer = (
-    <>
-      {audioState.mute ? (
+  return (
+    <div className={`visualizer-${chimeAttendeeId}`}>
+      {localMute ? (
         <div
           className={`flex justify-center items-end p-[6px] ${
-            noBackground ? " bg-transparent" : "bg-[#333333]"
-          } rounded-full  w-[30px] h-[30px]`}
+            noBackground ? "bg-transparent" : "bg-[#333333]"
+          } rounded-full w-[30px] h-[30px]`}
         >
           <MicrophoneSlash1
             size="18"
@@ -221,18 +163,19 @@ const ShowVisualizer = ({
           />
         </div>
       ) : (
-        <div className="flex justify-center items-center p-[6px] bg-[#6c3ec2] rounded-full  w-[30px] h-[30px] gap-x-[2px]">
-          <div style={visualizerStyle(6)} className="bg-cs-grey-50"></div>
-          <div style={visualizerStyle(15)} className="bg-cs-grey-50"></div>
-          <div style={visualizerStyle(25)} className="bg-cs-grey-50"></div>
-          <div style={visualizerStyle(15)} className="bg-cs-grey-50"></div>
-          <div style={visualizerStyle(6)} className="bg-cs-grey-50"></div>
+        <div className="flex justify-center items-center p-[6px] bg-[#6c3ec2] rounded-full w-[30px] h-[30px] gap-x-[2px]">
+          {[...Array(5)].map((_, index) => (
+            <div
+              key={index}
+              className="bar bg-cs-grey-50 transition-all test"
+              style={{ width: "4px", height: "3px" }}
+            />
+          ))}
         </div>
       )}
-    </>
+    </div>
   );
-
-  return <div>{audioVisualizer}</div>;
 };
 
 export default ShowVisualizer;
+// Working

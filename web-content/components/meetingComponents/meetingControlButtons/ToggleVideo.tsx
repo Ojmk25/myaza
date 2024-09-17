@@ -41,12 +41,43 @@ export const ToggleVideoButton = ({
     }, 5000);
   }, []);
 
+  // async function toggleVideo() {
+  //   try {
+  //     const videoList = await deviceController.listVideoInputDevices();
+  //     const videoElement = document.querySelector(
+  //       "#video-preview"
+  //     ) as HTMLVideoElement;
+  //     if (!videoElement) {
+  //       console.error("Video element not found!");
+  //       return;
+  //     }
+
+  //     if (
+  //       (await deviceController["activeDevices"].video) &&
+  //       (await deviceController["activeDevices"].video.groupId.length) > 1
+  //     ) {
+  //       deviceController.stopVideoPreviewForVideoInput(videoElement);
+  //       await deviceController.stopVideoInput();
+  //       setVideo(false);
+  //     } else {
+  //       await deviceController.startVideoInput(videoList[0].deviceId);
+  //       deviceController.startVideoPreviewForVideoInput(videoElement);
+  //       setVideo(true);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error in toggleVideo:", error);
+  //   }
+  // }
+
   async function toggleVideo() {
     try {
       const videoList = await deviceController.listVideoInputDevices();
       const videoElement = document.querySelector(
         "#video-preview"
       ) as HTMLVideoElement;
+      // const videoElementTwo = document.querySelector(
+      //   "#video-preview-two"
+      // ) as HTMLVideoElement;
       if (!videoElement) {
         console.error("Video element not found!");
         return;
@@ -57,11 +88,13 @@ export const ToggleVideoButton = ({
         (await deviceController["activeDevices"].video.groupId.length) > 1
       ) {
         deviceController.stopVideoPreviewForVideoInput(videoElement);
+        // deviceController.stopVideoPreviewForVideoInput(videoElementTwo);
         await deviceController.stopVideoInput();
         setVideo(false);
       } else {
         await deviceController.startVideoInput(videoList[0].deviceId);
         deviceController.startVideoPreviewForVideoInput(videoElement);
+        // deviceController.startVideoPreviewForVideoInput(videoElementTwo);
         setVideo(true);
       }
     } catch (error) {

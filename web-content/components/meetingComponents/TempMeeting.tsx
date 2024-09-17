@@ -148,9 +148,11 @@ export default function TempMeeting({
           //   query.link as string
           // );
 
-          // setTimeout(() => {
-          //   response?.data && response?.data?.data?.statusCode !== 200 && router.push("/");
-          // }, 2000)
+          setTimeout(() => {
+            response?.data &&
+              response?.data?.statusCode !== 200 &&
+              router.push("/");
+          }, 2000);
           setAppState((prevState) => ({
             ...prevState,
             sessionState: {
@@ -514,12 +516,12 @@ export default function TempMeeting({
           )}
           {showModal === "settings" && <Settings onClose={handleCloseModal} />}
           {/* <SuccessSlideIn openModal={openModal} response={successRes && successRes?.statusCode === 200} successActionResponse={successRes && successRes?.message} closeModal={() => { }} /> */}
-          {/* <FailureSlideIn
+          <FailureSlideIn
             openModal={openModal}
             response={successRes && successRes?.statusCode !== 200}
             errResponse={successRes && successRes?.body.message}
             closeModal={() => {}}
-          /> */}
+          />
           {loading && <LoadingScreen />}
           {noNetwork && <LoadingScreen />}
           {endeMeetingRef.current && <EndedMeetingModal />}

@@ -24,6 +24,9 @@ export const ToggleAudio = ({
   const deviceController = new DefaultDeviceController(logger, {
     enableWebAudio: true,
   });
+  useEffect(() => {
+    setAudioStatus("no");
+  }, []);
 
   const handleClick = () => {
     setVideo(!audio);

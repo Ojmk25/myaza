@@ -139,7 +139,7 @@ export default function NewPassword() {
         ["confirm-password"]: true,
       }));
     }
-  }, [formData.password]);
+  }, [formData.password, formData]);
 
   const handleResetPassword = async () => {
     const email = getSignUpUser();
