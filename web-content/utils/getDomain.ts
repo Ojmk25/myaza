@@ -26,8 +26,9 @@ export function getSubdomain(host: string) {
   // Split the hostname into parts in array
   const hostnameParts = host.split(".");
   // If the hostname has more than two parts, take out "www" if it's in the array return the first part (the subdomain)
-  if (hostnameParts.length > 2) {
+  if (hostnameParts.length > 3) {
     const filterOut = hostnameParts.filter((item) => item !== "www");
+    console.log(filterOut);
     return filterOut[0];
   }
 

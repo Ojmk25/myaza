@@ -142,8 +142,6 @@ export default function Home() {
         data?.data.body.status === "Success" &&
         navigate.push(`/meet/${extractedLink}`);
 
-      `/meet/${data?.data.body.data.MeetingDetails.ExternalMeetingId}`;
-
       // setInstantMeeting(data?.data.body.data.MeetingDetails.MeetingId as string, data?.data.body.data)
     } catch (error) {
       console.log(error);
