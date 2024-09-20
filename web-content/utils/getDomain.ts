@@ -25,12 +25,16 @@
 export function getSubdomain(host: string) {
   // Split the hostname into parts in array
   const hostnameParts = host.split(".");
-  console.log(hostnameParts);
   // If the hostname has more than two parts, take out "www" if it's in the array return the first part (the subdomain)
-  if (hostnameParts.length > 3) {
+
+  if (hostnameParts.length > 2) {
     const filterOut = hostnameParts.filter((item) => item !== "www");
     console.log(filterOut);
-    return filterOut[0];
+    // return filterOut[0];
+    if (filterOut[0] !== "cecurestream") {
+      return filterOut[0];
+    }
+    return "";
   }
 
   // If there is no subdomain, return an empty string
