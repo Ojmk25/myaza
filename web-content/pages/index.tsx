@@ -41,6 +41,7 @@ export default function Home() {
   );
   const [_, setVideoStatus] = useSessionStorage("videoStatus", "no");
   const [, setAudioStatus] = useSessionStorage("audioStatus", "no");
+  console.log(expressJoin);
 
   useEffect(() => {
     setLoggedIn(IsAuthenticated());
@@ -115,6 +116,8 @@ export default function Home() {
   };
 
   const handleSignInstantMeeting = async () => {
+    setExpressJoin("yes");
+
     setLoading(true);
     const clearAll = () => {
       setLoading(false);
@@ -124,13 +127,14 @@ export default function Home() {
       }, 2000);
     };
     try {
+      setExpressJoin("yes");
       const data = await createInstantMeeting({});
       // sessionStorage.setItem("meetingJoiner", "no");
-
+      console.log(expressJoin, data);
       setMeetingData(data);
       setLoading(true);
       setOpenModal(true);
-      setExpressJoin("yes");
+
       setAudioStatus("no");
       setVideoStatus("no");
 
@@ -145,9 +149,11 @@ export default function Home() {
       // setInstantMeeting(data?.data.body.data.MeetingDetails.MeetingId as string, data?.data.body.data)
     } catch (error) {
       console.log(error);
+      // setExpressJoin("no");
       setLoading(true);
       setOpenModal(true);
     } finally {
+      console.log(expressJoin);
       console.log("Finally");
       clearAll();
     }

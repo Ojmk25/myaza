@@ -9,7 +9,6 @@ import {
   useState,
 } from "react";
 import {
-  useToggleLocalMute,
   useRemoteVideoTileState,
   useRosterState,
   useContentShareControls,
@@ -37,10 +36,15 @@ import ShowVisualizer from "./ShowVisualizer";
 import capturePurple from "@/public/assets/images/capturePurple.svg";
 import Participants from "./Participants";
 import Conference from "./Conference";
-import { listAttendees, startTranscription } from "@/services/meetingServices";
+import {
+  listAttendees,
+  startTranscription,
+  stopTranscription,
+} from "@/services/meetingServices";
 import { useAppContext } from "@/context/StoreContext";
 import RaisedHandQueue from "./RaisedHandQueue";
 import { useRouter } from "next/router";
+import { RecordCircle } from "iconsax-react";
 // import AudioVisualizerContainer from "./MeetingCardAudio";
 
 type DynamicWidth = {
@@ -62,6 +66,7 @@ export default function MeetingSection({
   emoji,
   meetingId,
   attendeeDetailPass,
+  meetingDetails,
 }: {
   attendeIDString: string | null | undefined;
   externalID: string | null | undefined;
@@ -71,6 +76,7 @@ export default function MeetingSection({
   emoji: any;
   meetingId: string | null;
   attendeeDetailPass: AtteendeeDetailsProp[];
+  meetingDetails: any;
 }) {
   const { roster } = useRosterState();
   const attendees = Object.values(roster);
@@ -101,6 +107,7 @@ export default function MeetingSection({
     number | null
   >(null);
   const [bigContainerWidth, setBigContainerWidth] = useState(0);
+  const [bigContainerHeight, setBigContainerHeight] = useState(0);
   const containerTileRef = useRef<HTMLDivElement>(null);
   const [dynamicWidth, setDynamicWidth] = useState<DynamicWidth>({
     width: "",
@@ -118,39 +125,7 @@ export default function MeetingSection({
   const router = useRouter();
   const logger = new ConsoleLogger("MyLogger");
   const [attendeeItemsStatus, setAttendeeItems] = useState<any>();
-
-  useEffect(() => {
-    const audioVideo = meetingM?.audioVideo;
-
-    if (audioVideo) {
-      // const handleAttendeePresence = (attendeeId: string, present: boolean) => {
-      //   // if (present) {
-      //   //   const presentEntry = presents.find(
-      //   //     (present) => present.user_id === attendeeId
-      //   //   );
-      //   //   if (presentEntry) {
-      //   //     const fullName = getAttendeeFullName(attendeeId);
-      //   //     console.log(`Attendee ${fullName} has joined the meeting`);
-      //   //     // Perform additional actions (e.g., make API calls, update UI)
-      //   //   }
-      //   // } else {
-      //   //   console.log(`Attendee with id ${attendeeId} has left the meeting`);
-      //   //   // Handle attendee leaving the meeting
-      //   // }
-      //   console.log("There is a presence");
-      // };
-
-      audioVideo.realtimeSubscribeToAttendeeIdPresence(
-        (handleAttendeePresence) => {}
-      );
-
-      return () => {
-        audioVideo.realtimeUnsubscribeToAttendeeIdPresence(
-          (handleAttendeePresence) => {}
-        );
-      };
-    }
-  }, [meetingM]);
+  const [rosterArray, setRosterArray] = useState<any[]>([]);
 
   useEffect(() => {
     // Function to update screenWidth state when the window is resized
@@ -176,7 +151,8 @@ export default function MeetingSection({
 
   const transcriptionPayload = {
     meeting_id: meetingManager.meetingId as string,
-    // meeting_id: router.query.link as string,
+    // meeting_id: meetingDetails?.meeting_info?.ExternalMeetingId,
+    // meeting_id: `meeting_${router.query.link as string}`,
     // meeting_id: "e3a29246-53b9-4e96-9352-98b195312713",
     attendee_id: attendeIDString as string,
   };
@@ -191,7 +167,44 @@ export default function MeetingSection({
     //   }, 2000)
     // }
     try {
+      const transcriptionPayload = {
+        meeting_id: meetingManager.meetingId as string,
+        // meeting_id: `meeting_${router.query.link as string}`,
+        // meeting_id: router.query.link as string,
+        // meeting_id: "e3a29246-53b9-4e96-9352-98b195312713",
+        attendee_id: attendeIDString as string,
+      };
       const data = await startTranscription(transcriptionPayload);
+      console.log(transcriptionPayload);
+
+      // setCaptionOn(true);
+      // setLoading(true)
+      // setSuccessRes(data.data.body)
+      // setOpenModal(true)
+      // setTimeout(() => {
+      //   updateSignUpUser(registerPayload.email)
+      //   data.data.body.status === 'Success' && navigate.push("/auth/verify");
+      // }, 3000)
+      console.log(data);
+    } catch (error) {
+      // setLoading(true)
+      console.log(error);
+    } finally {
+      // clearAll()
+    }
+  };
+
+  const handleStopTranscription = async () => {
+    // setLoading(true)
+    // const clearAll = () => {
+    //   setLoading(false)
+    //   setTimeout(() => {
+    //     setSuccessRes("")
+    //     setOpenModal(false)
+    //   }, 2000)
+    // }
+    try {
+      const data = await stopTranscription(transcriptionPayload);
       console.log(transcriptionPayload);
 
       // setCaptionOn(true);
@@ -260,32 +273,152 @@ export default function MeetingSection({
     };
   }, [inviewSmallContainer]);
 
-  const attendeeItems = attendees.map((attendee, i) => {
-    const tilerId = attendeeIdToTileId[attendee.chimeAttendeeId];
-    const { externalUserId } = attendee;
+  const RenderSmallTiles = ({ array }: { array: any[] }) => {
+    return array.map((item, index) => {
+      const tilerId = attendeeIdToTileId[item.attendeeId];
+      if (item.attendeeId === attendeIDString) {
+        return (
+          <div
+            key={index}
+            className={`${getClassNames(
+              rosterArray.length
+            )} @container/meetingCard `}
+          >
+            <LocalAttendeeCard
+              key={item.attendeeId}
+              attendeeId={item.attendeeId}
+              ref={(el: any) => (tileRefs.current[index] = el)}
+              name={item.externalUserId}
+              videoTildId={1}
+              nameID={item.externalUserId}
+              meetingManager={meetingManager}
+              sideView={sideView}
+            />
+          </div>
+        );
+      } else {
+        return (
+          <div
+            key={index}
+            className={`${getClassNames(
+              rosterArray.length
+            )} @container/meetingCard `}
+          >
+            <RemoteAttendeeCard
+              key={item.attendeeId}
+              attendeeId={item.attendeeId}
+              ref={(el: any) => (tileRefs.current[index] = el)}
+              name={item.externalUserId}
+              videoTildId={tilerId}
+              nameID={item.externalUserId as string}
+              sideView={sideView}
+            />
+          </div>
+        );
+      }
+    });
+  };
 
-    if (i === 0) {
+  // const getAttendeesFromSessionStorage = (externalUserId: string) => {
+  //   const storedData = sessionStorage.getItem("meetingAttendees");
+  //   console.log(storedData);
+
+  //   if (!storedData)
+  //     return {
+  //       full_name: "Unknown User",
+  //       picture: null,
+  //       user_id: "no data yet",
+  //     };
+  //   if (storedData) {
+  //     const parsedArray = JSON.parse(storedData);
+
+  //     const attendeeDetailItems = parsedArray.find(
+  //       (att: any) => att.user_id === externalUserId
+  //     );
+  //     console.log(attendeeDetailItems);
+
+  //     if (attendeeDetailItems) {
+  //       return attendeeDetailItems;
+  //     } else {
+  //       return {
+  //         full_name: "Unknown User",
+  //         picture: null,
+  //         user_id: "no external Id matches",
+  //       };
+  //     }
+  //   }
+  // };
+  // const attendeeItems = attendees.map((attendee, i) => {
+  //   const tilerId = attendeeIdToTileId[attendee.chimeAttendeeId];
+  //   const { externalUserId } = attendee;
+  //   const userObject = getAttendeesFromSessionStorage(externalUserId as string);
+  //   console.log(userObject);
+
+  //   if (i === 0) {
+  //     return (
+  //       <LocalAttendeeCard
+  //         key={i}
+  //         attendeeId={attendee.chimeAttendeeId}
+  //         ref={(el: any) => (tileRefs.current[i] = el)}
+  //         name={externalUserId}
+  //         videoTildId={1}
+  //         nameID={attendee.externalUserId as string}
+  //         // audioState={
+  //         //   <ShowVisualizer
+  //         //     attendee={attendee}
+  //         //     meetingManager={meetingManager}
+  //         //     // attendeeId={attendee.chimeAttendeeId}
+  //         //     // audioVideo={audioVideo}
+  //         //   />
+  //         //   // <AudioVisualizerContainer
+  //         //   //   attendee={attendee}
+  //         //   //   meetingManager={meetingM}
+  //         //   // />
+  //         // }
+  //         // attendeeDetails={attendeeDetailItems}
+  //         userOject={userObject}
+  //         meetingManager={meetingManager}
+  //         sideView={sideView}
+  //       />
+  //     );
+  //   } else {
+  //     return (
+  //       <RemoteAttendeeCard
+  //         key={attendee.chimeAttendeeId}
+  //         attendeeId={attendee.chimeAttendeeId}
+  //         ref={(el: any) => (tileRefs.current[i] = el)}
+  //         name={externalUserId}
+  //         videoTildId={tilerId}
+  //         nameID={attendee.externalUserId as string}
+  //         // audioState={
+  //         //   <ShowVisualizer
+  //         //     attendee={attendee}
+  //         //     meetingManager={meetingManager}
+  //         //   />
+  //         //   // <AudioVisualizerContainer
+  //         //   //   attendee={attendee}
+  //         //   //   meetingManager={meetingM}
+  //         //   // />
+  //         // }
+  //         sideView={sideView}
+  //         // attendeeDetails={attendeeDetailItems}
+  //       />
+  //     );
+  //   }
+  // });
+
+  const attendeeItems = rosterArray.map((item, i) => {
+    const tilerId = attendeeIdToTileId[item.attendeeId];
+
+    if (item.attendeeId === attendeIDString) {
       return (
         <LocalAttendeeCard
-          key={i}
-          attendeeId={attendee.chimeAttendeeId}
+          key={item.attendeeId}
+          attendeeId={item.attendeeId}
           ref={(el: any) => (tileRefs.current[i] = el)}
-          name={externalUserId}
+          name={item.externalUserId}
           videoTildId={1}
-          nameID={attendee.externalUserId as string}
-          // audioState={
-          //   <ShowVisualizer
-          //     attendee={attendee}
-          //     meetingManager={meetingManager}
-          //     // attendeeId={attendee.chimeAttendeeId}
-          //     // audioVideo={audioVideo}
-          //   />
-          //   // <AudioVisualizerContainer
-          //   //   attendee={attendee}
-          //   //   meetingManager={meetingM}
-          //   // />
-          // }
-          // attendeeDetails={attendeeDetailItems}
+          nameID={item.externalUserId}
           meetingManager={meetingManager}
           sideView={sideView}
         />
@@ -293,56 +426,45 @@ export default function MeetingSection({
     } else {
       return (
         <RemoteAttendeeCard
-          key={attendee.chimeAttendeeId}
-          attendeeId={attendee.chimeAttendeeId}
+          key={item.attendeeId}
+          attendeeId={item.attendeeId}
           ref={(el: any) => (tileRefs.current[i] = el)}
-          name={externalUserId}
+          name={item.externalUserId}
           videoTildId={tilerId}
-          nameID={attendee.externalUserId as string}
-          // audioState={
-          //   <ShowVisualizer
-          //     attendee={attendee}
-          //     meetingManager={meetingManager}
-          //   />
-          //   // <AudioVisualizerContainer
-          //   //   attendee={attendee}
-          //   //   meetingManager={meetingM}
-          //   // />
-          // }
+          nameID={item.externalUserId as string}
           sideView={sideView}
-          // attendeeDetails={attendeeDetailItems}
         />
       );
     }
   });
-  console.log(attendeeItems);
 
+  // const smallScreenTiles = chunkArray(attendeeItems, tileId ? 2 : 6);
   const smallScreenTiles = chunkArray(attendeeItems, tileId ? 2 : 6);
 
-  useEffect(() => {
-    if (containerTileRef.current && changingWidth <= 699) {
-      if (attendees.length < 3) {
-        setDynamicWidth({ width: "100%", maxWidth: "100%" });
-      } else {
-        setDynamicWidth({ width: "100%", maxWidth: 230 });
-      }
-    } else if (
-      (containerTileRef.current && changingWidth >= 700) ||
-      changingWidth <= 890
-    ) {
-      if (attendees.length < 5) {
-        setDynamicWidth({ width: "100%", maxWidth: "100%" });
-      } else {
-        setDynamicWidth({ width: "100%", maxWidth: 210 });
-      }
-    } else if (containerTileRef.current && changingWidth >= 891) {
-      if (attendees.length < 4) {
-        setDynamicWidth({ width: "100%", maxWidth: "100%" });
-      } else {
-        setDynamicWidth({ width: "100%", maxWidth: 300 });
-      }
-    }
-  }, [containerTileRef.current?.offsetWidth, changingWidth]);
+  // useEffect(() => {
+  //   if (containerTileRef.current && changingWidth <= 699) {
+  //     if (attendees.length < 3) {
+  //       setDynamicWidth({ width: "100%", maxWidth: "100%" });
+  //     } else {
+  //       setDynamicWidth({ width: "100%", maxWidth: 230 });
+  //     }
+  //   } else if (
+  //     (containerTileRef.current && changingWidth >= 700) ||
+  //     changingWidth <= 890
+  //   ) {
+  //     if (attendees.length < 5) {
+  //       setDynamicWidth({ width: "100%", maxWidth: "100%" });
+  //     } else {
+  //       setDynamicWidth({ width: "100%", maxWidth: 210 });
+  //     }
+  //   } else if (containerTileRef.current && changingWidth >= 891) {
+  //     if (attendees.length < 4) {
+  //       setDynamicWidth({ width: "100%", maxWidth: "100%" });
+  //     } else {
+  //       setDynamicWidth({ width: "100%", maxWidth: 300 });
+  //     }
+  //   }
+  // }, [containerTileRef.current?.offsetWidth, changingWidth]);
 
   const [uuid, setUuid] = useState("");
 
@@ -387,15 +509,40 @@ export default function MeetingSection({
 
   useEffect(() => {
     setBigContainerWidth(bigContainerTileRef?.current?.clientWidth as number);
+    setBigContainerHeight(bigContainerTileRef?.current?.clientHeight as number);
+    const transcriptEventHandler = (transcriptEvent: TranscriptEvent): void => {
+      // `transcriptEvent` could be either a `Transcript` or `TranscriptionStatus`
+      // if it is `Transcript`, then it should contain transcription results
+      // else you need to handle the logic of `TranscriptionStatus` changes (start/ stop/ ...)
+      console.log(transcriptEvent);
 
+      if (transcriptEvent instanceof TranscriptionStatus) {
+        // Print Transcript Status, could be `STARTED`, `INTERRUPTED`, `RESUMED`, `STOPPED` or `FAILED`
+        console.log(transcriptEvent.type);
+      } else if (transcriptEvent instanceof Transcript) {
+        // Print Transcript result collection
+        console.log(transcriptEvent.results);
+      }
+    };
     const audioVideo = meetingManager.audioVideo;
     if (audioVideo?.transcriptionController) {
       audioVideo.transcriptionController.subscribeToTranscriptEvent(
-        (transcriptEvent: Transcript | TranscriptionStatus) => {
-          console.log(transcriptEvent);
-        }
+        // (transcriptEvent: Transcript | TranscriptionStatus) => {
+        //   console.log(transcriptEvent);
+        //   if (transcriptEvent.type === 'Transcript') {
+        //     transcriptEvent.results.forEach(result => {
+        //         const transcriptText = result.alternatives[0].transcript;
+        //         console.log('Transcription: ', transcriptText);
+        //     });
+        // }
+        // }
+        transcriptEventHandler
       );
     }
+
+    // audioVideo?.transcriptionController?.subscribeToTranscriptEvent(
+    //   transcriptEventHandler
+    // );
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (let entry of entries) {
@@ -403,6 +550,7 @@ export default function MeetingSection({
           // setChangingWidth(entry.contentRect.width);
           // console.log(entry.contentRect.width);
           setBigContainerWidth(entry.contentRect.width);
+          setBigContainerHeight(entry.contentRect.height);
           if (entry.contentRect.width < 300) {
             setDisplayCards(3);
           } else if (
@@ -476,9 +624,15 @@ export default function MeetingSection({
   };
 
   const returName = (string: any) => {
-    const details = appState.sessionState.meetingAttendees.find(
-      (att) => att.user_id === string
-    );
+    // const details = appState.sessionState.meetingAttendees.find(
+    //   (att) => att.user_id === string
+    // );
+    const details = Array.isArray(appState.sessionState.meetingAttendees)
+      ? appState.sessionState.meetingAttendees.find(
+          (att) => att.user_id === string
+        )
+      : null; // Return null or handle the case where it's not an array
+
     return getRemoteInitials(details?.full_name as string);
   };
 
@@ -489,8 +643,10 @@ export default function MeetingSection({
     return details?.full_name as string;
   };
 
+  // const [sortedAttendeeItems, setSortedAttendeeItems] =
+  //   useState<JSX.Element[]>(attendeeItems);
   const [sortedAttendeeItems, setSortedAttendeeItems] =
-    useState<JSX.Element[]>(attendeeItems);
+    useState<JSX.Element[]>(rosterArray);
 
   // useEffect(() => {
   //   // After rendering, we can access the refs and get class names
@@ -544,7 +700,8 @@ export default function MeetingSection({
           console.log(ref.className);
 
           return {
-            attendee: attendeeItems[index], // Store the attendee item
+            // attendee: attendeeItems[index], // Store the attendee item
+            attendee: rosterArray[index], // Store the attendee item
             className, // Capture the class name
             index, // Store the index if needed for debugging or other purposes
           };
@@ -566,7 +723,7 @@ export default function MeetingSection({
 
     // Rearrange the array: Keep the first item constant, then move 'device_Enabled' attendees to the front
     const reshuffledAttendeeItems = [
-      attendeeItems[0], // First item remains the same (local attendee)
+      rosterArray[0], // First item remains the same (local attendee)
       ...attendeesWithDeviceEnabled.map((item) => item?.attendee),
       ...attendeesWithoutDeviceEnabled.map((item) => item?.attendee),
     ];
@@ -576,9 +733,57 @@ export default function MeetingSection({
     );
   }, [appState.sessionState.audioState, audioVideo, meetingM, sideView]);
 
+  useEffect(() => {
+    setAppState((prevState) => {
+      // Extract the attendee IDs from the roster array
+      const rosterAttendeeIds = attendees.map(
+        (attendee) => attendee.chimeAttendeeId
+      );
+      // Filter the audioState array to only include attendees present in the roster
+      const updatedAudioState = prevState.sessionState.audioState.filter(
+        (item) => rosterAttendeeIds.includes(item.attendeeId)
+      );
+      return {
+        ...prevState,
+        sessionState: {
+          ...prevState.sessionState,
+          audioState: updatedAudioState,
+        },
+      };
+    });
+  }, [attendees.length]);
+
+  useEffect(() => {
+    const sortedAttendees = appState.sessionState.audioState.sort((a, b) => {
+      // Always prioritize attendeeId "1121"
+      if (a.attendeeId === attendeIDString) return -1;
+      if (b.attendeeId === attendeIDString) return 1;
+
+      // Sort based on video or audio being true for other attendees
+      const aHasMedia = a.video || !a.mute;
+      const bHasMedia = b.video || !b.mute;
+
+      return aHasMedia === bHasMedia ? 0 : aHasMedia ? -1 : 1;
+    });
+    setRosterArray(sortedAttendees);
+  }, [appState.sessionState.audioState]);
+  console.log(attendees);
+
   return (
     <>
+      {appState.sessionState.recordMeeeting && (
+        <div className=" flex gap-x-2 bg-cs-black-200 items-center p-1 rounded mx-2">
+          <div className="p-[4px] bg-cs-grey-50 rounded-lg w-8">
+            <RecordCircle size="24" color="#CB3A32" variant="Bulk" />
+          </div>
+          <div className=" text-cs-grey-50 font-normal">
+            Call is being recorded
+          </div>
+        </div>
+      )}
+
       <div className=" flex-4 overflow-hidden hidden md:flex metro-medium meetingSection relative">
+        {/* big screen share screen */}
         {tileId && (
           <div className=" flex-5 bg-cs-black-200 px-10 py-5 rounded-[4px] mr-4">
             <div className=" h-full flex flex-col">
@@ -614,37 +819,113 @@ export default function MeetingSection({
             ref={bigContainerTileRef}
           >
             {/* <div className="w-full flex gap-4 h-full flex-4 flex-wrap justify-center">
-              {attendeeItems}
-            </div> */}
+  {attendeeItems}
+</div> */}
 
             <div className="flex flex-wrap justify-center overflow-y-auto items-center w-full h-full">
-              {sortedAttendeeItems
+              {rosterArray
                 .slice(
                   0,
                   displayCards &&
-                    (attendeeItems.length > displayCards
+                    // (attendeeItems.length > displayCards
+                    (rosterArray.length > displayCards
                       ? displayCards - 1
                       : displayCards)
                 )
-                .map((item, index) => (
-                  <div
-                    key={index}
-                    className={`${getClassNames(
-                      attendeeItems.length
-                    )} @container/meetingCard `}
-                  >
-                    {item}
-                  </div>
-                ))}
-              {displayCards && attendeeItems.length > displayCards && (
-                <div className={` ${getClassNames(attendeeItems.length)}`}>
+                .map((item, index) => {
+                  const tilerId = attendeeIdToTileId[item.attendeeId];
+                  if (item.attendeeId === attendeIDString) {
+                    return (
+                      <div
+                        key={index}
+                        className={`${
+                          getClassNames(rosterArray.length)
+                          // calculateElementSize(
+                          //   bigContainerWidth,
+                          //   bigContainerHeight,
+                          //   attendeeItems.length,
+                          //   16 / 9
+                          // )
+                        } @container/meetingCard `}
+                        // style={{
+                        //   maxWidth: calculateElementSize(
+                        //     bigContainerWidth,
+                        //     bigContainerHeight,
+                        //     // attendeeItems.length,
+                        //     rosterArray.length,
+                        //     16 / 9
+                        //   ),
+                        //   maxHeight: calculateElementHeight(
+                        //     bigContainerWidth,
+                        //     bigContainerHeight,
+                        //     // attendeeItems.length,
+                        //     rosterArray.length,
+                        //     16 / 9
+                        //   ),
+                        // }}
+                      >
+                        <LocalAttendeeCard
+                          // key={index}
+                          attendeeId={item.attendeeId}
+                          ref={(el: any) => (tileRefs.current[index] = el)}
+                          name={item.externalUserId}
+                          videoTildId={1}
+                          nameID={item.externalUserId}
+                          meetingManager={meetingManager}
+                          sideView={sideView}
+                        />
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div
+                        key={index}
+                        className={`${
+                          getClassNames(rosterArray.length)
+                          // calculateElementSize(
+                          //   bigContainerWidth,
+                          //   bigContainerHeight,
+                          //   attendeeItems.length,
+                          //   16 / 9
+                          // )
+                        } @container/meetingCard `}
+                        // style={{
+                        //   maxWidth: calculateElementSize(
+                        //     bigContainerWidth,
+                        //     bigContainerHeight,
+                        //     rosterArray.length,
+                        //     16 / 9
+                        //   ),
+                        //   maxHeight: calculateElementHeight(
+                        //     bigContainerWidth,
+                        //     bigContainerHeight,
+                        //     rosterArray.length,
+                        //     16 / 9
+                        //   ),
+                        // }}
+                      >
+                        <RemoteAttendeeCard
+                          // key={item.attendeeId}
+                          attendeeId={item.attendeeId}
+                          ref={(el: any) => (tileRefs.current[index] = el)}
+                          name={item.externalUserId}
+                          videoTildId={tilerId}
+                          nameID={item.externalUserId as string}
+                          sideView={sideView}
+                        />
+                      </div>
+                    );
+                  }
+                })}
+              {displayCards && rosterArray.length > displayCards && (
+                <div className={` ${getClassNames(rosterArray.length)}`}>
                   <div
                     className={` bg-cs-black-200 flex-1 rounded flex h-full justify-center`}
                   >
-                    {attendeeItems.length - (displayCards - 1) <= 2 ? (
+                    {rosterArray.length - (displayCards - 1) <= 2 ? (
                       <div className="flex-1 flex justify-center items-center mx-auto">
-                        {attendees
-                          .slice(displayCards - 2, attendeeItems.length)
+                        {rosterArray
+                          .slice(displayCards - 2, rosterArray.length)
                           .map((item, index) => (
                             <div
                               className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 border-solid border-[0.5px] border-white -ml-2 uppercase"
@@ -655,22 +936,22 @@ export default function MeetingSection({
                           ))}
 
                         {/* <Image
-                          src={avatar}
-                          alt=""
-                          className=" max-w-[38px] max-h-[38px] rounded-full -ml-2"
-                        /> */}
+              src={avatar}
+              alt=""
+              className=" max-w-[38px] max-h-[38px] rounded-full -ml-2"
+            /> */}
                       </div>
                     ) : (
                       <div className="flex-1 flex justify-center items-center mx-auto">
                         {/* <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 border-solid border-[0.5px] border-white">
-                          MO
-                        </div>
-                        <Image
-                          src={avatar}
-                          alt=""
-                          className=" max-w-[38px] max-h-[38px] rounded-full -ml-2"
-                        /> */}
-                        {attendees
+              MO
+            </div>
+            <Image
+              src={avatar}
+              alt=""
+              className=" max-w-[38px] max-h-[38px] rounded-full -ml-2"
+            /> */}
+                        {rosterArray
                           .slice(displayCards - 2, displayCards)
                           .map((item, index) => (
                             <div
@@ -682,7 +963,7 @@ export default function MeetingSection({
                             </div>
                           ))}
                         <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 text-[10px] -ml-2 border-solid border-[0.5px] border-white">
-                          +{attendeeItems.length - (displayCards - 1)}
+                          +{rosterArray.length - (displayCards - 1)}
                         </div>
                       </div>
                     )}
@@ -696,7 +977,7 @@ export default function MeetingSection({
           <div className="w-full flex flex-col gap-4 h-full flex-4 @[300px]/meetingTiles:flex-row flex-wrap">
             <AttendeeItemsList attendees={attendees} />
           </div>
-        </div> */}
+          </div> */}
 
           <div
             className="w-0 overflow-hidden transition-all @container/bigScreenSideCards"
@@ -720,13 +1001,29 @@ export default function MeetingSection({
                   }
             }
           >
-            {sideView === "Participants" && (
+            {/* {sideView === "Participants" && ( */}
+            <div
+              style={
+                sideView === "Participants"
+                  ? {
+                      width: "100%",
+                      height: "100%",
+                      overflow: "visible",
+                    }
+                  : {
+                      width: "0",
+                      height: "0",
+                      overflow: "hidden",
+                    }
+              }
+            >
               <Participants
                 attendees={attendees}
                 sideViewFunc={sideViewFunc}
                 meetingManager={meetingManager}
               />
-            )}
+            </div>
+            {/* )} */}
 
             <div
               style={
@@ -806,6 +1103,12 @@ export default function MeetingSection({
                         >
                           Turn on caption
                         </button>
+                        <button
+                          className=" text-cs-purple-650 font-bold text-sm rounded-[10px] border border-cs-grey-150 p-3"
+                          onClick={handleStopTranscription}
+                        >
+                          Turn off caption
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -884,6 +1187,7 @@ export default function MeetingSection({
       </div>
 
       {/* small screen */}
+
       <div className=" md:hidden h-full metro-medium relative">
         {tileId &&
           sideView === "" && ( //screen share
@@ -922,7 +1226,7 @@ export default function MeetingSection({
               tileId ? "flex-row" : "flex-col h-full"
             }`}
           >
-            {sortedAttendeeItems.map((chunk, index) => (
+            {attendeeItems.map((chunk, index) => (
               <div
                 className={` flex ${
                   tileId ? "w-1/2" : "h-full"

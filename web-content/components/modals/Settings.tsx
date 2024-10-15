@@ -27,10 +27,11 @@ export interface UploadMediaPayload {
 const Settings = ({ onClose }: { onClose: () => void }) => {
   const [loggedIn, setLoggedIn] = useState<boolean>();
   const [loading, setLoading] = useState(false);
+  const { first_name, surname, email, picture } = getClientInfo();
 
   const [formData, setFormData] = useState({
-    "First name": "",
-    "Last name": "",
+    "First name": first_name,
+    "Last name": surname,
   });
   const [errMessage, setErrMessage] = useState({
     "First name": "",
@@ -44,7 +45,7 @@ const Settings = ({ onClose }: { onClose: () => void }) => {
   const [successRes, setSuccessRes] = useState<any>();
 
   useEffect(() => setLoggedIn(IsAuthenticated()), []);
-  const { first_name, surname, email, picture } = getClientInfo();
+
   const [newFile, setNewFile] = useState<File | null>();
   const { appState } = useAppContext();
 
@@ -127,6 +128,18 @@ const Settings = ({ onClose }: { onClose: () => void }) => {
       setFormData((prevState) => ({
         ...prevState,
         [name]: value,
+      }));
+    }
+    if (ValidateText(formData["First name"] as string)) {
+      setValidateSuccess((prevState) => ({
+        ...prevState,
+        "First name": true,
+      }));
+    }
+    if (ValidateText(formData["Last name"] as string)) {
+      setValidateSuccess((prevState) => ({
+        ...prevState,
+        "Last name": true,
       }));
     }
   };

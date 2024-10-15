@@ -7,14 +7,31 @@ const apiInstantMeeting = getApiPath("meeting", "instant-meeting");
 const apiScheduleMeeting = getApiPath("meeting", "schedule-meeting");
 const apiJoinMeeting = getApiPath("meeting", "join-meeting");
 const apiStartTranscription = getApiPath("meeting", "start-transcription");
+const apiStopTranscription = getApiPath("meeting", "stop-transcription");
 const listAttendeesPath = getApiPath("meeting", "list-attendees");
 const checkMeetingPath = getApiPath("meeting", "get-meeting");
 const endMeetingPath = getApiPath("meeting", "end-call");
+const startRecordingPath = getApiPath("meeting", "start-recording");
+const stopRecordingPath = getApiPath("meeting", "stop-recording");
 
 export interface TranscriptionPayload {
   meeting_id: string;
   attendee_id: string;
 }
+
+export interface StopTranscriptionPayload {
+  meeting_id: string;
+  attendee_id: string;
+}
+
+export interface StopRecordingPayload {
+  meeting_id: string;
+  media_pipeline_arn: string;
+  media_pipeline_id: string;
+}
+
+// media_pipeline_arn: string;
+// media_pipeline_id: string; for stoprecording
 
 export interface GetMeetingPayload {
   meeting_id: string;
@@ -125,6 +142,14 @@ export const startTranscription = async (data: TranscriptionPayload) => {
   }
 };
 
+export const stopTranscription = async (data: StopTranscriptionPayload) => {
+  try {
+    return await http.apiCall.post(apiStopTranscription, data);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const getMeeting = async (data: GetMeetingPayload) => {
   try {
     return await http.apiCall.post(checkMeetingPath, data);
@@ -136,6 +161,22 @@ export const getMeeting = async (data: GetMeetingPayload) => {
 export const endMeetingForAll = async (data: EndMeetingPayload) => {
   try {
     return await http.apiCall.api.post(endMeetingPath, data);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const startRecording = async (data: GetMeetingPayload) => {
+  try {
+    return await http.apiCall.api.post(startRecordingPath, data);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const stopRecording = async (data: StopRecordingPayload) => {
+  try {
+    return await http.apiCall.api.post(stopRecordingPath, data);
   } catch (error) {
     console.log(error);
   }

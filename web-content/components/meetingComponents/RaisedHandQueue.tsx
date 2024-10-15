@@ -73,11 +73,11 @@ const RaisedHandQueue = () => {
       <div className=" absolute bottom-0 z-40 text-cs-purple-650 bg-[#e1c6ff] p-2 max-w-80 rounded-lg">
         {attendeeState.map((item) => (
           <p className=" inline-block text-sm" key={item.externalUserID}>
-            {
-              appState.sessionState.meetingAttendees.find(
-                (att) => att.user_id === item.externalUserID
-              )?.full_name
-            }{" "}
+            {Array.isArray(appState.sessionState.meetingAttendees)
+              ? appState.sessionState.meetingAttendees.find(
+                  (att) => att.user_id === item.externalUserID
+                )?.full_name
+              : ""}{" "}
             raised hand
           </p>
         ))}

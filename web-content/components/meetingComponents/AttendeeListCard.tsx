@@ -4,12 +4,14 @@ import RaisedHand from "./RaisedHand";
 import { useAppContext } from "@/context/StoreContext";
 import Image from "next/image";
 import {
+  useActiveSpeakersState,
   useAttendeeAudioStatus,
   useAttendeeStatus,
 } from "amazon-chime-sdk-component-library-react";
 // import { VisualizerComp } from "./MeetingCardAudio";
 import { useEffect, useRef, useState } from "react";
 import { MicrophoneSlash1 } from "iconsax-react";
+import ShowVisualizer from "./ShowVisualizer";
 
 export const AttendeeListCard = ({
   attendeeId,
@@ -22,8 +24,29 @@ export const AttendeeListCard = ({
 }) => {
   const { appState } = useAppContext();
   const { meetingAttendees } = appState.sessionState;
-  const attendeeDetailItems = meetingAttendees.find(
-    (att) => att.user_id === externalID
+  // const attendeeDetailItems = meetingAttendees.find(
+  //   (att) => att.user_id === externalID
+  // );
+  const attendeeDetailItems = Array.isArray(meetingAttendees)
+    ? meetingAttendees.find((att) => att.user_id === externalID)
+    : null; // Return null or handle the case where it's not an array
+
+  const { videoEnabled, sharingContent, muted } = useAttendeeStatus(attendeeId);
+  const { muted: anotherStatusMute, signalStrength } =
+    useAttendeeAudioStatus(attendeeId);
+  const activeSpeakers = useActiveSpeakersState();
+
+  console.log(
+    externalID,
+    meetingAttendees,
+    appState.sessionState,
+    "video status is",
+    videoEnabled,
+    "content sharing is",
+    sharingContent,
+    "the audio status of the user",
+    anotherStatusMute,
+    activeSpeakers
   );
 
   const targetRef = useRef<HTMLDivElement | null>(null);
@@ -116,7 +139,12 @@ export const AttendeeListCard = ({
       <div className=" flex items-center gap-x-1">
         <RaisedHand attendeeId={attendeeId} noBackground />
         <div className={`external-visualizer-${attendeeId}`} ref={targetRef}>
-          <AudioComp />
+          {/* <AudioComp /> */}
+          <ShowVisualizer
+            chimeAttendeeId={attendeeId}
+            externalUserId={externalID}
+            noBackground
+          />
         </div>
       </div>
     </div>

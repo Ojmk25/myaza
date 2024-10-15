@@ -13,7 +13,7 @@
 // import { useAppContext } from "@/context/StoreContext";
 // import RaisedHand from "./RaisedHand";
 
-import { forwardRef } from "react";
+import { forwardRef, useState } from "react";
 
 // // import MeetingCardAudio from "./MeetingCardAudio";
 
@@ -161,6 +161,7 @@ import { useAppContext } from "@/context/StoreContext";
 import RaisedHand from "./RaisedHand";
 import ShowVisualizer from "./ShowVisualizer";
 import { stringify } from "querystring";
+import { MicrophoneSlash1 } from "iconsax-react";
 export const LocalAttendeeCard = forwardRef<
   HTMLDivElement,
   {
@@ -171,6 +172,7 @@ export const LocalAttendeeCard = forwardRef<
     // audioState: JSX.Element;
     meetingManager?: MeetingManager;
     sideView: string | undefined;
+    // userOject: any;
   }
 >(function LocalAttendeeCard(props, ref) {
   const { isVideoEnabled } = useLocalVideo();
@@ -178,29 +180,113 @@ export const LocalAttendeeCard = forwardRef<
   const { videoEnabled, sharingContent, muted } = useAttendeeStatus(
     props.attendeeId
   );
+  const [localAttendee, setLocalAttendee] = useState<any>();
+  const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    getNameAbbreviation();
-  }, [appState.sessionState.meetingAttendees, props.sideView, props.meetingManager, muted]);
-  useEffect(() => {
-    setAppState((prevState) => ({
-      ...prevState,
-      sessionState: {
-        ...prevState.sessionState,
-        audioState: [
-          ...prevState.sessionState.audioState,
-          {
-            volume: 0,
-            mute: muted,
-            attendeeId: `${props.attendeeId}${Date.now()}`,
-          },
-        ],
-      },
-    }));
-  }, [videoEnabled, muted]);
-  const attendeeDetailItems = appState.sessionState.meetingAttendees.find(
-    (att) => att.user_id === props.nameID
+    const intervalId = setInterval(() => {
+      // Check session storage for data
+      const storedData = sessionStorage.getItem("meetingAttendees");
+
+      if (storedData) {
+        setData(JSON.parse(storedData));
+        clearInterval(intervalId); // Stop checking once data is found
+      }
+    }, 1000); // Check every second (can adjust the interval as needed)
+
+    return () => clearInterval(intervalId); // Cleanup when the component unmounts
+  }, []);
+
+  // Only render when data is found in session storage
+  if (!data) {
+    return null;
+  }
+
+  // useEffect(() => {
+  //   const storedAttendeeData = sessionStorage.getItem("meetingAttendees");
+
+  //   if (storedAttendeeData) {
+  //     const parsedAttendeeArray = JSON.parse(storedAttendeeData);
+  //     const attendeeDetailItems = parsedAttendeeArray.find(
+  //       (att: any) => att.user_id === props.nameID
+  //     );
+  //     setLocalAttendee(attendeeDetailItems);
+  //     console.log(parsedAttendeeArray, attendeeDetailItems);
+  //   }
+  // }, []);
+
+  // useEffect(() => {
+  //   getNameAbbreviation();
+  // }, [appState.sessionState.meetingAttendees, props.sideView, props.meetingManager, muted]);
+  // useEffect(() => {
+  //   setAppState((prevState) => ({
+  //     ...prevState,
+  //     sessionState: {
+  //       ...prevState.sessionState,
+  //       audioState: [
+  //         ...prevState.sessionState.audioState,
+  //         {
+  //           volume: 0,
+  //           mute: muted,
+  //           attendeeId: `${props.attendeeId}${Date.now()}`,
+  //         },
+  //       ],
+  //     },
+  //   }));
+  // }, [videoEnabled, muted]);
+
+  // console.log(props.userOject);
+
+  // const attendeeDetailItems = appState.sessionState.meetingAttendees.find(
+  //   (att) => att.user_id === props.nameID
+  // );
+
+  // const storedAttendeeData = sessionStorage.getItem("meetingAttendees");
+  // let parsedAttendeeArray;
+  // if (storedAttendeeData) {
+  //   parsedAttendeeArray = JSON.parse(storedAttendeeData);
+  //   setLocalAttendee(parsedAttendeeArray);
+  //   console.log(parsedAttendeeArray);
+  // }
+
+  // const attendeeDetailItems = appState.sessionState.meetingAttendees.find(
+  //   (att: any) => att.user_id === props.nameID
+  // );
+  const attendeeDetailItems = Array.isArray(
+    appState.sessionState.meetingAttendees
+  )
+    ? appState.sessionState.meetingAttendees.find(
+        (att) => att.user_id === props.nameID
+      )
+    : null; // Return null or handle the case where it's not an array
+  const audioStatusFromState = appState.sessionState.audioState.find(
+    (att) => att.externalUserId === props.nameID
   );
+
+  const AudioComp = () => {
+    return (
+      <>
+        {audioStatusFromState?.mute ||
+        audioStatusFromState?.mute === undefined ? (
+          <div
+            className={`flex justify-center items-end p-[6px] bg-[#333333] rounded-full w-[30px] h-[30px]`}
+          >
+            <MicrophoneSlash1 size="18" color="#FAFAFA" />
+          </div>
+        ) : (
+          <div className="flex justify-center items-center p-[6px] bg-[#6c3ec2] rounded-full w-[30px] h-[30px] gap-x-[2px]">
+            {[...Array(5)].map((_, index) => (
+              <div
+                key={index}
+                className="bar bg-cs-grey-50 transition-all"
+                style={{ width: "4px", height: "3px" }}
+              />
+            ))}
+          </div>
+        )}
+      </>
+    );
+  };
 
   return (
     <div
@@ -216,12 +302,9 @@ export const LocalAttendeeCard = forwardRef<
           isVideoEnabled ? "absolute right-3 z-10 top-3" : "flex justify-end"
         }`}
       >
-        {/* {props.audioState} */}
-
-        <ShowVisualizer
-          chimeAttendeeId={props.attendeeId}
-          meetingManager={props.meetingManager as MeetingManager}
-        />
+        <div className={`tileVisualizer-${props.attendeeId}`}>
+          <AudioComp />
+        </div>
       </div>
       <div className={` ${isVideoEnabled ? "left-3 top-3" : ""} z-10 absolute`}>
         <ReactionEmoji attendeeId={props.attendeeId} />
@@ -248,14 +331,6 @@ export const LocalAttendeeCard = forwardRef<
                   {attendeeDetailItems?.picture &&
                   attendeeDetailItems?.picture !== "" ? (
                     <div>
-                      {/* <Image
-                        src={`${attendeeDetails.picture}`}
-                        alt=""
-                        // width={50}
-                        // height={50}
-
-                        layout="fill"
-                      /> */}
                       <img
                         src={attendeeDetailItems.picture}
                         alt={attendeeDetailItems.full_name}
@@ -267,14 +342,12 @@ export const LocalAttendeeCard = forwardRef<
                       {attendeeDetailItems &&
                         getRemoteInitials(
                           attendeeDetailItems &&
-                            (attendeeDetailItems?.full_name as string)
+                            (attendeeDetailItems.full_name as string)
                         )}
-                      {/* {attendeeDetails?.full_name as string} */}
                     </div>
                   )}
                 </>
               )}
-              {/* w-[100px] h-[100px] max-w-[150px] max-h-[150px] */}
 
               {!isVideoEnabled && (
                 <h3 className=" font-medium text-cs-grey-50 text-center @[100px]/meetingCard:mt-0 @[230px]/meetingCard:mt-2 capitalize @[100px]/meetingCard:text-xs @[230px]/meetingCard:text-base overflow-hidden text-ellipsis">

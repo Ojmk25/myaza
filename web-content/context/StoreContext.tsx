@@ -14,9 +14,10 @@ type AtteendeeDetailsProp = {
 };
 
 type AudioState = {
-  volume: number;
-  mute: boolean;
+  mute: boolean | null;
+  video: boolean;
   attendeeId: string;
+  externalUserId: string;
 };
 
 type SessionState = {
@@ -34,6 +35,7 @@ type SessionState = {
   guestLastName: string;
   meetingAttendees: AtteendeeDetailsProp[];
   audioState: AudioState[];
+  recordMeeeting: boolean;
 };
 
 type AppState = {
@@ -62,6 +64,7 @@ export const AppCtx = createContext<AppContextType>({
       guestLastName: "",
       meetingAttendees: [],
       audioState: [],
+      recordMeeeting: false,
     },
   },
   setAppState: () => {},
@@ -87,6 +90,7 @@ export const StoreContext: React.FC<{ children: React.ReactNode }> = ({
       guestLastName: "",
       meetingAttendees: [],
       audioState: [],
+      recordMeeeting: false,
     },
   });
 

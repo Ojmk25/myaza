@@ -13,16 +13,18 @@ const ShowVisualizer = ({
   chimeAttendeeId,
   meetingManager,
   noBackground,
+  externalUserId,
 }: {
   chimeAttendeeId: string;
-  meetingManager: MeetingManager;
+  meetingManager?: MeetingManager;
   noBackground?: boolean;
+  externalUserId: string;
 }) => {
   const { appState, setAppState } = useAppContext();
   const meetingM = useMeetingManager();
   const volumeRef = useRef(0);
   const muteRef = useRef(true);
-  const [localMute, setLocalMute] = useState(true);
+  const [localMute, setLocalMute] = useState<boolean>();
   const sideVisualizerContainerRef = useRef(false);
   const { videoEnabled, sharingContent, muted } =
     useAttendeeStatus(chimeAttendeeId);
@@ -40,16 +42,110 @@ const ShowVisualizer = ({
       if (attendeeId === chimeAttendeeId) {
         volumeRef.current = volume || 0;
         muteRef.current = muted || false;
+
+        setAppState((prevState) => {
+          const existingAttendee = prevState.sessionState.audioState.find(
+            (item) => item.attendeeId === `${attendeeId}`
+          );
+
+          // If attendee already exists, do not add a new one
+          if (existingAttendee) {
+            return prevState;
+          }
+
+          // Otherwise, add the new attendee
+          return {
+            ...prevState,
+            sessionState: {
+              ...prevState.sessionState,
+              audioState: [
+                ...prevState.sessionState.audioState,
+                {
+                  video: videoEnabled,
+                  mute: muted,
+                  attendeeId: `${attendeeId}`,
+                  externalUserId: externalUserId,
+                },
+              ],
+            },
+          };
+        });
+
         // updateVisualizer();
         // updateExternalVisualizer();
         // setLocalMute(muted as boolean);
-        setLocalMute(muteRef.current);
+        // setLocalMute(muteRef.current);
+        if (muted) {
+          setLocalMute(muted);
+          setAppState((prevState) => {
+            const updatedAudioState = prevState.sessionState.audioState.map(
+              (item) =>
+                item.attendeeId === `${attendeeId}`
+                  ? {
+                      ...item,
+                      mute: muted, // Update mute status only
+                    }
+                  : item
+            );
 
-        updateVisualizerTest();
-        updateExternalVisualizerTest();
+            return {
+              ...prevState,
+              sessionState: {
+                ...prevState.sessionState,
+                audioState: updatedAudioState,
+              },
+            };
+          });
+        } else if (muted === false) {
+          setLocalMute(muted);
+          setAppState((prevState) => {
+            const updatedAudioState = prevState.sessionState.audioState.map(
+              (item) =>
+                item.attendeeId === `${attendeeId}`
+                  ? {
+                      ...item,
+                      mute: muted, // Update mute status only
+                    }
+                  : item
+            );
+
+            return {
+              ...prevState,
+              sessionState: {
+                ...prevState.sessionState,
+                audioState: updatedAudioState,
+              },
+            };
+          });
+        }
+
+        // updateVisualizerTest();
+        // updateExternalVisualizerTest();
+        updateTileVisualizer();
       }
     };
 
+    const updateTileVisualizer = () => {
+      const factor = [6, 15, 25, 15, 6]; // Visualizer bar height factors
+      const visualizerBars = document.querySelectorAll(
+        `.tileVisualizer-${chimeAttendeeId}`
+      );
+      console.log(visualizerBars, volumeRef.current);
+
+      visualizerBars.forEach((item) => {
+        const conte = item.querySelectorAll(".bar");
+        if (conte) {
+          conte.forEach((bar, index) => {
+            const barElement = bar as HTMLElement;
+
+            barElement.style.height = `${Math.max(
+              3,
+              volumeRef.current * factor[index]
+            )}px`;
+          });
+        }
+      });
+    };
     const updateVisualizer = () => {
       const factor = [6, 15, 25, 15, 6]; // Visualizer bar height factors
       const visualizerBars = document.querySelectorAll(
@@ -140,18 +236,56 @@ const ShowVisualizer = ({
       volumeIndicatorCallback
     );
 
+    const removeItem = (
+      attendeeId: string,
+      volume: number | null,
+      muted: boolean | null
+    ) => {
+      console.log(
+        attendeeId,
+        volume,
+        muted,
+        "THIS PERSON JUST UNSUBSCRIBES OUT OF THE MEETING"
+      );
+    };
+
     return () => {
       meetingM.audioVideo?.realtimeUnsubscribeFromVolumeIndicator(
-        chimeAttendeeId
+        chimeAttendeeId,
+        removeItem
       );
     };
   }, [meetingM, chimeAttendeeId, muted, muteRef.current]);
 
-  console.log(chimeAttendeeId, localMute);
-
-  return (
-    <div className={`visualizer-${chimeAttendeeId}`}>
-      {localMute ? (
+  // return (
+  //   // <div className={`visualizer-${chimeAttendeeId}`}>
+  //   //   {testMute === true ? (
+  //   //     <div
+  //   //       className={`flex justify-center items-end p-[6px] ${
+  //   //         noBackground ? "bg-transparent" : "bg-[#333333]"
+  //   //       } rounded-full w-[30px] h-[30px]`}
+  //   //     >
+  //   //       <MicrophoneSlash1
+  //   //         size="18"
+  //   //         color={noBackground ? "#5E29B7" : "#FAFAFA"}
+  //   //       />
+  //   //     </div>
+  //   //   ) : (
+  //   //     <div className="flex justify-center items-center p-[6px] bg-[#6c3ec2] rounded-full w-[30px] h-[30px] gap-x-[2px]">
+  //   //       {[...Array(5)].map((_, index) => (
+  //   //         <div
+  //   //           key={index}
+  //   //           className="bar bg-cs-grey-50 transition-all test"
+  //   //           style={{ width: "4px", height: "3px" }}
+  //   //         />
+  //   //       ))}
+  //   //     </div>
+  //   //   )}
+  //   // </div>
+  // );
+  if (localMute === true || localMute === undefined) {
+    return (
+      <div className={`visualizer-${chimeAttendeeId}`}>
         <div
           className={`flex justify-center items-end p-[6px] ${
             noBackground ? "bg-transparent" : "bg-[#333333]"
@@ -162,19 +296,21 @@ const ShowVisualizer = ({
             color={noBackground ? "#5E29B7" : "#FAFAFA"}
           />
         </div>
-      ) : (
-        <div className="flex justify-center items-center p-[6px] bg-[#6c3ec2] rounded-full w-[30px] h-[30px] gap-x-[2px]">
-          {[...Array(5)].map((_, index) => (
-            <div
-              key={index}
-              className="bar bg-cs-grey-50 transition-all test"
-              style={{ width: "4px", height: "3px" }}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  } else {
+    return (
+      <div className="flex justify-center items-center p-[6px] bg-[#6c3ec2] rounded-full w-[30px] h-[30px] gap-x-[2px]">
+        {[...Array(5)].map((_, index) => (
+          <div
+            key={index}
+            className="bar bg-cs-grey-50 transition-all test"
+            style={{ width: "4px", height: "3px" }}
+          />
+        ))}
+      </div>
+    );
+  }
 };
 
 export default ShowVisualizer;

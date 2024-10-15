@@ -20,10 +20,11 @@ import {
   useContentShareControls,
   useContentShareState,
   useLocalVideo,
-  useToggleLocalMute,
   MeetingManager,
   useAudioVideo,
   useMeetingStatus,
+  useAttendeeStatus,
+  useToggleLocalMute,
 } from "amazon-chime-sdk-component-library-react";
 import raisedHand from "@/public/assets/images/raisedHand.svg";
 import raisedHandWhite from "@/public/assets/images/raisedHandWhite.svg";
@@ -33,12 +34,18 @@ import { useRouter } from "next/router";
 import { useAppContext } from "@/context/StoreContext";
 import { useSessionStorage } from "@/hooks/useStorage";
 import { useMeetingManager } from "amazon-chime-sdk-component-library-react";
-import { endMeetingForAll, listAttendees } from "@/services/meetingServices";
+import {
+  endMeetingForAll,
+  listAttendees,
+  startRecording,
+  stopRecording,
+} from "@/services/meetingServices";
 import { emojis } from "@/constants/emojis";
 import ReactDOM from "react-dom/client";
 import * as LottiePlayer from "@lottiefiles/lottie-player";
 import captureWhite from "@/public/assets/images/captureWhite.svg";
 import capturePurple from "@/public/assets/images/capturePurple.svg";
+import { getIdFromArn } from "@/utils/meetingFunctions";
 
 export default function MeetingControl({
   bgColor,
@@ -60,7 +67,6 @@ export default function MeetingControl({
   externalID: string | null | undefined;
 }) {
   const currentTimeRef = useRef<HTMLDivElement>(null);
-  const { muted, toggleMute } = useToggleLocalMute();
   const { isVideoEnabled, toggleVideo } = useLocalVideo();
   const { toggleContentShare } = useContentShareControls();
   const { isLocalUserSharing } = useContentShareState();
@@ -74,7 +80,19 @@ export default function MeetingControl({
   const { appState, setAppState } = useAppContext();
   const hasRunRef = useRef(false);
   const raiseHandSoundRef = useRef<HTMLAudioElement>(null);
+  const { muted, toggleMute } = useToggleLocalMute();
   const router = useRouter();
+  const [mediaPipeLineId, setMediaPipelineId] = useState("");
+
+  const [expressJoin, setExpressJoin] = useSessionStorage(
+    "meetingJoiner",
+    "no"
+  );
+  const [localMeetingAttendees, setLocalMeetingAttendees] = useSessionStorage(
+    "meetingAttendess",
+    ""
+  );
+  const { muted: liveMuted } = useAttendeeStatus(attendeIDString as string);
 
   useEffect(() => {
     import("@lottiefiles/lottie-player");
@@ -253,6 +271,57 @@ export default function MeetingControl({
       if (present) {
         console.log(`Attendee ${attendeeId} joined the meeting`);
 
+        audioVideo.addObserver({
+          videoTileDidUpdate: (tileState) => {
+            const attendeeId = tileState.boundAttendeeId;
+            console.log(
+              `Attendee ${attendeeId} has video ${
+                tileState.active ? "enabled" : "disabled"
+              }`
+            );
+
+            tileState.active
+              ? setAppState((prevState) => {
+                  const updatedAudioState =
+                    prevState.sessionState.audioState.map((item) =>
+                      item.attendeeId === `${attendeeId}`
+                        ? {
+                            ...item,
+                            video: true, // Update video status only
+                          }
+                        : item
+                    );
+
+                  return {
+                    ...prevState,
+                    sessionState: {
+                      ...prevState.sessionState,
+                      audioState: updatedAudioState,
+                    },
+                  };
+                })
+              : setAppState((prevState) => {
+                  const updatedAudioState =
+                    prevState.sessionState.audioState.map((item) =>
+                      item.attendeeId === `${attendeeId}`
+                        ? {
+                            ...item,
+                            video: false, // Update video status only
+                          }
+                        : item
+                    );
+
+                  return {
+                    ...prevState,
+                    sessionState: {
+                      ...prevState.sessionState,
+                      audioState: updatedAudioState,
+                    },
+                  };
+                });
+          },
+        });
+
         if (raiseHandSoundRef.current)
           raiseHandSoundRef.current.src = "/assets/sounds/ding-126626.mp3";
         raiseHandSoundRef.current?.play();
@@ -274,6 +343,19 @@ export default function MeetingControl({
         await getAttendeesList(router.query.link as string);
       } else {
         console.log(`Attendee ${attendeeId} left the meeting ${present}`);
+        setAppState((prevState) => {
+          const updatedAudioState = prevState.sessionState.audioState.filter(
+            (item) => item.attendeeId !== attendeeId
+          );
+
+          return {
+            ...prevState,
+            sessionState: {
+              ...prevState.sessionState,
+              audioState: updatedAudioState,
+            },
+          };
+        });
       }
     };
 
@@ -288,6 +370,34 @@ export default function MeetingControl({
     };
   }, [audioVideo, router.isReady]);
 
+  function updateSessionStorageArray(key: string, newArray: any[]) {
+    // Check if the item exists in session storage
+    const storedData = sessionStorage.getItem(key);
+
+    let updatedArray: any[];
+
+    if (storedData) {
+      // Parse the existing array from session storage
+      const parsedArray = JSON.parse(storedData);
+
+      // Merge the arrays
+      const mergedArray = [...parsedArray, ...newArray];
+
+      // Remove duplicates by filtering the array (assuming you want to remove exact duplicates)
+      updatedArray = mergedArray.filter(
+        (item, index, self) =>
+          self.findIndex((i) => JSON.stringify(i) === JSON.stringify(item)) ===
+          index
+      );
+    } else {
+      // If the item doesn't exist, just use the new array
+      updatedArray = newArray;
+    }
+
+    // Save the updated array back to session storage
+    sessionStorage.setItem(key, JSON.stringify(updatedArray));
+  }
+
   const getAttendeesList = async (meetingId: string) => {
     try {
       const response = await listAttendees({
@@ -295,12 +405,14 @@ export default function MeetingControl({
       });
       if (response) {
         const { data } = response.data.body;
+        // updateSessionStorageArray("meetingAttendees", data);
+        console.log(data, data?.next_token);
         const attendee = response.data.body;
         setAppState((prevState) => ({
           ...prevState,
           sessionState: {
             ...prevState.sessionState,
-            meetingAttendees: data,
+            meetingAttendees: data?.attendee,
           },
         }));
         return data;
@@ -310,6 +422,44 @@ export default function MeetingControl({
     } finally {
     }
   };
+  // ("Missing required body field: media_pipeline_arn, which must be a str");
+
+  const handleStartRecording = async () => {
+    try {
+      const data = await startRecording({
+        meeting_id: meetingDetails?.meeting_info?.ExternalMeetingId,
+      });
+      setMediaPipelineId(data?.data?.body?.data?.MediaPipelineArn);
+      broadCastRecording(true);
+      handleOtherViews("Record");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const handleStopRecording = async () => {
+    try {
+      const data = await stopRecording({
+        meeting_id: meetingDetails?.meeting_info?.ExternalMeetingId,
+        // "Missing required body field: media_pipeline_arn, which must be a str"
+        //@ts-ignore
+        // user_id: "",
+        // media_pipeline_arn:
+        //   "arn:aws:chime:us-east-1:165553610930:media-pipeline/06601acf-ac26-4436-9ae1-31a21e241725",
+        media_pipeline_arn: mediaPipeLineId,
+        media_pipeline_id: getIdFromArn(mediaPipeLineId) as string,
+        // media_pipeline_id: "06601acf-ac26-4436-9ae1-31a21e241725",
+        // "MediaPipelineArn": "arn:aws:chime:us-east-1:165553610930:media-pipeline/06601acf-ac26-4436-9ae1-31a21e241725"
+      });
+      if (data?.data.statusCode === 200) {
+        broadCastRecording(false);
+        handleOtherViews("Record");
+        setMediaPipelineId("");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  console.log(appState.sessionState.recordMeeeting);
 
   useEffect(() => {
     // Cleanup the audio when the component unmounts
@@ -363,6 +513,53 @@ export default function MeetingControl({
     meetingManager.audioVideo?.realtimeSendDataMessage("reaction", message);
   };
 
+  const broadCastRecording = (value: boolean) => {
+    // Update local state immediately
+    setAppState((prevState) => ({
+      ...prevState,
+      sessionState: {
+        ...prevState.sessionState,
+        recordMeeeting: value,
+      },
+    }));
+
+    // Check if audioVideo is available
+    if (!audioVideo) return;
+
+    // Create and send the message
+    const message = JSON.stringify(value);
+
+    meetingManager.audioVideo?.realtimeSendDataMessage("recording", message);
+  };
+
+  useEffect(() => {
+    if (!audioVideo) return;
+
+    const handleDataMessage = (dataMessage: {
+      data: AllowSharedBufferSource | undefined;
+    }) => {
+      const message = new TextDecoder().decode(dataMessage.data);
+      const parsedMessage = JSON.parse(message);
+
+      setAppState((prevState) => ({
+        ...prevState,
+        sessionState: {
+          ...prevState.sessionState,
+          recordMeeeting: parsedMessage,
+        },
+      }));
+    };
+
+    audioVideo?.realtimeSubscribeToReceiveDataMessage(
+      "recording",
+      handleDataMessage
+    );
+
+    return () => {
+      audioVideo?.realtimeUnsubscribeFromReceiveDataMessage("recording");
+    };
+  }, [audioVideo]);
+
   useEffect(() => {
     const emojis = document.querySelectorAll<HTMLButtonElement>(".emoji-list");
     const container = document.querySelector<HTMLDivElement>(".meetingScreen");
@@ -372,15 +569,22 @@ export default function MeetingControl({
       const lottieEl = document.createElement("div");
       lottieEl.classList.add("emoji-animate");
       const root = ReactDOM.createRoot(lottieEl);
-      const attendeeDetailItems = appState.sessionState.meetingAttendees.find(
-        (att) => att.user_id === appState.sessionState.reaction.senderExternalId
-      );
+      // const attendeeDetailItems = appState.sessionState.meetingAttendees.find(
+      //   (att) => att.user_id === appState.sessionState.reaction.senderExternalId
+      // );
+      const attendeeDetailItems = Array.isArray(
+        appState.sessionState.meetingAttendees
+      )
+        ? appState.sessionState.meetingAttendees.find(
+            (att) =>
+              att.user_id === appState.sessionState.reaction.senderExternalId
+          )
+        : null; // Return null or handle the case where it's not an array
       function getRandomNumber(): number {
         const numbers = [0, 150, 300];
         const randomIndex = Math.floor(Math.random() * numbers.length);
         return numbers[randomIndex];
       }
-      console.log(appState.sessionState.reaction.lottieCode);
 
       root.render(
         <div className=" flex flex-col justify-center items-center">
@@ -499,25 +703,10 @@ export default function MeetingControl({
           },
         },
       }));
+      setExpressJoin("no");
+      updateSessionStorageArray("meetingAttendees", []);
     };
   }, []);
-
-  useEffect(() => {
-    setAppState((prevState) => ({
-      ...prevState,
-      sessionState: {
-        ...prevState.sessionState,
-        audioState: [
-          ...prevState.sessionState.audioState,
-          {
-            volume: 0,
-            mute: muted,
-            attendeeId: attendeIDString as string,
-          },
-        ],
-      },
-    }));
-  }, [isVideoEnabled, muted]);
 
   return (
     <>
@@ -609,18 +798,41 @@ export default function MeetingControl({
               <h6 className=" text-cs-grey-100 font-medium text-xs">Share</h6>
             </div>
 
-            <div className="text-center">
-              <div className="p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto">
-                <RecordCircle
-                  size="24"
-                  // color="#5E29B7"
-                  color="#e1c6ff"
-                  className="mx-auto max-w-5"
-                />
-              </div>
-              {/* <h6 className=" text-cs-grey-100 font-medium text-xs">Record</h6> */}
-              <h6 className=" text-[#e1c6ff] font-medium text-xs">Record</h6>
-            </div>
+            {meetingDetails?.meeting_info?.MeetingHostId === externalID &&
+              externalID && (
+                <div
+                  className="text-center cursor-pointer"
+                  onClick={() => {
+                    if (mediaPipeLineId === "") {
+                      handleStartRecording();
+                    } else {
+                      handleStopRecording();
+                    }
+                  }}
+                >
+                  <div
+                    className={`p-3 rounded-md max-w-12 mx-auto ${
+                      otherViews.includes("Record")
+                        ? "bg-[#5E29B7]"
+                        : "bg-[#E1C6FF4D]"
+                    }`}
+                  >
+                    <RecordCircle
+                      size="24"
+                      color={
+                        otherViews.includes("Record") ? "#FAFAFA" : "#5E29B7"
+                      }
+                      // color="#5E29B7"
+                      // color="#e1c6ff"
+                      className="mx-auto max-w-5"
+                    />
+                  </div>
+                  <h6 className=" text-cs-grey-100 font-medium text-xs">
+                    Record
+                  </h6>
+                  {/* <h6 className=" text-[#e1c6ff] font-medium text-xs">Record</h6> */}
+                </div>
+              )}
 
             <div className=" relative">
               <div
@@ -1026,26 +1238,53 @@ export default function MeetingControl({
                           </div>
                         </div>
 
-                        <div className="text-center max-w-[215px]">
-                          <div
-                            className={`p-3 ${
-                              isLocalUserSharing ? "bg-cs-purple-650" : ""
-                            }  rounded flex items-center gap-x-3 border border-solid border-cs-grey-55 justify-center`}
-                          >
-                            <RecordCircle
-                              size="24"
-                              // color={isLocalUserSharing ? "#FAFAFA" : "#333333"}
-                              color="#e1c6ff"
-                              className="max-w-5"
-                            />
-                            {/* <h6 className=" text-cs-grey-dark font-medium text-xs">
-                              {isLocalUserSharing ? "Stop recording" : "Record"}
-                            </h6> */}
-                            <h6 className=" text-[#e1c6ff] font-medium text-xs">
+                        {meetingDetails?.meeting_info?.MeetingHostId ===
+                          externalID &&
+                          externalID && (
+                            <div
+                              className="text-center max-w-[215px] cursor-pointer"
+                              onClick={() => {
+                                if (mediaPipeLineId === "") {
+                                  handleStartRecording();
+                                } else {
+                                  handleStopRecording();
+                                }
+                              }}
+                            >
+                              <div
+                                className={`p-3 ${
+                                  otherViews.includes("Record")
+                                    ? "bg-cs-purple-650"
+                                    : ""
+                                }  rounded flex items-center gap-x-3 border border-solid border-cs-grey-55 justify-center`}
+                              >
+                                <RecordCircle
+                                  size="24"
+                                  color={
+                                    otherViews.includes("Record")
+                                      ? "#FAFAFA"
+                                      : "#333333"
+                                  }
+                                  // color="#e1c6ff"
+                                  className="max-w-5"
+                                />
+                                <h6
+                                  className={` ${
+                                    otherViews.includes("Record")
+                                      ? "text-cs-grey-50"
+                                      : "text-cs-grey-dark"
+                                  } font-medium text-xs`}
+                                >
+                                  {otherViews.includes("Record")
+                                    ? "Stop recording"
+                                    : "Record"}
+                                </h6>
+                                {/* <h6 className=" text-[#e1c6ff] font-medium text-xs">
                               Record
-                            </h6>
-                          </div>
-                        </div>
+                            </h6> */}
+                              </div>
+                            </div>
+                          )}
 
                         <div
                           className="text-center cursor-pointer max-w-[215px]"

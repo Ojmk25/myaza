@@ -493,6 +493,7 @@ export default function TempMeeting({
               meetingManager.meetingSessionConfiguration?.meetingId as string
             }
             attendeeDetailPass={attendeeDetails}
+            meetingDetails={meetingDetails}
           />
 
           <MeetingControl

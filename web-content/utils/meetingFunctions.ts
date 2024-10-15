@@ -56,3 +56,10 @@ export const validateMeetingIdString = (input: string) => {
     return hexPattern.test(input);
   }
 };
+
+export function getIdFromArn(arn: string) {
+  if (!arn) return;
+  // Split the string by the "/" character and return the last part
+  const parts = arn.split("/");
+  return parts[parts.length - 1];
+}
