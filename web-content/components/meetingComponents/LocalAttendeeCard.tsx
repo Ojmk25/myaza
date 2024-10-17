@@ -249,16 +249,16 @@ export const LocalAttendeeCard = forwardRef<
   //   console.log(parsedAttendeeArray);
   // }
 
-  // const attendeeDetailItems = appState.sessionState.meetingAttendees.find(
-  //   (att: any) => att.user_id === props.nameID
-  // );
-  const attendeeDetailItems = Array.isArray(
-    appState.sessionState.meetingAttendees
-  )
-    ? appState.sessionState.meetingAttendees.find(
-        (att) => att.user_id === props.nameID
-      )
-    : null; // Return null or handle the case where it's not an array
+  const attendeeDetailItems = appState.sessionState.meetingAttendees.find(
+    (att: any) => att.user_id === props.nameID
+  );
+  // const attendeeDetailItems = Array.isArray(
+  //   appState.sessionState.meetingAttendees
+  // )
+  //   ? appState.sessionState.meetingAttendees.find(
+  //       (att) => att.user_id === props.nameID
+  //     )
+  //   : null; // Return null or handle the case where it's not an array
   const audioStatusFromState = appState.sessionState.audioState.find(
     (att) => att.externalUserId === props.nameID
   );
