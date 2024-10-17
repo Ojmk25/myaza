@@ -412,7 +412,7 @@ export default function MeetingControl({
           ...prevState,
           sessionState: {
             ...prevState.sessionState,
-            meetingAttendees: data?.attendee,
+            meetingAttendees: data?.attendees,
           },
         }));
         return data;
