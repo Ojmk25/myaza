@@ -269,17 +269,9 @@ export default function MeetingControl({
       present: boolean
     ) => {
       if (present) {
-        console.log(`Attendee ${attendeeId} joined the meeting`);
-
         audioVideo.addObserver({
           videoTileDidUpdate: (tileState) => {
             const attendeeId = tileState.boundAttendeeId;
-            console.log(
-              `Attendee ${attendeeId} has video ${
-                tileState.active ? "enabled" : "disabled"
-              }`
-            );
-
             tileState.active
               ? setAppState((prevState) => {
                   const updatedAudioState =
@@ -342,7 +334,6 @@ export default function MeetingControl({
         }
         await getAttendeesList(router.query.link as string);
       } else {
-        console.log(`Attendee ${attendeeId} left the meeting ${present}`);
         setAppState((prevState) => {
           const updatedAudioState = prevState.sessionState.audioState.filter(
             (item) => item.attendeeId !== attendeeId
@@ -415,6 +406,26 @@ export default function MeetingControl({
             meetingAttendees: data?.attendees,
           },
         }));
+        if (data?.next_token !== null) {
+          try {
+            const newList = await listAttendees({
+              meeting_id: meetingId,
+              next_token: data?.next_token,
+            });
+            setAppState((prevState) => ({
+              ...prevState,
+              sessionState: {
+                ...prevState.sessionState,
+                meetingAttendees: [
+                  ...prevState.sessionState.meetingAttendees,
+                  newList?.data.body.data.attendees,
+                ],
+              },
+            }));
+          } catch (err) {
+            console.log(err);
+          }
+        }
         return data;
       }
     } catch (error) {
@@ -459,7 +470,6 @@ export default function MeetingControl({
       console.log(error);
     }
   };
-  console.log(appState.sessionState.recordMeeeting);
 
   useEffect(() => {
     // Cleanup the audio when the component unmounts

@@ -130,7 +130,7 @@ const ShowVisualizer = ({
       const visualizerBars = document.querySelectorAll(
         `.tileVisualizer-${chimeAttendeeId}`
       );
-      console.log(visualizerBars, volumeRef.current);
+      // console.log(visualizerBars, volumeRef.current);
 
       visualizerBars.forEach((item) => {
         const conte = item.querySelectorAll(".bar");
@@ -300,7 +300,9 @@ const ShowVisualizer = ({
     );
   } else {
     return (
-      <div className={`flex justify-center items-center p-[6px] bg-[#6c3ec2] rounded-full w-[30px] h-[30px] gap-x-[2px] tileVisualizer-${chimeAttendeeId}`}>
+      <div
+        className={`flex justify-center items-center p-[6px] bg-[#6c3ec2] rounded-full w-[30px] h-[30px] gap-x-[2px] tileVisualizer-${chimeAttendeeId}`}
+      >
         {[...Array(5)].map((_, index) => (
           <div
             key={index}

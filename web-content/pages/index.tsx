@@ -165,10 +165,74 @@ export default function Home() {
     navigate.push(`/meet/${extractedLink}`);
   };
 
+  // const [recording, setRecording] = useState(false);
+  // const [videoUrl, setVideoUrl] = useState(null);
+  // const videoRef = useRef(null);
+  // const mediaRecorderRef = useRef(null);
+  // const recordedChunksRef = useRef([]);
+
+  // // Start recording the browser tab or screen
+  // const startRecording = async () => {
+  //   try {
+  //     const stream = await navigator.mediaDevices.getDisplayMedia({
+  //       video: true,
+  //       audio: true,
+  //     });
+
+  //     // Create a MediaRecorder for the captured stream
+  //     const mediaRecorder = new MediaRecorder(stream);
+  //     mediaRecorderRef.current = mediaRecorder;
+
+  //     mediaRecorder.ondataavailable = (event) => {
+  //       if (event.data.size > 0) {
+  //         recordedChunksRef.current.push(event.data);
+  //       }
+  //     };
+
+  //     mediaRecorder.onstop = () => {
+  //       const blob = new Blob(recordedChunksRef.current, {
+  //         type: "video/webm",
+  //       });
+  //       const videoURL = URL.createObjectURL(blob);
+  //       setVideoUrl(videoURL);
+  //       recordedChunksRef.current = []; // Reset chunks for the next recording
+  //     };
+
+  //     mediaRecorder.start();
+  //     setRecording(true);
+  //   } catch (err) {
+  //     console.error("Error capturing the tab: ", err);
+  //   }
+  // };
+
+  // // Stop the recording
+  // const stopRecording = () => {
+  //   if (mediaRecorderRef.current) {
+  //     mediaRecorderRef.current.stop();
+  //     setRecording(false);
+  //   }
+  // };
+
   return (
     <div className="homepage ">
       {loggedIn !== null && (
         <main className=" pt-6 w-full flex items-center justify-center flex-col mx-auto ">
+          {/* <div>
+            <h1>Record a Browser Tab</h1>
+            {!recording ? (
+              <button onClick={startRecording}>Start Recording</button>
+            ) : (
+              <button onClick={stopRecording}>Stop Recording</button>
+            )}
+
+            {videoUrl && (
+              <div>
+                <h2>Recorded Video</h2>
+                <video ref={videoRef} src={videoUrl} controls />
+              </div>
+            )}
+          </div> */}
+
           <Header />
           <div className="flex justify-center items-center">
             <div className="block lg:grid px-6 gap-x-16 items-center grid-cols-2  bg-cs-bg max-auto w-full max-w-[1392px]">

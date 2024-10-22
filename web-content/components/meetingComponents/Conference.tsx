@@ -33,7 +33,7 @@ const Conference = ({
           [{appState.sessionState.sessionName}]
         </h3>
         <p className=" text-xs @[300px]/bigScreenSideCards:text-sm text-cs-black-200 font-normal mb-4 mt-6">
-          Invite others to join by copying the meting link and sharing it:{" "}
+          Invite others to join by copying the meeting link and sharing it:{" "}
         </p>
       </div>
       <div className=" relative mt-7 mb-5">

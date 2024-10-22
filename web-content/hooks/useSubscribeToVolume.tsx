@@ -11,8 +11,6 @@ const useVolumeIndicator = (
     attendeeId,
   });
 
-  console.log(audioState);
-
   useEffect(() => {
     const volumeIndicatorCallback = (
       attendeeId: string,

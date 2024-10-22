@@ -42,14 +42,12 @@ export const ToggleAudio = ({
   //     },
   //   }));
   // }, [audioEnabled]);
-  console.log(audioStatus);
 
   const toggleAudio = async () => {
     if (audioEnabled && audioStream) {
       await deviceController
         .stopAudioInput()
         .then(() => {
-          console.log("Audio input stopped successfully");
           audioStream.getTracks().forEach((track) => track.stop());
           audioContext?.close();
           setAudioStream(null);
@@ -68,8 +66,6 @@ export const ToggleAudio = ({
           setAudioStream(stream);
           const newAudioContext = new AudioContext();
           setAudioContext(newAudioContext);
-
-          console.log("Audio input started successfully");
         })
         .then(() => {
           setAudioEnabled(true);

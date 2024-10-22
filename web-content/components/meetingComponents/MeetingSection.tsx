@@ -1,13 +1,7 @@
 "use client";
 import Image from "next/image";
 import closeIconPurple from "@/public/assets/images/closeIconPurple.svg";
-import {
-  SetStateAction,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { SetStateAction, useEffect, useRef, useState } from "react";
 import {
   useRemoteVideoTileState,
   useRosterState,
@@ -37,7 +31,6 @@ import capturePurple from "@/public/assets/images/capturePurple.svg";
 import Participants from "./Participants";
 import Conference from "./Conference";
 import {
-  listAttendees,
   startTranscription,
   stopTranscription,
 } from "@/services/meetingServices";
@@ -45,7 +38,6 @@ import { useAppContext } from "@/context/StoreContext";
 import RaisedHandQueue from "./RaisedHandQueue";
 import { useRouter } from "next/router";
 import { RecordCircle } from "iconsax-react";
-// import AudioVisualizerContainer from "./MeetingCardAudio";
 
 type DynamicWidth = {
   width: number | string;
@@ -80,24 +72,10 @@ export default function MeetingSection({
 }) {
   const { roster } = useRosterState();
   const attendees = Object.values(roster);
-  const { tiles, tileIdToAttendeeId, attendeeIdToTileId, size } =
-    useRemoteVideoTileState();
-  const { toggleContentShare } = useContentShareControls();
-  const { isLocalUserSharing, tileId, sharingAttendeeId } =
-    useContentShareState();
-  const [meetingSideView, setMeetingSideView] = useState("meeting");
-  const messageData = new DataMessage(
-    Date.now(),
-    "Test-Meeting",
-    new Uint8Array(),
-    "attendee",
-    "externalId"
-  );
+  const { attendeeIdToTileId } = useRemoteVideoTileState();
+  const { tileId, sharingAttendeeId } = useContentShareState();
 
-  const messageChat = new Message("string", {}, "I said");
   const audioVideo = useAudioVideo();
-  const [chatMessages, setChatMessages] = useState<any>([]);
-  const [someChat, setSomeChat] = useState("");
   const participantsRef = useRef<HTMLDivElement>(null);
   // const [sideView, setSideView] = useState('');
   const [tooltipMessage, setTooltipMessage] = useState("");
@@ -109,22 +87,13 @@ export default function MeetingSection({
   const [bigContainerWidth, setBigContainerWidth] = useState(0);
   const [bigContainerHeight, setBigContainerHeight] = useState(0);
   const containerTileRef = useRef<HTMLDivElement>(null);
-  const [dynamicWidth, setDynamicWidth] = useState<DynamicWidth>({
-    width: "",
-    maxWidth: "",
-  });
   const [screenWidth, setScreenWidth] = useState<number>(0);
   const [changingWidth, setChangingWidth] = useState<number>(0);
   const [captionOn, setCaptionOn] = useState(false);
   const captionScroll = useRef<HTMLDivElement>(null);
   const [displayCards, setDisplayCards] = useState<number>();
-  const [attendeeDetails, setAttendeeDetails] =
-    useState<AtteendeeDetailsProp[]>(attendeeDetailPass);
   const meetingM = useMeetingManager();
   const { appState, setAppState } = useAppContext();
-  const router = useRouter();
-  const logger = new ConsoleLogger("MyLogger");
-  const [attendeeItemsStatus, setAttendeeItems] = useState<any>();
   const [rosterArray, setRosterArray] = useState<any[]>([]);
 
   useEffect(() => {
@@ -234,15 +203,6 @@ export default function MeetingSection({
 
   const chunkRefs = useRef<(HTMLDivElement | null)[]>([]);
   const tileRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  useEffect(() => {
-    // Log the className of each attendee card (local and remote)
-    tileRefs.current.forEach((ref, index) => {
-      if (ref) {
-        console.log(`Class names for tile ${index}:`, ref.className);
-      }
-    });
-  }, [appState.sessionState.audioState]);
 
   useEffect(() => {
     const options = {
@@ -697,7 +657,6 @@ export default function MeetingSection({
       .map((ref, index) => {
         if (ref) {
           const className = ref.className;
-          console.log(ref.className);
 
           return {
             // attendee: attendeeItems[index], // Store the attendee item
@@ -767,14 +726,13 @@ export default function MeetingSection({
     });
     setRosterArray(sortedAttendees);
   }, [appState.sessionState.audioState]);
-  console.log(attendees);
 
   return (
     <>
       {appState.sessionState.recordMeeeting && (
         <div className=" flex gap-x-2 bg-cs-black-200 items-center p-1 rounded mx-2">
-          <div className="p-[4px] bg-cs-grey-50 rounded-lg w-8">
-            <RecordCircle size="24" color="#CB3A32" variant="Bulk" />
+          <div className="p-[4px] bg-cs-grey-50 rounded-lg w-7">
+            <RecordCircle size="20" color="#CB3A32" variant="Bulk" />
           </div>
           <div className=" text-cs-grey-50 font-normal">
             Call is being recorded
@@ -785,7 +743,7 @@ export default function MeetingSection({
       <div className=" flex-4 overflow-hidden hidden md:flex metro-medium meetingSection relative">
         {/* big screen share screen */}
         {tileId && (
-          <div className=" flex-5 bg-cs-black-200 px-10 py-5 rounded-[4px] mr-4">
+          <div className=" flex-5 bg-cs-black-200 px-10 py-5 rounded-[4px] mr-4 pl-2 mt-2 ml-2">
             <div className=" h-full flex flex-col">
               <div className="flex gap-x-3 flex-2 items-center">
                 {/* <div className="p-[4px] bg-cs-grey-50 rounded-lg"><RecordCircle size="24" color="#CB3A32" variant="Bulk" /></div>
@@ -991,6 +949,8 @@ export default function MeetingSection({
                     flex: "1 1 50%",
                     minWidth: screenWidth < 1025 ? 190 : 300,
                     marginLeft: 16,
+                    paddingTop: 8,
+                    marginRight: 8,
                   }
                 : {
                     width: "0px",

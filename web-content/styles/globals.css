@@ -122,6 +122,9 @@
   z-index: 10000;
 }
 
+iframe[id="#jsd-widget"] {
+  display: none;
+}
 /* @font-face {
   font-family: Metropolis;
   font-weight: 400;

@@ -128,12 +128,9 @@ const Chat = ({
   }, [messages]);
 
   const returName = (string: any) => {
-    // const details = appState.sessionState.meetingAttendees.find(
-    //   (att) => att.user_id === string
-    // );
-    const details = Array.isArray(meetingAttendees)
-      ? meetingAttendees.find((att) => att.user_id === externalID)
-      : null; // Return null or handle the case where it's not an array
+    const details = appState.sessionState.meetingAttendees.find(
+      (att) => att.user_id === string
+    );
 
     return details;
   };
