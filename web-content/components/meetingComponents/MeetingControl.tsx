@@ -14,7 +14,7 @@ import {
   VideoSlash,
 } from "iconsax-react";
 import Image from "next/image";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { lazy, useEffect, useLayoutEffect, useRef, useState } from "react";
 import DateTimeDisplay from "../../utils/getDate";
 import {
   useContentShareControls,
@@ -92,7 +92,8 @@ export default function MeetingControl({
     "meetingAttendess",
     ""
   );
-  const { muted: liveMuted } = useAttendeeStatus(attendeIDString as string);
+  const [miniroster, setMiniRoster] = useState<string[]>([]);
+  const [prevLength, setPrevLength] = useState(0);
 
   useEffect(() => {
     import("@lottiefiles/lottie-player");
@@ -332,7 +333,9 @@ export default function MeetingControl({
 
           setSetupDone(true);
         }
-        await getAttendeesList(router.query.link as string);
+        // await getAttendeesList(router.query.link as string);
+
+        setMiniRoster((prevRoster) => [...prevRoster, attendeeId]); // Add attendee to roster
       } else {
         setAppState((prevState) => {
           const updatedAudioState = prevState.sessionState.audioState.filter(
@@ -347,6 +350,10 @@ export default function MeetingControl({
             },
           };
         });
+        // Remove attendee from the roster
+        setMiniRoster((prevRoster) =>
+          prevRoster.filter((attendee) => attendee !== attendeeId)
+        );
       }
     };
 
@@ -360,6 +367,16 @@ export default function MeetingControl({
       );
     };
   }, [audioVideo, router.isReady]);
+
+  useEffect(() => {
+    const updateRoster = async () => {
+      if (miniroster.length > prevLength) {
+        await getAttendeesList(router.query.link as string);
+      }
+    };
+    updateRoster();
+    setPrevLength(miniroster.length); // Update previous length
+  }, [miniroster.length]);
 
   function updateSessionStorageArray(key: string, newArray: any[]) {
     // Check if the item exists in session storage
@@ -390,49 +407,45 @@ export default function MeetingControl({
   }
 
   const getAttendeesList = async (meetingId: string) => {
+    let allAttendees: any[] = []; // Array to hold all the attendees
+    let nextToken: string | null = null;
+
     try {
-      const response = await listAttendees({
-        meeting_id: meetingId,
-      });
-      if (response) {
-        const { data } = response.data.body;
-        // updateSessionStorageArray("meetingAttendees", data);
-        console.log(data, data?.next_token);
-        const attendee = response.data.body;
-        setAppState((prevState) => ({
-          ...prevState,
-          sessionState: {
-            ...prevState.sessionState,
-            meetingAttendees: data?.attendees,
-          },
-        }));
-        if (data?.next_token !== null) {
-          try {
-            const newList = await listAttendees({
-              meeting_id: meetingId,
-              next_token: data?.next_token,
-            });
-            setAppState((prevState) => ({
-              ...prevState,
-              sessionState: {
-                ...prevState.sessionState,
-                meetingAttendees: [
-                  ...prevState.sessionState.meetingAttendees,
-                  newList?.data.body.data.attendees,
-                ],
-              },
-            }));
-          } catch (err) {
-            console.log(err);
-          }
+      do {
+        // Make the API call with the current next_token (or without it for the first call)
+        const response = await listAttendees({
+          meeting_id: meetingId,
+          next_token: nextToken, // Pass the token, if it's null, it will be ignored
+        });
+
+        if (response) {
+          const { data } = response.data.body;
+
+          // Merge current page of attendees with the allAttendees array
+          allAttendees = [...allAttendees, ...data?.attendees];
+
+          // Update the nextToken, which will control the loop
+          nextToken = data?.next_token || null;
+
+          console.log(data?.attendees, data?.next_token);
         }
-        return data;
-      }
+      } while (nextToken !== null); // Continue while there is a next_token
+      setAppState((prevState) => ({
+        ...prevState,
+        sessionState: {
+          ...prevState.sessionState,
+          meetingAttendees: allAttendees,
+        },
+      }));
+
+      // Return the complete array of attendees
+      return allAttendees;
     } catch (error) {
-      console.log(error);
-    } finally {
+      console.log("Error fetching attendees:", error);
+      return []; // Return an empty array in case of an error
     }
   };
+
   // ("Missing required body field: media_pipeline_arn, which must be a str");
 
   const handleStartRecording = async () => {
@@ -879,22 +892,32 @@ export default function MeetingControl({
               >
                 <div className=" relative py-2 px-4 flex gap-x-4 emoji-list">
                   {emojis.map((emoji) => (
-                    <Image
-                      src={emoji.emoji}
-                      alt={emoji.alt}
-                      width={18}
-                      height={18}
-                      className="min-w-6 max-w-5 cursor-pointer emoji"
-                      onClick={() =>
-                        sendReaction(
-                          attendeIDString as string,
-                          emoji.emoji,
-                          externalID as string,
-                          emoji.lottieCode
-                        )
-                      }
-                      key={emoji.alt}
-                    />
+                    <>
+                      <Image
+                        src={emoji.emoji}
+                        alt={emoji.alt}
+                        width={18}
+                        height={18}
+                        className="min-w-6 max-w-5 cursor-pointer emoji"
+                        onClick={() =>
+                          sendReaction(
+                            attendeIDString as string,
+                            emoji.emoji,
+                            externalID as string,
+                            emoji.lottieCode
+                          )
+                        }
+                        key={emoji.alt}
+                      />
+                      <lottie-player
+                        id={`${emoji.lottieCode}-big-screen-hide`}
+                        autoplay
+                        loop={false}
+                        mode="normal"
+                        src={`https://fonts.gstatic.com/s/e/notoemoji/latest/${emoji.lottieCode}/lottie.json`}
+                        style={{ display: "none" }}
+                      />
+                    </>
                   ))}
                 </div>
               </div>
@@ -1134,22 +1157,33 @@ export default function MeetingControl({
               >
                 <div className=" relative py-2 px-4 flex gap-x-4 emoji-list">
                   {emojis.map((emoji) => (
-                    <Image
-                      src={emoji.emoji}
-                      alt={emoji.alt}
-                      width={18}
-                      height={18}
-                      className="min-w-6 max-w-5 cursor-pointer emoji"
-                      onClick={() =>
-                        sendReaction(
-                          attendeIDString as string,
-                          emoji.emoji,
-                          externalID as string,
-                          emoji.lottieCode
-                        )
-                      }
-                      key={emoji.alt}
-                    />
+                    <>
+                      <Image
+                        src={emoji.emoji}
+                        alt={emoji.alt}
+                        width={18}
+                        height={18}
+                        className="min-w-6 max-w-5 cursor-pointer emoji"
+                        onClick={() =>
+                          sendReaction(
+                            attendeIDString as string,
+                            emoji.emoji,
+                            externalID as string,
+                            emoji.lottieCode
+                          )
+                        }
+                        key={emoji.alt}
+                      />
+
+                      <lottie-player
+                        id={`${emoji.lottieCode}-small-screen-hide`}
+                        autoplay
+                        loop={false}
+                        mode="normal"
+                        src={`https://fonts.gstatic.com/s/e/notoemoji/latest/${emoji.lottieCode}/lottie.json`}
+                        style={{ display: "none" }}
+                      />
+                    </>
                   ))}
                 </div>
               </div>

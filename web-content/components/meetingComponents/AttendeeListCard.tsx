@@ -24,12 +24,12 @@ export const AttendeeListCard = ({
 }) => {
   const { appState } = useAppContext();
   const { meetingAttendees } = appState.sessionState;
-  // const attendeeDetailItems = meetingAttendees.find(
-  //   (att) => att.user_id === externalID
-  // );
-  const attendeeDetailItems = Array.isArray(meetingAttendees)
-    ? meetingAttendees.find((att) => att.user_id === externalID)
-    : null; // Return null or handle the case where it's not an array
+  const attendeeDetailItems = meetingAttendees.find(
+    (att) => att.user_id === externalID
+  );
+  // const attendeeDetailItems = Array.isArray(meetingAttendees)
+  //   ? meetingAttendees.find((att) => att.user_id === externalID)
+  //   : null; // Return null or handle the case where it's not an array
 
   const { videoEnabled, sharingContent, muted } = useAttendeeStatus(attendeeId);
   const { muted: anotherStatusMute, signalStrength } =
@@ -150,3 +150,339 @@ export const AttendeeListCard = ({
     </div>
   );
 };
+
+// {
+//   "statusCode": 200,
+//   "body": {
+//       "status": "Success",
+//       "message": "Successfully fetched attendees",
+//       "data": {
+//           "attendees": [
+//               {
+//                   "user_id": "ext_user_Andrew_Sisipenzi_ba",
+//                   "full_name": "Andrew Sisipenzi",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "user_1fcfda80-1286-441a-b63a-0d36972cb886",
+//                   "full_name": "Abidemi Ogedengbe",
+//                   "picture": "https://dw97yo6s8re7n.cloudfront.net/profile-pictures/user_1fcfda80-1286-441a-b63a-0d36972cb886/22e8a544-1724240063.png"
+//               },
+//               {
+//                   "user_id": "ext_user_solomon_ebigwei_3e",
+//                   "full_name": "solomon ebigwei",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Andrew_Sisipenzi_39",
+//                   "full_name": "Andrew Sisipenzi",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Emmanuel_Okororie_59",
+//                   "full_name": "Emmanuel Okororie",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Dasola_Dasola_80",
+//                   "full_name": "Dasola Dasola",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "user_1e6916c4-788e-4560-8969-fcd6b049a989",
+//                   "full_name": "Tosin Tomori",
+//                   "picture": "https://dw97yo6s8re7n.cloudfront.net/profile-pictures/user_1e6916c4-788e-4560-8969-fcd6b049a989/4db6abf3-1728998860.jpeg"
+//               },
+//               {
+//                   "user_id": "ext_user_Emmanuel_Second_62",
+//                   "full_name": "Emmanuel Second",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Andrew_Sisipenzi_6b",
+//                   "full_name": "Andrew Sisipenzi",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Omolomo_Tpain_d9",
+//                   "full_name": "Omolomo Tpain",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "user_4536ba13-2ad7-45aa-b126-f60d0ab94583",
+//                   "full_name": "Emmanuel Kalu",
+//                   "picture": "https://dw97yo6s8re7n.cloudfront.net/profile-pictures/user_4536ba13-2ad7-45aa-b126-f60d0ab94583/2d7811f9-1724241178.jpeg"
+//               },
+//               {
+//                   "user_id": "ext_user_Andrew_Sisipenzi_18",
+//                   "full_name": "Andrew Sisipenzi",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Abiola_Ajayi_09",
+//                   "full_name": "Abiola Ajayi",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Drew_Six_4b",
+//                   "full_name": "Drew Six",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Opeyemi_Ajayi_51",
+//                   "full_name": "Opeyemi Ajayi",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Dasola_Dasola_5a",
+//                   "full_name": "Dasola Dasola",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Abiola_Ajayi_93",
+//                   "full_name": "Abiola Ajayi",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Bolarinwa_Akinjo_65",
+//                   "full_name": "Bolarinwa Akinjo",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Adeola_Adekola_39",
+//                   "full_name": "Adeola Adekola",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Qazeem_Adeniyi_de",
+//                   "full_name": "Qazeem Adeniyi",
+//                   "picture": null
+//               }
+//           ],
+//           "next_token": "eyJAQHRva2VuIjoiZXlKcFpDSTZleUp6SWpvaVlqVm1PR0V6WkRndE1tWTJNeTFsWVRjNExXRTROMkl0WldVeVpHSTJZMlE1T1RJMEluMHNJbU5wWkNJNmV5SnpJam9pTTJWbVltTTVORGd0TmpVNFpTMDBPREF4TFdFek1USXRaV0kyTmpOaU5Ea3lOekV6SW4xOSJ9"
+//       }
+//   }
+// }
+
+// {
+//   "statusCode": 200,
+//   "body": {
+//       "status": "Success",
+//       "message": "Successfully fetched attendees",
+//       "data": {
+//           "attendees": [
+//               {
+//                   "user_id": "ext_user_Chinenye_Florence_1b",
+//                   "full_name": "Chinenye Florence",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Nenye_Florence_ef",
+//                   "full_name": "Nenye Florence",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Godbless_Agbedeyi_34",
+//                   "full_name": "Godbless Agbedeyi",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Kehinde_Alagbe_c4",
+//                   "full_name": "Kehinde Alagbe",
+//                   "picture": null
+//               }
+//           ],
+//           "next_token": null
+//       }
+//   }
+// }
+
+// {
+//   "statusCode": 200,
+//   "body": {
+//       "status": "Success",
+//       "message": "Successfully fetched attendees",
+//       "data": {
+//           "attendees": [
+//               {
+//                   "user_id": "ext_user_Qazeem_Adeniyi_de",
+//                   "full_name": "Qazeem Adeniyi",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Chinenye_Florence_1b",
+//                   "full_name": "Chinenye Florence",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Nenye_Florence_ef",
+//                   "full_name": "Nenye Florence",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Godbless_Agbedeyi_34",
+//                   "full_name": "Godbless Agbedeyi",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Kehinde_Alagbe_c4",
+//                   "full_name": "Kehinde Alagbe",
+//                   "picture": null
+//               }
+//           ],
+//           "next_token": null
+//       }
+//   }
+// }
+
+// 0
+// :
+// {user_id: 'ext_user_Andrew_Sisipenzi_ba', full_name: 'Andrew Sisipenzi', picture: null}
+// 1
+// :
+// {user_id: 'user_1fcfda80-1286-441a-b63a-0d36972cb886', full_name: 'Abidemi Ogedengbe', picture: 'https://dw97yo6s8re7n.cloudfront.net/profile-pictu…86-441a-b63a-0d36972cb886/22e8a544-1724240063.png'}
+// 2
+// :
+// {user_id: 'ext_user_Kenny_Alagbe_fa', full_name: 'Kenny Alagbe', picture: null}
+// 3
+// :
+// {user_id: 'ext_user_solomon_ebigwei_3e', full_name: 'solomon ebigwei', picture: null}
+// 4
+// :
+// {user_id: 'ext_user_Andrew_Sisipenzi_39', full_name: 'Andrew Sisipenzi', picture: null}
+// 5
+// :
+// {user_id: 'ext_user_Emmanuel_Okororie_59', full_name: 'Emmanuel Okororie', picture: null}
+// 6
+// :
+// {user_id: 'ext_user_Dasola_Dasola_80', full_name: 'Dasola Dasola', picture: null}
+// 7
+// :
+// {user_id: 'user_1e6916c4-788e-4560-8969-fcd6b049a989', full_name: 'Tosin Tomori', picture: 'https://dw97yo6s8re7n.cloudfront.net/profile-pictu…e-4560-8969-fcd6b049a989/4db6abf3-1728998860.jpeg'}
+// 8
+// :
+// {user_id: 'ext_user_Emmanuel_Second_62', full_name: 'Emmanuel Second', picture: null}
+// 9
+// :
+// {user_id: 'ext_user_Andrew_Sisipenzi_6b', full_name: 'Andrew Sisipenzi', picture: null}
+// 10
+// :
+// {user_id: 'ext_user_Omolomo_Tpain_d9', full_name: 'Omolomo Tpain', picture: null}
+// 11
+// :
+// {user_id: 'user_4536ba13-2ad7-45aa-b126-f60d0ab94583', full_name: 'Emmanuel Kalu', picture: 'https://dw97yo6s8re7n.cloudfront.net/profile-pictu…7-45aa-b126-f60d0ab94583/2d7811f9-1724241178.jpeg'}
+// 12
+// :
+// {user_id: 'ext_user_Andrew_Sisipenzi_18', full_name: 'Andrew Sisipenzi', picture: null}
+// 13
+// :
+// {user_id: 'ext_user_Abiola_Ajayi_09', full_name: 'Abiola Ajayi', picture: null}
+// 14
+// :
+// {user_id: 'ext_user_Drew_Six_4b', full_name: 'Drew Six', picture: null}
+// 15
+// :
+// {user_id: 'ext_user_Opeyemi_Ajayi_51', full_name: 'Opeyemi Ajayi', picture: null}
+// 16
+// :
+// {user_id: 'ext_user_Dasola_Dasola_5a', full_name: 'Dasola Dasola', picture: null}
+// 17
+// :
+// {user_id: 'ext_user_Abiola_Ajayi_93', full_name: 'Abiola Ajayi', picture: null}
+// 18
+// :
+// {user_id: 'ext_user_Bolarinwa_Akinjo_65', full_name: 'Bolarinwa Akinjo', picture: null}
+// 19
+// :
+// {user_id: 'ext_user_Adeola_Adekola_39', full_name: 'Adeola Adekola', picture: null}
+
+// 0
+// :
+// {user_id: 'ext_user_Qazeem_Adeniyi_de', full_name: 'Qazeem Adeniyi', picture: null}
+// 1
+// :
+// {user_id: 'ext_user_Chinenye_Florence_1b', full_name: 'Chinenye Florence', picture: null}
+// 2
+// :
+// {user_id: 'ext_user_Nenye_Florence_ef', full_name: 'Nenye Florence', picture: null}
+// 3
+// :
+// {user_id: 'ext_user_Godbless_Agbedeyi_34', full_name: 'Godbless Agbedeyi', picture: null}
+// 4
+// :
+// {user_id: 'ext_user_Kehinde_Alagbe_c4', full_name: 'Kehinde Alagbe', picture: null}
+
+// {
+//   "statusCode": 200,
+//   "body": {
+//       "status": "Success",
+//       "message": "Successfully fetched attendees",
+//       "data": {
+//           "attendees": [
+//               {
+//                   "user_id": "ext_user_Qazeem_Adeniyi_de",
+//                   "full_name": "Qazeem Adeniyi",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Chinenye_Florence_1b",
+//                   "full_name": "Chinenye Florence",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_solomon_ebigwei_b8",
+//                   "full_name": "solomon ebigwei",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Nenye_Florence_ef",
+//                   "full_name": "Nenye Florence",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Godbless_Agbedeyi_34",
+//                   "full_name": "Godbless Agbedeyi",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Kehinde_Alagbe_c4",
+//                   "full_name": "Kehinde Alagbe",
+//                   "picture": null
+//               },
+//               {
+//                   "user_id": "ext_user_Olusola_Ijimade_f7",
+//                   "full_name": "Olusola Ijimade",
+//                   "picture": null
+//               }
+//           ],
+//           "next_token": null
+//       }
+//   }
+// }
+
+// 0
+// :
+// {user_id: 'ext_user_Adeola_Adekola_39', full_name: 'Adeola Adekola', picture: null}
+// 1
+// :
+// {user_id: 'ext_user_Qazeem_Adeniyi_de', full_name: 'Qazeem Adeniyi', picture: null}
+// 2
+// :
+// {user_id: 'ext_user_Chinenye_Florence_1b', full_name: 'Chinenye Florence', picture: null}
+// 3
+// :
+// {user_id: 'ext_user_solomon_ebigwei_b8', full_name: 'solomon ebigwei', picture: null}
+// 4
+// :
+// {user_id: 'ext_user_Nenye_Florence_ef', full_name: 'Nenye Florence', picture: null}
+// 5
+// :
+// {user_id: 'ext_user_Godbless_Agbedeyi_34', full_name: 'Godbless Agbedeyi', picture: null}
+// 6
+// :
+// {user_id: 'ext_user_Kehinde_Alagbe_c4', full_name: 'Kehinde Alagbe', picture: null}
+// 7
+// :
+// {user_id: 'ext_user_Olusola_Ijimade_f7', full_name: 'Olusola Ijimade', picture: null}
+
+// // sessionState.meetingAttendees is not iterable is the error that occured when the host ended the meeting

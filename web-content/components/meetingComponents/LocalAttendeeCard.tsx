@@ -39,6 +39,8 @@ export const LocalAttendeeCard = forwardRef<
     (att) => att.externalUserId === props.nameID
   );
 
+  console.log(appState.sessionState.meetingAttendees);
+
   const AudioComp = () => {
     return (
       <>

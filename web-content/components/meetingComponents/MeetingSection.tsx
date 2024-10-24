@@ -95,6 +95,7 @@ export default function MeetingSection({
   const meetingM = useMeetingManager();
   const { appState, setAppState } = useAppContext();
   const [rosterArray, setRosterArray] = useState<any[]>([]);
+  console.log(appState.sessionState.meetingAttendees);
 
   useEffect(() => {
     // Function to update screenWidth state when the window is resized
@@ -588,7 +589,7 @@ export default function MeetingSection({
     //   (att) => att.user_id === string
     // );
     const details = Array.isArray(appState.sessionState.meetingAttendees)
-      ? appState.sessionState.meetingAttendees.find(
+      ? appState.sessionState.meetingAttendees?.find(
           (att) => att.user_id === string
         )
       : null; // Return null or handle the case where it's not an array
@@ -726,6 +727,7 @@ export default function MeetingSection({
     });
     setRosterArray(sortedAttendees);
   }, [appState.sessionState.audioState]);
+  console.log(attendees);
 
   return (
     <>
@@ -740,7 +742,7 @@ export default function MeetingSection({
         </div>
       )}
 
-      <div className=" flex-4 overflow-hidden hidden md:flex metro-medium meetingSection relative">
+      <div className=" flex-4 overflow-hidden hidden md:flex metro-medium meetingSection relative overflow-x-hidden">
         {/* big screen share screen */}
         {tileId && (
           <div className=" flex-5 bg-cs-black-200 px-10 py-5 rounded-[4px] mr-4 pl-2 mt-2 ml-2">
