@@ -8,15 +8,16 @@ import {
 } from "amazon-chime-sdk-js";
 import { useMeetingManager } from "amazon-chime-sdk-component-library-react";
 
-interface TranscriptEntry {
+type TranscriptEntry = {
   attendeeId: string | undefined;
   text: string;
-}
+};
 
-interface TranscriptEntryArray {
+type TranscriptEntryArray = {
   attendeeId: string;
   transcript: string;
-}
+};
+
 const TranscriptComponent = () => {
   const meetingManager = useMeetingManager();
   const [transcripts, setTranscripts] = useState<TranscriptEntry[]>([]);
