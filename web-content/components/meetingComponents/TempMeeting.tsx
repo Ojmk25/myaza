@@ -366,7 +366,7 @@ export default function TempMeeting({
   return (
     <div className="w-full flex items-center flex-col">
       <div className="max-auto w-full ">
-        <main className=" flex flex-col md:px-6 h-dvh w-full relative meetingScreen">
+        <main className=" flex flex-col md:px-6 h-dvh w-full relative meetingScreen overflow-hidden">
           {/* header for small screen */}
           <div className="md:hidden px-4">
             <div className="flex  justify-between items-center py-4 bg-[#FEFDFF] border-solid border-b border-b-[#FAFAFA]">

@@ -892,7 +892,7 @@ export default function MeetingControl({
               >
                 <div className=" relative py-2 px-4 flex gap-x-4 emoji-list">
                   {emojis.map((emoji) => (
-                    <>
+                    <div key={emoji.alt}>
                       <Image
                         src={emoji.emoji}
                         alt={emoji.alt}
@@ -907,7 +907,6 @@ export default function MeetingControl({
                             emoji.lottieCode
                           )
                         }
-                        key={emoji.alt}
                       />
                       <lottie-player
                         id={`${emoji.lottieCode}-big-screen-hide`}
@@ -917,7 +916,7 @@ export default function MeetingControl({
                         src={`https://fonts.gstatic.com/s/e/notoemoji/latest/${emoji.lottieCode}/lottie.json`}
                         style={{ display: "none" }}
                       />
-                    </>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -1157,7 +1156,7 @@ export default function MeetingControl({
               >
                 <div className=" relative py-2 px-4 flex gap-x-4 emoji-list">
                   {emojis.map((emoji) => (
-                    <>
+                    <div key={emoji.alt}>
                       <Image
                         src={emoji.emoji}
                         alt={emoji.alt}
@@ -1183,7 +1182,7 @@ export default function MeetingControl({
                         src={`https://fonts.gstatic.com/s/e/notoemoji/latest/${emoji.lottieCode}/lottie.json`}
                         style={{ display: "none" }}
                       />
-                    </>
+                    </div>
                   ))}
                 </div>
               </div>

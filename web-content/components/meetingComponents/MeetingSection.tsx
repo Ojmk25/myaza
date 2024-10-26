@@ -23,6 +23,7 @@ import {
   TranscriptionStatus,
   Transcript,
   ConsoleLogger,
+  TranscriptResult,
 } from "amazon-chime-sdk-js";
 import Chat from "./IncallMessage";
 import { getRemoteInitials } from "@/utils/meetingFunctions";
@@ -38,6 +39,7 @@ import { useAppContext } from "@/context/StoreContext";
 import RaisedHandQueue from "./RaisedHandQueue";
 import { useRouter } from "next/router";
 import { RecordCircle } from "iconsax-react";
+import TranscriptComponent from "./TranscriptDisplay";
 
 type DynamicWidth = {
   width: number | string;
@@ -471,35 +473,36 @@ export default function MeetingSection({
   useEffect(() => {
     setBigContainerWidth(bigContainerTileRef?.current?.clientWidth as number);
     setBigContainerHeight(bigContainerTileRef?.current?.clientHeight as number);
-    const transcriptEventHandler = (transcriptEvent: TranscriptEvent): void => {
-      // `transcriptEvent` could be either a `Transcript` or `TranscriptionStatus`
-      // if it is `Transcript`, then it should contain transcription results
-      // else you need to handle the logic of `TranscriptionStatus` changes (start/ stop/ ...)
-      console.log(transcriptEvent);
 
-      if (transcriptEvent instanceof TranscriptionStatus) {
-        // Print Transcript Status, could be `STARTED`, `INTERRUPTED`, `RESUMED`, `STOPPED` or `FAILED`
-        console.log(transcriptEvent.type);
-      } else if (transcriptEvent instanceof Transcript) {
-        // Print Transcript result collection
-        console.log(transcriptEvent.results);
-      }
-    };
-    const audioVideo = meetingManager.audioVideo;
-    if (audioVideo?.transcriptionController) {
-      audioVideo.transcriptionController.subscribeToTranscriptEvent(
-        // (transcriptEvent: Transcript | TranscriptionStatus) => {
-        //   console.log(transcriptEvent);
-        //   if (transcriptEvent.type === 'Transcript') {
-        //     transcriptEvent.results.forEach(result => {
-        //         const transcriptText = result.alternatives[0].transcript;
-        //         console.log('Transcription: ', transcriptText);
-        //     });
-        // }
-        // }
-        transcriptEventHandler
-      );
-    }
+    // const transcriptEventHandler = (transcriptEvent: TranscriptEvent): void => {
+    //   // `transcriptEvent` could be either a `Transcript` or `TranscriptionStatus`
+    //   // if it is `Transcript`, then it should contain transcription results
+    //   // else you need to handle the logic of `TranscriptionStatus` changes (start/ stop/ ...)
+    //   console.log(transcriptEvent);
+
+    //   if (transcriptEvent instanceof TranscriptionStatus) {
+    //     // Print Transcript Status, could be `STARTED`, `INTERRUPTED`, `RESUMED`, `STOPPED` or `FAILED`
+    //     console.log(transcriptEvent.type);
+    //   } else if (transcriptEvent instanceof Transcript) {
+    //     // Print Transcript result collection
+    //     console.log(transcriptEvent.results);
+    //   }
+    // };
+    // const audioVideo = meetingManager.audioVideo;
+    // if (audioVideo?.transcriptionController) {
+    //   audioVideo.transcriptionController.subscribeToTranscriptEvent(
+    //     // (transcriptEvent: Transcript | TranscriptionStatus) => {
+    //     //   console.log(transcriptEvent);
+    //     //   if (transcriptEvent.type === 'Transcript') {
+    //     //     transcriptEvent.results.forEach(result => {
+    //     //         const transcriptText = result.alternatives[0].transcript;
+    //     //         console.log('Transcription: ', transcriptText);
+    //     //     });
+    //     // }
+    //     // }
+    //     transcriptEventHandler
+    //   );
+    // }
 
     // audioVideo?.transcriptionController?.subscribeToTranscriptEvent(
     //   transcriptEventHandler
@@ -741,7 +744,7 @@ export default function MeetingSection({
           </div>
         </div>
       )}
-
+      <TranscriptComponent />
       <div className=" flex-4 overflow-hidden hidden md:flex metro-medium meetingSection relative overflow-x-hidden">
         {/* big screen share screen */}
         {tileId && (
