@@ -17,6 +17,7 @@ type TranscriptEntryArray = {
   attendeeId: string;
   transcript: string;
 }
+// fix semi colon
 
 const TranscriptComponent = () => {
   const meetingManager = useMeetingManager();
