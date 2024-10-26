@@ -11,12 +11,12 @@ import { useMeetingManager } from "amazon-chime-sdk-component-library-react";
 type TranscriptEntry = {
   attendeeId: string | undefined;
   text: string;
-};
+}
 
 type TranscriptEntryArray = {
   attendeeId: string;
   transcript: string;
-};
+}
 
 const TranscriptComponent = () => {
   const meetingManager = useMeetingManager();
