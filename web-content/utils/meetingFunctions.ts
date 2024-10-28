@@ -63,3 +63,8 @@ export function getIdFromArn(arn: string) {
   const parts = arn.split("/");
   return parts[parts.length - 1];
 }
+
+export const returnFullName = (string: any, array: any[]) => {
+  const details = array.find((att) => att.user_id === string);
+  return details?.full_name as string;
+};
