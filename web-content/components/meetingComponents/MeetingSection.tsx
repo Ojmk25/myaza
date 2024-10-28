@@ -39,7 +39,6 @@ import { useAppContext } from "@/context/StoreContext";
 import RaisedHandQueue from "./RaisedHandQueue";
 import { useRouter } from "next/router";
 import { RecordCircle } from "iconsax-react";
-import TranscriptComponent from "./TranscriptDisplay";
 
 type DynamicWidth = {
   width: number | string;
@@ -744,7 +743,7 @@ export default function MeetingSection({
           </div>
         </div>
       )}
-      <TranscriptComponent />
+     
       <div className=" flex-4 overflow-hidden hidden md:flex metro-medium meetingSection relative overflow-x-hidden">
         {/* big screen share screen */}
         {tileId && (
