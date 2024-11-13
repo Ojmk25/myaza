@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss";
-import img from "../../public/assets/images/bgImg.svg"
+import img from "../../public/assets/images/bgImg.svg";
 
 const config: Config = {
   // important: true,
@@ -17,11 +17,11 @@ const config: Config = {
         // "cs-bg": "url('../public/assets/images/bgImg.svg')",
       },
       fontFamily: {
-        sans: ['var(--font-metropolis)']
+        sans: ["var(--font-metropolis)"],
       },
       colors: {
         cs: {
-          "red": "#D11C1C",
+          red: "#D11C1C",
 
           "purple-400": "#843DE7",
           "purple-500": "#7133CF",
@@ -32,10 +32,10 @@ const config: Config = {
           "error-500": "#DE524C",
           "error-600": "#CB3A32",
 
-
           "modal-100": "#404040D9",
 
           "success-bg": "#D9F9E7",
+          "grey-light": "#FFFFFA",
           "grey-45": "#FCF6FF",
           "grey-50": "#FAFAFA",
           "grey-55": "#DFDFDF",
@@ -54,23 +54,23 @@ const config: Config = {
           "black-100": "#101010",
           "black-200": "#1E1E1E",
 
-        }
+          "slate-300": "CDD5E0",
+          "slate-400": "#97A3B6",
+        },
       },
       boxShadow: {
         "1xl": "0 4px 4px -4px rgb(0 0 0 / 0.15)",
       },
       flex: {
-        "0": '1 1 0%',
-        "2": '1 1 25%',
+        "0": "1 1 0%",
+        "2": "1 1 25%",
         "3": "1 1 50%",
         "4": "1 1 100%",
         "5": "1 1 60%",
-        "6": "1 1 40%"
-      }
+        "6": "1 1 40%",
+      },
     },
   },
-  plugins: [
-    require('@tailwindcss/container-queries'),
-  ],
+  plugins: [require("@tailwindcss/container-queries")],
 };
 export default config;

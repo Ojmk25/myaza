@@ -1,4 +1,4 @@
-import TempMeeting from "@/components/meetingComponents/TempMeeting";
+import MeetingPage from "@/components/meetingComponents/MeetingPage";
 import LoadingScreen from "@/components/modals/LoadingScreen";
 import { useSessionStorage } from "@/hooks/useStorage";
 import { useRouter } from "next/router";
@@ -40,7 +40,7 @@ const Meet = () => {
   }, [router]);
 
   if (updateRoute !== "" && updateRoute === "yes") {
-    return <TempMeeting param={router.query.link} />;
+    return <MeetingPage param={router.query.link} />;
   } else {
     return (
       <>

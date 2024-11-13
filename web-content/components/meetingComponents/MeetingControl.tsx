@@ -10,6 +10,7 @@ import {
   MoreCircle,
   ProfileAdd,
   RecordCircle,
+  SearchNormal1,
   Video,
   VideoSlash,
 } from "iconsax-react";
@@ -42,10 +43,11 @@ import {
 } from "@/services/meetingServices";
 import { emojis } from "@/constants/emojis";
 import ReactDOM from "react-dom/client";
-import * as LottiePlayer from "@lottiefiles/lottie-player";
+// import * as LottiePlayer from "@lottiefiles/lottie-player";
 import captureWhite from "@/public/assets/images/captureWhite.svg";
 import capturePurple from "@/public/assets/images/capturePurple.svg";
 import { getIdFromArn } from "@/utils/meetingFunctions";
+import greenCheck from "@/public/assets/svgs/green-check.svg";
 
 export default function MeetingControl({
   bgColor,
@@ -56,6 +58,9 @@ export default function MeetingControl({
   attendeIDString,
   meetingDetails,
   externalID,
+  startTranscriptionProp,
+  stopTranscriptionProp,
+  transcriptionStatus,
 }: {
   bgColor: boolean;
   onOpen: () => void;
@@ -65,6 +70,9 @@ export default function MeetingControl({
   attendeIDString: string | null | undefined;
   meetingDetails: any;
   externalID: string | null | undefined;
+  startTranscriptionProp: () => void;
+  stopTranscriptionProp: () => void;
+  transcriptionStatus: boolean;
 }) {
   const currentTimeRef = useRef<HTMLDivElement>(null);
   const { isVideoEnabled, toggleVideo } = useLocalVideo();
@@ -83,7 +91,6 @@ export default function MeetingControl({
   const { muted, toggleMute } = useToggleLocalMute();
   const router = useRouter();
   const [mediaPipeLineId, setMediaPipelineId] = useState("");
-
   const [expressJoin, setExpressJoin] = useSessionStorage(
     "meetingJoiner",
     "no"
@@ -908,14 +915,6 @@ export default function MeetingControl({
                           )
                         }
                       />
-                      <lottie-player
-                        id={`${emoji.lottieCode}-big-screen-hide`}
-                        autoplay
-                        loop={false}
-                        mode="normal"
-                        src={`https://fonts.gstatic.com/s/e/notoemoji/latest/${emoji.lottieCode}/lottie.json`}
-                        style={{ display: "none" }}
-                      />
                     </div>
                   ))}
                 </div>
@@ -998,9 +997,63 @@ export default function MeetingControl({
 
         <div className=" flex gap-x-4 lg:gap-x-6 flex-2 justify-end cursor-pointer">
           <div
-            className="text-center"
-            onClick={() => handleLocalSideView("Caption")}
+            className="text-center relative"
+            onClick={() => {
+              // setOpenCaption(!openCaption);
+              handleLocalSideView("Caption");
+            }}
           >
+            {sideView === "Caption" && (
+              <div
+                className=" absolute border border-solid border-cs-grey-50 rounded-[10px] shadow-1xl bg-cs-grey-light pt-4 pl-3 pr-1 bottom-24 -left-[50px]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className=" relative">
+                  <div className=" relative">
+                    <SearchNormal1
+                      size="16"
+                      color="#677489"
+                      className=" absolute top-[32%] left-[5%]"
+                    />
+                    <input
+                      type="text"
+                      name=""
+                      id=""
+                      placeholder="Search for language"
+                      className=" placeholder:text-sm placeholder:text-cs-slate-400 metro-light border border-cs-slate-300 outline-none rounded-md block py-[12px] pl-[43px] pr-[6px] text-left"
+                    />
+                  </div>
+                  <div
+                    className=" text-left text-cs-grey-dark metro-light my-4 flex gap-x-2"
+                    onClick={stopTranscriptionProp}
+                  >
+                    <button>Off</button>
+                    {!transcriptionStatus && (
+                      <Image
+                        src={greenCheck}
+                        alt="hand"
+                        width={12}
+                        height={8}
+                      />
+                    )}
+                  </div>
+                  <div
+                    className=" text-left text-cs-grey-dark metro-light my-4 flex gap-x-2"
+                    onClick={startTranscriptionProp}
+                  >
+                    <button>English (Auto-generated)</button>
+                    {transcriptionStatus && (
+                      <Image
+                        src={greenCheck}
+                        alt="hand"
+                        width={12}
+                        height={8}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
             <div
               className={`p-3 ${
                 sideView === "Caption" ? "bg-[#5E29B7]" : "bg-[#E1C6FF4D]"
@@ -1172,15 +1225,6 @@ export default function MeetingControl({
                           )
                         }
                         key={emoji.alt}
-                      />
-
-                      <lottie-player
-                        id={`${emoji.lottieCode}-small-screen-hide`}
-                        autoplay
-                        loop={false}
-                        mode="normal"
-                        src={`https://fonts.gstatic.com/s/e/notoemoji/latest/${emoji.lottieCode}/lottie.json`}
-                        style={{ display: "none" }}
                       />
                     </div>
                   ))}
