@@ -249,7 +249,7 @@ export default function MeetingControl({
   const handleEndMeeting = async () => {
     try {
       await endMeetingForAll({
-        chime_meeting_id: meetingDetails?.meeting_info?.MeetingId,
+        meeting_id: meetingDetails?.meeting_info?.MeetingId,
       });
     } catch (error) {
       console.log(error);

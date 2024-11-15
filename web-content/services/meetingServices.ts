@@ -38,7 +38,7 @@ export interface GetMeetingPayload {
 }
 
 export interface EndMeetingPayload {
-  chime_meeting_id: string;
+  meeting_id: string;
 }
 
 export const setInstantMeeting = (meetingID: string, meetingData: any) => {
