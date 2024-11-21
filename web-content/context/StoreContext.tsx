@@ -6,6 +6,7 @@ import {
   GlobalStyles,
 } from "amazon-chime-sdk-component-library-react";
 import { ThemeProvider } from "styled-components";
+import { VideoFxConfig } from "amazon-chime-sdk-js";
 
 type AtteendeeDetailsProp = {
   full_name: string;
@@ -20,6 +21,12 @@ type AudioState = {
   externalUserId: string;
 };
 
+type RaisedHand = {
+  timestamp: string;
+  message: string;
+  externalUserID: string;
+};
+
 type SessionState = {
   sessionName: string;
   sessionCategory: string;
@@ -30,12 +37,14 @@ type SessionState = {
     senderExternalId: string;
     lottieCode: string;
   };
-  raisedHand: { timestamp: string; message: string; externalUserID: string };
+  raisedHand: RaisedHand[];
   guestFirstName: string;
   guestLastName: string;
   meetingAttendees: AtteendeeDetailsProp[];
   audioState: AudioState[];
   recordMeeeting: boolean;
+  filterClick: string;
+  filterConfig: VideoFxConfig;
 };
 
 type AppState = {
@@ -59,12 +68,21 @@ export const AppCtx = createContext<AppContextType>({
         senderExternalId: "",
         lottieCode: "",
       },
-      raisedHand: { timestamp: "", message: "", externalUserID: "" },
+      raisedHand: [],
       guestFirstName: "",
       guestLastName: "",
       meetingAttendees: [],
       audioState: [],
       recordMeeeting: false,
+      filterClick: "",
+      filterConfig: {
+        backgroundBlur: { isEnabled: false, strength: "medium" },
+        backgroundReplacement: {
+          isEnabled: false,
+          backgroundImageURL: "",
+          defaultColor: undefined,
+        },
+      },
     },
   },
   setAppState: () => {},
@@ -85,12 +103,21 @@ export const StoreContext: React.FC<{ children: React.ReactNode }> = ({
         senderExternalId: "",
         lottieCode: "",
       },
-      raisedHand: { timestamp: "", message: "", externalUserID: "" },
+      raisedHand: [],
       guestFirstName: "",
       guestLastName: "",
       meetingAttendees: [],
       audioState: [],
       recordMeeeting: false,
+      filterClick: "",
+      filterConfig: {
+        backgroundBlur: { isEnabled: false, strength: "medium" },
+        backgroundReplacement: {
+          isEnabled: false,
+          backgroundImageURL: "",
+          defaultColor: undefined,
+        },
+      },
     },
   });
 

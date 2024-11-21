@@ -84,6 +84,19 @@
     background: #919191;
   }
 
+  .customeScrollBarTwo::-webkit-scrollbar {
+    width: 4px;
+  }
+  .customeScrollBarTwo::-webkit-scrollbar-track {
+    background: white;
+    box-shadow: inset 0 0 5px white;
+    border-radius: 10px;
+  }
+  .customeScrollBarTwo::-webkit-scrollbar-thumb {
+    background: #b4b4b4;
+    border-radius: 6px;
+  }
+
   /* Hide the default jira widget button injected from script */
   .atlwdg-trigger.atlwdg-TOP {
     top: 0;
@@ -124,6 +137,11 @@
 
 iframe[id="#jsd-widget"] {
   display: none;
+}
+
+/* capitalize video nameplate */
+.ch-nameplate .ch-text {
+  text-transform: capitalize;
 }
 /* @font-face {
   font-family: Metropolis;

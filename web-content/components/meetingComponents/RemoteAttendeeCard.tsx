@@ -46,7 +46,7 @@ export const RemoteAttendeeCard = forwardRef<
   const audioStatusFromState = appState.sessionState.audioState.find(
     (att) => att.externalUserId === props.nameID
   );
-
+  console.log(videoEnabled, props.attendeeId, attendeeDetailItems);
   const AudioComp = () => {
     return (
       <>
@@ -106,7 +106,7 @@ export const RemoteAttendeeCard = forwardRef<
             : "absolute right-8 bottom-3 z-10"
         }`}
       >
-        <RaisedHand attendeeId={props.attendeeId} />
+        <RaisedHand attendeeId={props.attendeeId} externalId={props.nameID} />
       </div>
 
       <div className="flex-1 flex justify-center items-center">
@@ -134,8 +134,7 @@ export const RemoteAttendeeCard = forwardRef<
 
                 // </div>
                 <>
-                  {attendeeDetailItems &&
-                  attendeeDetailItems?.picture &&
+                  {attendeeDetailItems?.picture &&
                   attendeeDetailItems?.picture !== "" ? (
                     <div>
                       {/* <Image

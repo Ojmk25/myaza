@@ -25,7 +25,7 @@ export interface StopTranscriptionPayload {
 }
 
 export interface StopRecordingPayload {
-  meeting_id: string;
+  // meeting_id: string;
   media_pipeline_arn: string;
   media_pipeline_id: string;
 }

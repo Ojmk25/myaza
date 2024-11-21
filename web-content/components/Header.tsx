@@ -14,6 +14,7 @@ import {
 } from "@/services/authService";
 import Settings from "@/components/modals/Settings";
 import WidgetButton from "./WidgetButton";
+import { usePathname } from "next/navigation";
 
 export default function Header() {
   const [loggedIn, setLoggedIn] = useState(false);
@@ -26,6 +27,8 @@ export default function Header() {
   const [showModal, setShowModal] = useState("");
   const { picture } = getClientInfo();
   const widgetRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+  const lastSegment = pathname.split("/").pop();
 
   useEffect(() => {
     setLoggedIn(IsAuthenticated());
@@ -304,13 +307,15 @@ export default function Header() {
           >
             <button
               className=" text-cs-grey-50 bg-cs-purple-650 rounded-md py-[14px] px-10 font-bold max-h-[52px] h-full"
-              onClick={() => navigate.push("/auth/signup")}
+              onClick={() => navigate.push(`/auth/signup`)}
             >
               Sign up
             </button>
             <button
               className=" text-cs-purple-650 font-bold py-3 px-10 border border-cs-purple-650 rounded hover:text-white hover:bg-cs-purple-650 max-h-[52px]"
-              onClick={() => navigate.push("/auth/login")}
+              onClick={() =>
+                navigate.push(`/auth/login?prevpage=${lastSegment}`)
+              }
             >
               Sign in
             </button>
@@ -335,12 +340,6 @@ export default function Header() {
         </div>
       )}
       {showModal === "settings" && <Settings onClose={handleCloseModal} />}
-
-      {/* <div className=" w-fit relative overflow-hidden">
-              <div className="bg-cs-purple-650 p-[10px] rounded-lg flex items-center cursor-pointer">
-                <MessageQuestion size="18" color="#FAF0FF" />
-              </div>
-            </div> */}
       <div
         className=" w-fit fixed bottom-10 right-4 z-50 text-white"
         ref={widgetRef}

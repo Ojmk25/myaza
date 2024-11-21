@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 import { useAppContext } from "@/context/StoreContext";
 import { useSessionStorage } from "@/hooks/useStorage";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 export default function GuestNameInput() {
   const [errMessage, setErrMessage] = useState({
@@ -36,6 +37,8 @@ export default function GuestNameInput() {
     "meetingJoiner",
     "yes"
   );
+  const pathname = usePathname();
+  const lastSegment = pathname.split("/").pop();
   useEffect(() => {
     setLoggedIn(IsAuthenticated());
     getNameAbbreviation();
@@ -136,7 +139,6 @@ export default function GuestNameInput() {
                 loggedIn ? "block" : "hidden"
               } flex gap-x-4 items-center mt-[48px]`}
             >
-              {/* <Image src={avatar} alt="logo" className="rounded-full w-10 h-10 object-cover" /> */}
               {!picture ? (
                 <div className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50">
                   {getNameAbbreviation()}
@@ -174,7 +176,10 @@ export default function GuestNameInput() {
               } text-center my-6 text-base font-semibold text-cs-grey-dark`}
             >
               Already have an account?{" "}
-              <Link href={"/auth/login"} className=" text-cs-purple-650">
+              <Link
+                href={`/auth/login?prevpage=${lastSegment}`}
+                className=" text-cs-purple-650"
+              >
                 Sign in
               </Link>
             </p>

@@ -137,7 +137,11 @@ export const AttendeeListCard = ({
         </h4>
       </div>
       <div className=" flex items-center gap-x-1">
-        <RaisedHand attendeeId={attendeeId} noBackground />
+        <RaisedHand
+          attendeeId={attendeeId}
+          noBackground
+          externalId={externalID}
+        />
         <div className={`external-visualizer-${attendeeId}`} ref={targetRef}>
           {/* <AudioComp /> */}
           <ShowVisualizer

@@ -92,7 +92,7 @@ export const LocalAttendeeCard = forwardRef<
           isVideoEnabled ? "right-8 bottom-3" : "right-8 bottom-3"
         } z-10 absolute`}
       >
-        <RaisedHand attendeeId={props.attendeeId} />
+        <RaisedHand attendeeId={props.attendeeId} externalId={props.nameID} />
       </div>
       <div className="flex-1 flex justify-center items-center">
         <div className=" w-full h-full ">

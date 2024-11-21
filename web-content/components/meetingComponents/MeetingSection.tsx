@@ -100,7 +100,7 @@ export default function MeetingSection({
   const { appState, setAppState } = useAppContext();
   const [rosterArray, setRosterArray] = useState<any[]>([]);
   const captionNotifierRef = useRef<HTMLDivElement>(null);
-  console.log(appState.sessionState.meetingAttendees);
+  console.log(appState.sessionState.meetingAttendees, attendees);
 
   useEffect(() => {
     // Function to update screenWidth state when the window is resized

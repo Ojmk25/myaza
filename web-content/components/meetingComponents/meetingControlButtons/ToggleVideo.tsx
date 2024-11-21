@@ -2,15 +2,24 @@
 
 import { FailureSlideIn } from "@/components/FailureSlideIn";
 import LoadingScreen from "@/components/modals/LoadingScreen";
+import { useAppContext } from "@/context/StoreContext";
 import { useSessionStorage } from "@/hooks/useStorage";
-import { DefaultDeviceController } from "amazon-chime-sdk-js";
+import {
+  ConsoleLogger,
+  DefaultDeviceController,
+  DefaultVideoTransformDevice,
+  VideoFxConfig,
+  VideoFxProcessor,
+} from "amazon-chime-sdk-js";
 import { Video, VideoSlash } from "iconsax-react";
 import { useEffect, useRef, useState } from "react";
 
 export const ToggleVideoButton = ({
   deviceController,
+  getVideoStatus,
 }: {
   deviceController: DefaultDeviceController;
+  getVideoStatus: (getVideoStatus: boolean) => void;
 }) => {
   const [video, setVideo] = useState(false);
   const hasRunRef = useRef(false);
@@ -19,6 +28,11 @@ export const ToggleVideoButton = ({
   const [loading, setLoading] = useState(true);
 
   const [_, setVideoStatus] = useSessionStorage("videoStatus", "yes");
+  const [deviceOk, setDeviceOk] = useState<any>();
+  const { appState, setAppState } = useAppContext();
+
+  const [videoFx, setVideoFx] = useState<any>(null);
+  const localStateConfig = localStorage.getItem("videoFxConfig");
 
   useEffect(() => {
     if (video) {
@@ -26,6 +40,7 @@ export const ToggleVideoButton = ({
     } else {
       setVideoStatus("no");
     }
+    getVideoStatus(video);
   }, [video]);
 
   useEffect(() => {
@@ -75,9 +90,6 @@ export const ToggleVideoButton = ({
       const videoElement = document.querySelector(
         "#video-preview"
       ) as HTMLVideoElement;
-      // const videoElementTwo = document.querySelector(
-      //   "#video-preview-two"
-      // ) as HTMLVideoElement;
       if (!videoElement) {
         console.error("Video element not found!");
         return;
@@ -92,15 +104,71 @@ export const ToggleVideoButton = ({
         await deviceController.stopVideoInput();
         setVideo(false);
       } else {
+        setDeviceOk(videoList[0].deviceId);
         await deviceController.startVideoInput(videoList[0].deviceId);
         deviceController.startVideoPreviewForVideoInput(videoElement);
         // deviceController.startVideoPreviewForVideoInput(videoElementTwo);
+        // makeBlur();
         setVideo(true);
       }
     } catch (error) {
       console.error("Error in toggleVideo:", error);
     }
   }
+
+  const videoFxConfig: VideoFxConfig = {
+    backgroundBlur: {
+      isEnabled: true,
+      strength: "medium",
+    },
+    backgroundReplacement: {
+      isEnabled: false,
+      backgroundImageURL: "space.jpg",
+      defaultColor: undefined,
+    },
+  };
+  const localFxConfig = JSON.parse(localStateConfig as string);
+
+  const makeBlur = async () => {
+    const logger = new ConsoleLogger("MyLogger");
+
+    let videoFxProcessor: VideoFxProcessor | undefined = undefined;
+
+    if (!(await VideoFxProcessor.isSupported(logger))) {
+      // logger is optional for isSupported
+      console.log("This browser is not supported");
+    } else {
+      console.log("This browser is definetely supported");
+
+      try {
+        videoFxProcessor = await VideoFxProcessor.create(logger, videoFxConfig);
+        // assuming that logger and videoInputDevice have already been set
+        const videoTransformDevice = new DefaultVideoTransformDevice(
+          logger,
+          deviceOk,
+          [videoFxProcessor]
+        );
+        const videoElement = document.querySelector(
+          "#video-preview"
+        ) as HTMLVideoElement;
+        // const videoElementTwo = document.querySelector(
+        //   "#video-preview-two"
+        // ) as HTMLVideoElement;
+        if (!videoElement) {
+          console.error("Video element not found!");
+          return;
+        }
+
+        // assuming that meetingSession has already been created
+        await deviceController.startVideoInput(videoTransformDevice);
+        await deviceController.startVideoPreviewForVideoInput(videoElement);
+      } catch (error) {
+        //@ts-ignore
+        logger.warn(error.toString());
+      }
+    }
+  };
+
   return (
     <>
       <div

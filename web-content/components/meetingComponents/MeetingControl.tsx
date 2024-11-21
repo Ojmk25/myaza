@@ -95,10 +95,7 @@ export default function MeetingControl({
     "meetingJoiner",
     "no"
   );
-  const [localMeetingAttendees, setLocalMeetingAttendees] = useSessionStorage(
-    "meetingAttendess",
-    ""
-  );
+  const previousRaisedHandLength = useRef<number>(0);
   const [miniroster, setMiniRoster] = useState<string[]>([]);
   const [prevLength, setPrevLength] = useState(0);
 
@@ -113,19 +110,6 @@ export default function MeetingControl({
       setRaiseHandAdded(false);
     }
   }, [otherViews]);
-
-  useEffect(() => {
-    if (raiseHandAdded) {
-      const timeout = setTimeout(() => {
-        setOtherViews((prevOtherViews) =>
-          prevOtherViews.filter((item) => item !== "Raise-Hand")
-        );
-        setRaiseHandAdded(false); // Reset the state after removing "Raise-Hand"
-      }, 10000);
-
-      return () => clearTimeout(timeout);
-    }
-  }, [raiseHandAdded]);
 
   useEffect(() => {
     const updateCurrentTime = () => {
@@ -148,6 +132,64 @@ export default function MeetingControl({
       clearInterval(intervalId);
     };
   }, []);
+
+  useEffect(() => {
+    if (!audioVideo) return;
+
+    const handleDataMessage = (dataMessage: {
+      data: AllowSharedBufferSource | undefined;
+    }) => {
+      const message = new TextDecoder().decode(dataMessage.data);
+      const parsedMessage = JSON.parse(message);
+
+      setAppState((prevState) => {
+        // Combine existing reactions with new ones
+        const existingReactions = prevState.sessionState.raisedHand;
+
+        // Check if the incoming object already exists in existingReactions
+        const isDuplicate = existingReactions.some(
+          (reaction) =>
+            // reaction.message === parsedMessage.attendee &&
+            reaction.externalUserID === parsedMessage.externalUserID
+        );
+
+        // If it exists, remove it; otherwise, add it
+        const updatedReactions = isDuplicate
+          ? existingReactions.filter(
+              (reaction) =>
+                !(
+                  // reaction.message === parsedMessage.attendee &&
+                  (reaction.externalUserID === parsedMessage.externalUserID)
+                )
+            )
+          : [
+              ...existingReactions,
+              {
+                timestamp: parsedMessage.timestamp,
+                message: parsedMessage.attendee,
+                externalUserID: parsedMessage.externalUserID,
+              },
+            ];
+
+        return {
+          ...prevState,
+          sessionState: {
+            ...prevState.sessionState,
+            raisedHand: updatedReactions,
+          },
+        };
+      });
+    };
+
+    audioVideo.realtimeSubscribeToReceiveDataMessage(
+      "raise-hand",
+      handleDataMessage
+    );
+
+    return () => {
+      audioVideo.realtimeUnsubscribeFromReceiveDataMessage("raise-hand");
+    };
+  }, [appState.sessionState.raisedHand, audioVideo]);
 
   const handleLocalSideView = (value: string) => {
     if (value === sideView) {
@@ -173,34 +215,49 @@ export default function MeetingControl({
     externalUserID: string
   ) => {
     handleOtherViews("Raise-Hand");
-    let timestampVar = timestamp;
-    let attendeeVar = attendee;
-    let raiseHandExternalUserID = externalUserID;
-    if (otherViews.includes("Raise-Hand")) {
-      timestampVar = "";
-      attendeeVar = "";
-      raiseHandExternalUserID = externalUserID;
-    }
+    setAppState((prevState) => {
+      const existingReactions = prevState.sessionState.raisedHand;
 
-    // Update local state immediately
-    setAppState((prevState) => ({
-      ...prevState,
-      sessionState: {
-        ...prevState.sessionState,
-        raisedHand: {
-          timestamp: timestampVar,
-          message: attendee,
-          externalUserID: raiseHandExternalUserID,
+      // Check if the incoming object already exists in existingReactions
+      const isDuplicate = existingReactions.some(
+        (reaction) =>
+          reaction.message === attendee &&
+          reaction.externalUserID === externalUserID
+      );
+
+      // If it exists, remove it; otherwise, add it
+      const updatedReactions = isDuplicate
+        ? existingReactions.filter(
+            (reaction) =>
+              !(
+                reaction.message === attendee &&
+                reaction.externalUserID === externalUserID
+              )
+          )
+        : [
+            ...existingReactions,
+            {
+              timestamp: timestamp,
+              message: attendee,
+              externalUserID: externalUserID,
+            },
+          ];
+
+      return {
+        ...prevState,
+        sessionState: {
+          ...prevState.sessionState,
+          raisedHand: updatedReactions,
         },
-      },
-    }));
+      };
+    });
 
     // Check if audioVideo is available
     if (!audioVideo) return;
     const message = JSON.stringify({
-      timestamp: timestampVar,
+      timestamp: timestamp,
       message: attendee,
-      externalUserID: raiseHandExternalUserID,
+      externalUserID: externalUserID,
     });
 
     // Send the message
@@ -249,7 +306,7 @@ export default function MeetingControl({
   const handleEndMeeting = async () => {
     try {
       await endMeetingForAll({
-        meeting_id: meetingDetails?.meeting_info?.MeetingId,
+        meeting_id: meetingDetails?.meeting_info?.ExternalMeetingId,
       });
     } catch (error) {
       console.log(error);
@@ -421,7 +478,7 @@ export default function MeetingControl({
       do {
         // Make the API call with the current next_token (or without it for the first call)
         const response = await listAttendees({
-          meeting_id: meetingId,
+          meeting_id: meetingDetails?.meeting_info?.ExternalMeetingId,
           next_token: nextToken, // Pass the token, if it's null, it will be ignored
         });
 
@@ -437,13 +494,28 @@ export default function MeetingControl({
           console.log(data?.attendees, data?.next_token);
         }
       } while (nextToken !== null); // Continue while there is a next_token
-      setAppState((prevState) => ({
-        ...prevState,
-        sessionState: {
-          ...prevState.sessionState,
-          meetingAttendees: allAttendees,
-        },
-      }));
+
+      setAppState((prevState) => {
+        const existingAttendees = new Set(
+          prevState.sessionState.meetingAttendees.map(
+            (attendee) => attendee.user_id
+          )
+        );
+        const newAttendees = allAttendees.filter(
+          (attendee) => !existingAttendees.has(attendee.user_id)
+        );
+
+        return {
+          ...prevState,
+          sessionState: {
+            ...prevState.sessionState,
+            meetingAttendees: [
+              ...prevState.sessionState.meetingAttendees,
+              ...newAttendees,
+            ],
+          },
+        };
+      });
 
       // Return the complete array of attendees
       return allAttendees;
@@ -470,7 +542,7 @@ export default function MeetingControl({
   const handleStopRecording = async () => {
     try {
       const data = await stopRecording({
-        meeting_id: meetingDetails?.meeting_info?.ExternalMeetingId,
+        // meeting_id: meetingDetails?.meeting_info?.ExternalMeetingId,
         // "Missing required body field: media_pipeline_arn, which must be a str"
         //@ts-ignore
         // user_id: "",
@@ -492,22 +564,25 @@ export default function MeetingControl({
   };
 
   useEffect(() => {
-    // Cleanup the audio when the component unmounts
+    const currentRaisedHandLength = appState.sessionState.raisedHand.length;
+    // Check if an item was added to the array
     if (
-      appState.sessionState.raisedHand.message !== "" &&
-      appState.sessionState.raisedHand.timestamp !== "" &&
+      currentRaisedHandLength > previousRaisedHandLength.current &&
       raiseHandSoundRef.current
     ) {
       raiseHandSoundRef.current.src =
         "/assets/sounds/message-incoming-2-199577.mp3";
       raiseHandSoundRef.current.play();
     }
+
+    // Update the ref to the current length
+    previousRaisedHandLength.current = currentRaisedHandLength;
     return () => {
       if (raiseHandSoundRef.current) {
         raiseHandSoundRef.current.pause();
       }
     };
-  }, [appState.sessionState.raisedHand.timestamp, audioVideo]);
+  }, [appState.sessionState.raisedHand]);
 
   const sendReaction = (
     sender: string,
@@ -720,11 +795,13 @@ export default function MeetingControl({
         ...prevState,
         sessionState: {
           ...prevState.sessionState,
-          raisedHand: {
-            timestamp: "",
-            message: "",
-            externalUserID: "",
-          },
+          raisedHand: [
+            // {
+            //   timestamp: "",
+            //   message: "",
+            //   externalUserID: "",
+            // },
+          ],
           reaction: {
             sender: "",
             message: "",
@@ -737,6 +814,8 @@ export default function MeetingControl({
       updateSessionStorageArray("meetingAttendees", []);
     };
   }, []);
+
+  console.log(appState.sessionState.raisedHand);
 
   return (
     <>
@@ -807,7 +886,9 @@ export default function MeetingControl({
                   />
                 )}
               </div>
-              <h6 className=" text-cs-grey-100 font-medium text-xs">Video</h6>
+              <h6 className=" text-cs-grey-100 font-medium text-xs">
+                {isVideoEnabled ? "Stop Video" : "Video"}
+              </h6>
             </div>
 
             <div
@@ -825,7 +906,9 @@ export default function MeetingControl({
                   className="mx-auto max-w-5"
                 />
               </div>
-              <h6 className=" text-cs-grey-100 font-medium text-xs">Share</h6>
+              <h6 className=" text-cs-grey-100 font-medium text-xs">
+                {isLocalUserSharing ? "Stop Sharing" : "Share"}
+              </h6>
             </div>
 
             {meetingDetails?.meeting_info?.MeetingHostId === externalID &&
@@ -858,7 +941,9 @@ export default function MeetingControl({
                     />
                   </div>
                   <h6 className=" text-cs-grey-100 font-medium text-xs">
-                    Record
+                    {otherViews.includes("Record")
+                      ? "Stop recording"
+                      : "Record"}
                   </h6>
                   {/* <h6 className=" text-[#e1c6ff] font-medium text-xs">Record</h6> */}
                 </div>

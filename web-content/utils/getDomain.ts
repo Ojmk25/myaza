@@ -3,6 +3,8 @@
 //  * @returns `string` if windows object is available, otherwise `false`.
 //  */
 
+import { VideoFxConfig } from "amazon-chime-sdk-js";
+
 // export const subDomain = (): string | null => {
 //   /***
 //    * Returns SubDomains off the URL
@@ -21,6 +23,18 @@
 //   }
 //   return null;
 // };
+
+const videoFxConfig: VideoFxConfig = {
+  backgroundBlur: {
+    isEnabled: false,
+    strength: "medium",
+  },
+  backgroundReplacement: {
+    isEnabled: false,
+    backgroundImageURL: "",
+    defaultColor: undefined,
+  },
+};
 
 export function getSubdomain(host: string) {
   // Split the hostname into parts in array
@@ -46,6 +60,13 @@ export const getApiBaseURL = () => {
 
   if (typeof window !== "undefined") {
     sessionStorage.setItem("cecurestream_meetingJoiner", "no");
+    const videoConfig = localStorage.getItem("videoFxConfig");
+    if (videoConfig) {
+      console.log("User has config");
+    } else {
+      localStorage.setItem("videoFxConfig", JSON.stringify(videoFxConfig));
+    }
+
     const host = window.location.host;
     const subDomain = getSubdomain(host);
 

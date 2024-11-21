@@ -19,6 +19,7 @@ export const ToggleAudio = ({
   const [audioLevel, setAudioLevel] = useState<number>(0);
   const { setAppState } = useAppContext();
   const [audioStatus, setAudioStatus] = useSessionStorage("audioStatus", "no");
+  const [loading, setLoading] = useState(false)
 
   const logger = new ConsoleLogger("MyLogger");
   const deviceController = new DefaultDeviceController(logger, {
@@ -26,6 +27,7 @@ export const ToggleAudio = ({
   });
   useEffect(() => {
     setAudioStatus("no");
+    setLoading(true)
   }, []);
 
   const handleClick = () => {
@@ -175,7 +177,7 @@ export const ToggleAudio = ({
           {audio ? "Unmute" : "Mute"}
         </h6>
       </div>
-      {audioLevelDisplayRef.current &&
+      {audioLevelDisplayRef.current && loading && 
         ReactDOM.createPortal(audioVisualizer, audioLevelDisplayRef.current)}
     </>
   );

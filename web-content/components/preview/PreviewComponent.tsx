@@ -2,7 +2,10 @@
 import {
   ConsoleLogger,
   DefaultDeviceController,
+  DefaultVideoTransformDevice,
   MediaStreamBrokerObserver,
+  VideoFxConfig,
+  VideoFxProcessor,
 } from "amazon-chime-sdk-js";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useMeetingManager } from "amazon-chime-sdk-component-library-react";
@@ -10,18 +13,28 @@ import { useRouter } from "next/navigation";
 import { ToggleVideoButton } from "@/components/meetingComponents/meetingControlButtons/ToggleVideo";
 import { ToggleAudio } from "@/components/meetingComponents/meetingControlButtons/ToggleAudio";
 
-import { getNameAbbreviation, IsAuthenticated } from "@/services/authService";
+import {
+  getClientInfo,
+  getNameAbbreviation,
+  IsAuthenticated,
+} from "@/services/authService";
 import GuestNameInput from "./GuestNameInput";
 import Header from "../Header";
 import LoadingScreen from "../modals/LoadingScreen";
 import { FailureSlideIn } from "../FailureSlideIn";
+import Image from "next/image";
+import guestAvatar from "@/public/assets/images/avatar_setup.png";
+import { ToggleVideoBgButton } from "../meetingComponents/meetingControlButtons/ToggleVideoBg";
+import { getRemoteInitials } from "@/utils/meetingFunctions";
 
 export default function PreviewComponent() {
   const [loggedIn, setLoggedIn] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const navigate = useRouter();
-  const audioLevelDisplayRef = useRef(null);
+  const audioLevelDisplayRef = useRef<HTMLDivElement | null>(null);
   const meetingManager = useMeetingManager();
+  const profileRef = useRef<HTMLDivElement | null>(null);
+  const { picture, first_name, surname } = getClientInfo();
 
   const logger = new ConsoleLogger("MyLogger");
 
@@ -45,112 +58,73 @@ export default function PreviewComponent() {
         await deviceController.stopAudioInput();
       };
       if (videoElement) {
-        // deviceController.stopVideoPreviewForVideoInput(videoElement);
-        // deviceController.stopVideoInput();
-        // deviceController.stopAudioInput();
-        // meetingManager.meetingSession?.audioVideo.stop()
-        // meetingManager.meetingSession?.audioVideo.chooseVideoInputDevice(null);
-
-        // deviceController.stopVideoPreviewForVideoInput(videoElement);
-        // deviceController.stopVideoInput();
-        // deviceController.destroy();
-        // meetingManager.meetingSession?.audioVideo.stopVideoInput();
-        // meetingManager.meetingSession?.audioVideo.stopLocalVideoTile();
-        // meetingManager.meetingSession?.audioVideo.stopVideoPreviewForVideoInput(
-        //   videoElement
-        // );
-
-        // meetingManager.meetingSession?.audioVideo.stop();
-        // deviceController.destroy();
         unMountCamera();
       }
     };
   }, []);
 
-  useEffect(() => {
-    // const init = async () => {
-    //   //List the device list
-    //   const deviceList = await deviceController.listVideoInputDevices();
-    //   const audioList = await deviceController.listAudioInputDevices();
+  const videoFxConfig: VideoFxConfig = {
+    backgroundBlur: {
+      isEnabled: true,
+      strength: "medium",
+    },
+    backgroundReplacement: {
+      isEnabled: false,
+      backgroundImageURL: "space.jpg",
+      defaultColor: undefined,
+    },
+  };
 
-    //   if (!deviceList[0].deviceId || !audioList[0].deviceId) {
-    //     setLoading(false);
-    //     setErrMessage("We could not detect your microphone or camera!");
-    //     setTimeout(() => {
-    //       setErrMessage("");
-    //     }, 2000);
-    //   }
-    //   // Choose video/audio device
-    //   await deviceController.startVideoInput(deviceList[0].deviceId);
-    //   await deviceController.startAudioInput(audioList[0].deviceId);
-
-    //   // //Grab the video element
-    //   // const videoElement = videoRef.current as HTMLVideoElement;
-    //   const videoElement = document.querySelector(
-    //     "#video-preview"
-    //   ) as HTMLVideoElement;
-
-    //   //Start video/audio preview
-    //   if (videoElement) {
-    //     deviceController?.startVideoPreviewForVideoInput(videoElement);
-    //     setLoading(false);
-    //   }
-    //   deviceController.chooseAudioOutput(audioList[0].deviceId);
-    // };
-
-    // init();
-    return () => {
-      // const videoElement = videoRef.current as HTMLVideoElement;
-      const videoElement = document.querySelector(
-        "#video-preview"
-      ) as HTMLVideoElement;
-      if (videoElement) {
-        deviceController.stopVideoInput();
-        deviceController.stopAudioInput();
-        deviceController.stopVideoPreviewForVideoInput(videoElement);
-        // meetingManager.meetingSession?.audioVideo.chooseVideoInputDevice(null);
-        meetingManager.meetingSession?.audioVideo.stopVideoInput();
-        meetingManager.meetingSession?.audioVideo.stopLocalVideoTile();
-        meetingManager.meetingSession?.audioVideo.stopVideoPreviewForVideoInput(
-          videoElement
-        );
-        meetingManager.meetingSession?.audioVideo.stop();
-      }
-      const unMount = async () => {
-        if (!videoElement) return;
-        deviceController.stopVideoPreviewForVideoInput(videoElement);
-        await deviceController.stopVideoInput();
-        deviceController.stopAudioInput();
-      };
-      unMount();
-      deviceController.stopVideoInput();
-      deviceController.stopAudioInput();
-    };
-  }, [deviceController]);
+  // useEffect(() => {
+  //   return () => {
+  //     // const videoElement = videoRef.current as HTMLVideoElement;
+  //     const videoElement = document.querySelector(
+  //       "#video-preview"
+  //     ) as HTMLVideoElement;
+  //     if (videoElement) {
+  //       deviceController.stopVideoInput();
+  //       deviceController.stopAudioInput();
+  //       deviceController.stopVideoPreviewForVideoInput(videoElement);
+  //       // meetingManager.meetingSession?.audioVideo.chooseVideoInputDevice(null);
+  //       meetingManager.meetingSession?.audioVideo.stopVideoInput();
+  //       meetingManager.meetingSession?.audioVideo.stopLocalVideoTile();
+  //       meetingManager.meetingSession?.audioVideo.stopVideoPreviewForVideoInput(
+  //         videoElement
+  //       );
+  //       meetingManager.meetingSession?.audioVideo.stop();
+  //     }
+  //     const unMount = async () => {
+  //       if (!videoElement) return;
+  //       deviceController.stopVideoPreviewForVideoInput(videoElement);
+  //       await deviceController.stopVideoInput();
+  //       deviceController.stopAudioInput();
+  //     };
+  //     unMount();
+  //     deviceController.stopVideoInput();
+  //     deviceController.stopAudioInput();
+  //   };
+  // }, [deviceController]);
 
   useEffect(() => {
     const init = async () => {
-      //List the device list
-      const deviceList = await deviceController.listVideoInputDevices();
-      const audioList = await deviceController.listAudioInputDevices();
-
-      // Choose video/audio device
-      await deviceController.startVideoInput(deviceList[0].deviceId);
-      await deviceController.startAudioInput(audioList[0].deviceId);
-      // hasRunRef.current = true;
-
-      // //Grab the video element
-      // const videoElement = videoRef.current as HTMLVideoElement;
-      const videoElement = document.querySelector(
-        "#video-preview"
-      ) as HTMLVideoElement;
-
-      //Start video/audio preview
-      if (videoElement) {
-        deviceController?.startVideoPreviewForVideoInput(videoElement);
-        // setLoading(false);
-      }
-      deviceController.chooseAudioOutput(audioList[0].deviceId);
+      // //List the device list
+      // const deviceList = await deviceController.listVideoInputDevices();
+      // const audioList = await deviceController.listAudioInputDevices();
+      // // Choose video/audio device
+      // await deviceController.startVideoInput(deviceList[0].deviceId);
+      // await deviceController.startAudioInput(audioList[0].deviceId);
+      // // hasRunRef.current = true;
+      // // //Grab the video element
+      // // const videoElement = videoRef.current as HTMLVideoElement;
+      // const videoElement = document.querySelector(
+      //   "#video-preview"
+      // ) as HTMLVideoElement;
+      // //Start video/audio preview
+      // if (videoElement) {
+      //   deviceController?.startVideoPreviewForVideoInput(videoElement);
+      //   // setLoading(false);
+      // }
+      // deviceController.chooseAudioOutput(audioList[0].deviceId);
     };
 
     // init();
@@ -185,6 +159,17 @@ export default function PreviewComponent() {
     };
   }, [deviceController]);
 
+  const getVideoStatus = (videoStatus: boolean) => {
+    const targetElement = profileRef.current;
+
+    if (!targetElement) return;
+    if (videoStatus) {
+      targetElement.style.display = "none";
+    } else {
+      targetElement.style.display = "block";
+    }
+  };
+
   return (
     <>
       {loggedIn !== null && (
@@ -199,7 +184,7 @@ export default function PreviewComponent() {
               {/* <Image src={avatar} alt="hero" height={490} width={600} className="w-[600px] h-[490px]" /> */}
               <div className=" relative">
                 <div
-                  className=" relative bg-cs-black-200 rounded-[4px] md:rounded-[31px]"
+                  className=" relative bg-cs-black-200 rounded-[4px] md:rounded-[31px] overflow-hidden"
                   id="preview-container"
                 >
                   <video
@@ -208,11 +193,41 @@ export default function PreviewComponent() {
                     className="rounded-[4px] md:rounded-[31px] w-full object-cover h-[302px] sm:h-[342px] md:h-[200px] lg:h-[261px] xl:h-[358px] "
                     ref={videoRef}
                   ></video>
-                  {/* <video
-                    id="video-preview-two"
-                    autoPlay
-                    className="rounded-[4px] md:rounded-[31px] w-full object-cover h-[302px] sm:h-[342px] md:h-[200px] lg:h-[261px] xl:h-[358px] "
-                  ></video> */}
+                  <div
+                    className=" absolute inset-0 bg-cs-black-200"
+                    ref={profileRef}
+                  >
+                    <div className=" relative flex items-center justify-center h-full ">
+                      {loggedIn ? (
+                        <>
+                          {picture && picture !== "" ? (
+                            <Image
+                              src={picture as string}
+                              alt="avatar"
+                              className=" w-[150px] rounded-full"
+                              width={100}
+                              height={100}
+                            />
+                          ) : (
+                            <div className=" bg-cs-grey-800 rounded-full flex justify-center items-center text-cs-grey-55 font-semibold m-auto uppercase w-[150px] h-[150px]">
+                              <h4 className=" text-[50px] leading-[60px]">
+                                {getRemoteInitials(`${first_name} ${surname}`)}
+                              </h4>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <Image
+                          src={guestAvatar}
+                          alt="avatar"
+                          className=" w-[150px] rounded-full"
+                          width={100}
+                          height={100}
+                        />
+                      )}
+                    </div>
+                  </div>
+                  {/* <ToggleVideoBgButton /> */}
                   <div className="" ref={audioLevelDisplayRef}></div>
                 </div>
 
@@ -220,7 +235,10 @@ export default function PreviewComponent() {
                 <div className=" flex justify-center my-6">
                   <div className=" flex gap-x-6">
                     <ToggleAudio audioLevelDisplayRef={audioLevelDisplayRef} />
-                    <ToggleVideoButton deviceController={deviceController} />
+                    <ToggleVideoButton
+                      deviceController={deviceController}
+                      getVideoStatus={getVideoStatus}
+                    />
                     <div
                       className=" bg-cs-red text-center rounded-lg py-3 md:py-4 px-5 md:px-6 text-white font-bold text-sm h-fit cursor-pointer"
                       onClick={() => navigate.push("/")}
@@ -237,8 +255,4 @@ export default function PreviewComponent() {
       )}
     </>
   );
-}
-
-{
-  /* <video id="video-preview" className="w-[400px] h-[400px]"></video> */
 }

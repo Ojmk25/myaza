@@ -18,6 +18,7 @@ import { SuccessSlideIn } from "@/components/SuccessSlideIn";
 import { FailureSlideIn } from "@/components/FailureSlideIn";
 import LoadingScreen from "@/components/modals/LoadingScreen";
 import { updateSignUpUser } from "@/config";
+import { useSearchParams } from "next/navigation";
 
 export default function Login() {
   const navigate = useRouter();
@@ -38,6 +39,8 @@ export default function Login() {
     email: false,
     password: false,
   });
+  const searchParams = useSearchParams();
+  const lastPart = searchParams.get("prevpage");
 
   const handleInput = (input: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = input.target;
@@ -121,9 +124,13 @@ export default function Login() {
       setOpenModal(true);
       setTimeout(() => {
         updateSignUpUser(loginPayload.email);
-        data.response &&
-          data?.response?.statusCode === 200 &&
-          navigate.push("/");
+        if (data?.response?.statusCode) {
+          if (lastPart !== null) {
+            navigate.push(`/${lastPart}`);
+          } else {
+            navigate.push(`/`);
+          }
+        }
       }, 3000);
     } catch (error) {
       console.log(error);

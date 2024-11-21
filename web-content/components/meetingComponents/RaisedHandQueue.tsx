@@ -1,97 +1,58 @@
 import { useAppContext } from "@/context/StoreContext";
 import { useEffect, useRef, useState } from "react";
 
-interface AttendeeDetail {
-  timestamp: string;
-  message: string;
-  externalUserID: string;
-}
-
 const RaisedHandQueue = () => {
   const { appState } = useAppContext();
-  const [attendeeState, setAttendeeState] = useState<AttendeeDetail[]>([]);
-  const timers = useRef<Map<string, NodeJS.Timeout>>(new Map()); // Map to store timers for each attendee
+  const { raisedHand } = appState.sessionState;
+  const previousRaisedHandLength = useRef<number>(0);
+  const [displayQueue, setDisplayQueue] = useState(false);
 
   useEffect(() => {
-    const addOrUpdateAttendee = (newAttendee: AttendeeDetail) => {
-      setAttendeeState((prevAttendees) => {
-        // Check if the attendee with the same externalUserId already exists
-        const attendeeExists = prevAttendees.some(
-          (att) => att.externalUserID === newAttendee.externalUserID
-        );
-
-        if (newAttendee.timestamp === "") {
-          // Remove attendee immediately if the timestamp is empty
-          clearTimeout(timers.current.get(newAttendee.externalUserID)); // Clear any existing timer
-          timers.current.delete(newAttendee.externalUserID); // Remove the timer from the map
-          return prevAttendees.filter(
-            (att) => att.externalUserID !== newAttendee.externalUserID
-          );
-        }
-
-        if (!attendeeExists) {
-          // Add the new attendee if it doesn't exist
-          return [...prevAttendees, newAttendee];
-        } else {
-          // If attendee exists, update the attendee details
-          return prevAttendees.map((att) =>
-            att.externalUserID === newAttendee.externalUserID
-              ? newAttendee
-              : att
-          );
-        }
-      });
-
-      // If the timestamp is not empty, reset or start the timer for this attendee
-      if (newAttendee.timestamp !== "") {
-        // Clear any previous timer for this attendee
-        if (timers.current.has(newAttendee.externalUserID)) {
-          clearTimeout(timers.current.get(newAttendee.externalUserID)!);
-        }
-
-        // Set a new timer for 10 seconds
-        const timer = setTimeout(() => {
-          setAttendeeState((prevAttendees) =>
-            prevAttendees.filter(
-              (att) => att.externalUserID !== newAttendee.externalUserID
-            )
-          );
-          timers.current.delete(newAttendee.externalUserID); // Remove the timer after completion
-        }, 10000); // 10 seconds
-
-        // Store the new timer
-        timers.current.set(newAttendee.externalUserID, timer);
-      }
+    const currentRaisedHandLength = raisedHand.length;
+    if (currentRaisedHandLength > previousRaisedHandLength.current) {
+      setDisplayQueue(true);
+    }
+    const timerId = setTimeout(() => {
+      setDisplayQueue(false);
+    }, 10000);
+    // Update the ref to the current length
+    previousRaisedHandLength.current = currentRaisedHandLength;
+    return () => {
+      clearTimeout(timerId);
     };
+  }, [raisedHand]);
 
-    // Call the function when attendeeDetailItems changes
-    addOrUpdateAttendee(appState.sessionState.raisedHand);
-  }, [appState.sessionState.raisedHand]);
-
-  if (attendeeState.length !== 0 && attendeeState.length < 2) {
+  if (raisedHand.length !== 0 && raisedHand.length < 2 && displayQueue) {
     return (
       <div className=" absolute bottom-0 z-40 text-cs-purple-650 bg-[#e1c6ff] p-2 max-w-80 rounded-lg">
-        {attendeeState.map((item) => (
+        {appState.sessionState.raisedHand.map((item) => (
           <p className=" inline-block text-sm" key={item.externalUserID}>
-            {Array.isArray(appState.sessionState.meetingAttendees)
-              ? appState.sessionState.meetingAttendees.find(
-                  (att) => att.user_id === item.externalUserID
-                )?.full_name
-              : ""}{" "}
+            <span className=" capitalize">
+              {Array.isArray(appState.sessionState.meetingAttendees)
+                ? appState.sessionState.meetingAttendees.find(
+                    (att) => att.user_id === item.externalUserID
+                  )?.full_name
+                : ""}
+            </span>{" "}
             raised hand
           </p>
         ))}
       </div>
     );
-  } else if (attendeeState.length > 1) {
+  } else if (raisedHand.length > 1) {
     return (
       <div className=" absolute bottom-0 z-40 text-cs-purple-650 bg-[#e1c6ff] p-2 max-w-80 rounded-lg test2 text-sm">
-        {
-          appState.sessionState.meetingAttendees.find(
-            (att) => att.user_id === attendeeState[0]?.externalUserID
-          )?.full_name
-        }{" "}
-        and {attendeeState.length - 1} others raised hands
+        <span>
+          {
+            appState.sessionState.meetingAttendees.find(
+              (att) =>
+                att.user_id ===
+                appState.sessionState.raisedHand[0]?.externalUserID
+            )?.full_name
+          }
+        </span>{" "}
+        and {raisedHand.length - 1} other{`${raisedHand.length > 2 ? "s" : ""}`}{" "}
+        raised hands
       </div>
     );
   }
