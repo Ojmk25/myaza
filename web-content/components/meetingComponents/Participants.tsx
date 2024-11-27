@@ -18,9 +18,7 @@ const Participants = ({
   meetingManager: MeetingManager;
 }) => {
   const { appState } = useAppContext();
-  // useEffect(() => {
-  //   console.log("A participant's audio has changed");
-  // }, [appState.sessionState.audioState]);
+
   return (
     <div
       className={` h-full bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-2 @[300px]/bigScreenSideCards:px-4 pt-5 overflow-y-scroll no-scrollbar`}

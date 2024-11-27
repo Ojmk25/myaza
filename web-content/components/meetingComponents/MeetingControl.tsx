@@ -1,5 +1,6 @@
 "use client";
 import {
+  ArrowLeft,
   Coffee,
   EmojiHappy,
   Messages1,
@@ -23,18 +24,15 @@ import {
   useLocalVideo,
   MeetingManager,
   useAudioVideo,
-  useMeetingStatus,
-  useAttendeeStatus,
   useToggleLocalMute,
 } from "amazon-chime-sdk-component-library-react";
-import raisedHand from "@/public/assets/images/raisedHand.svg";
+import raisedHandImage from "@/public/assets/images/raisedHand.svg";
 import raisedHandWhite from "@/public/assets/images/raisedHandWhite.svg";
 import captureGray from "@/public/assets/images/captureGray.svg";
 
 import { useRouter } from "next/router";
 import { useAppContext } from "@/context/StoreContext";
 import { useSessionStorage } from "@/hooks/useStorage";
-import { useMeetingManager } from "amazon-chime-sdk-component-library-react";
 import {
   endMeetingForAll,
   listAttendees,
@@ -48,6 +46,8 @@ import captureWhite from "@/public/assets/images/captureWhite.svg";
 import capturePurple from "@/public/assets/images/capturePurple.svg";
 import { getIdFromArn } from "@/utils/meetingFunctions";
 import greenCheck from "@/public/assets/svgs/green-check.svg";
+import RecordingConsentModal from "../modals/RecordingConsent";
+import RecordingConsentFailedModal from "../modals/RecordingConsentFailed";
 
 export default function MeetingControl({
   bgColor,
@@ -98,7 +98,9 @@ export default function MeetingControl({
   const previousRaisedHandLength = useRef<number>(0);
   const [miniroster, setMiniRoster] = useState<string[]>([]);
   const [prevLength, setPrevLength] = useState(0);
-
+  const [failedRecording, setFailedRecording] = useState(false);
+  const { reaction, raisedHand, recordMeeting, meetingAttendees, sessionName } =
+    appState.sessionState;
   useEffect(() => {
     import("@lottiefiles/lottie-player");
   });
@@ -144,7 +146,7 @@ export default function MeetingControl({
 
       setAppState((prevState) => {
         // Combine existing reactions with new ones
-        const existingReactions = prevState.sessionState.raisedHand;
+        const existingReactions = raisedHand;
 
         // Check if the incoming object already exists in existingReactions
         const isDuplicate = existingReactions.some(
@@ -189,7 +191,7 @@ export default function MeetingControl({
     return () => {
       audioVideo.realtimeUnsubscribeFromReceiveDataMessage("raise-hand");
     };
-  }, [appState.sessionState.raisedHand, audioVideo]);
+  }, [raisedHand, audioVideo]);
 
   const handleLocalSideView = (value: string) => {
     if (value === sideView) {
@@ -216,7 +218,7 @@ export default function MeetingControl({
   ) => {
     handleOtherViews("Raise-Hand");
     setAppState((prevState) => {
-      const existingReactions = prevState.sessionState.raisedHand;
+      const existingReactions = raisedHand;
 
       // Check if the incoming object already exists in existingReactions
       const isDuplicate = existingReactions.some(
@@ -381,6 +383,7 @@ export default function MeetingControl({
 
         if (raiseHandSoundRef.current)
           raiseHandSoundRef.current.src = "/assets/sounds/ding-126626.mp3";
+        if (raiseHandSoundRef.current) raiseHandSoundRef.current.volume = 0.3;
         raiseHandSoundRef.current?.play();
         if (!setupDone && !hasRunRef.current) {
           hasRunRef.current = true;
@@ -525,38 +528,63 @@ export default function MeetingControl({
     }
   };
 
-  // ("Missing required body field: media_pipeline_arn, which must be a str");
-
   const handleStartRecording = async () => {
+    setAppState((prevState) => ({
+      ...prevState,
+      sessionState: {
+        ...prevState.sessionState,
+        recordMeetingLoading: true,
+      },
+    }));
     try {
       const data = await startRecording({
         meeting_id: meetingDetails?.meeting_info?.ExternalMeetingId,
       });
-      setMediaPipelineId(data?.data?.body?.data?.MediaPipelineArn);
-      broadCastRecording(true);
-      handleOtherViews("Record");
+      if (data?.data.statusCode === 200) {
+        setMediaPipelineId(data?.data?.body?.data?.MediaPipelineArn);
+        handleOtherViews("Record");
+        setAppState((prevState) => ({
+          ...prevState,
+          sessionState: {
+            ...prevState.sessionState,
+            recordMeeting: true,
+          },
+        }));
+      } else {
+        setFailedRecording(true);
+      }
     } catch (error) {
       console.log(error);
+    } finally {
+      setAppState((prevState) => ({
+        ...prevState,
+        sessionState: {
+          ...prevState.sessionState,
+          recordMeetingLoading: false,
+        },
+      }));
     }
   };
+
   const handleStopRecording = async () => {
     try {
       const data = await stopRecording({
-        // meeting_id: meetingDetails?.meeting_info?.ExternalMeetingId,
-        // "Missing required body field: media_pipeline_arn, which must be a str"
-        //@ts-ignore
-        // user_id: "",
-        // media_pipeline_arn:
-        //   "arn:aws:chime:us-east-1:165553610930:media-pipeline/06601acf-ac26-4436-9ae1-31a21e241725",
         media_pipeline_arn: mediaPipeLineId,
         media_pipeline_id: getIdFromArn(mediaPipeLineId) as string,
-        // media_pipeline_id: "06601acf-ac26-4436-9ae1-31a21e241725",
-        // "MediaPipelineArn": "arn:aws:chime:us-east-1:165553610930:media-pipeline/06601acf-ac26-4436-9ae1-31a21e241725"
       });
       if (data?.data.statusCode === 200) {
-        broadCastRecording(false);
+        broadCastRecording(externalID as string, true);
         handleOtherViews("Record");
         setMediaPipelineId("");
+        setAppState((prevState) => ({
+          ...prevState,
+          sessionState: {
+            ...prevState.sessionState,
+            recordMeeting: false,
+          },
+        }));
+      } else {
+        setFailedRecording(true);
       }
     } catch (error) {
       console.log(error);
@@ -564,7 +592,7 @@ export default function MeetingControl({
   };
 
   useEffect(() => {
-    const currentRaisedHandLength = appState.sessionState.raisedHand.length;
+    const currentRaisedHandLength = raisedHand.length;
     // Check if an item was added to the array
     if (
       currentRaisedHandLength > previousRaisedHandLength.current &&
@@ -572,6 +600,7 @@ export default function MeetingControl({
     ) {
       raiseHandSoundRef.current.src =
         "/assets/sounds/message-incoming-2-199577.mp3";
+      raiseHandSoundRef.current.volume = 0.4;
       raiseHandSoundRef.current.play();
     }
 
@@ -582,7 +611,7 @@ export default function MeetingControl({
         raiseHandSoundRef.current.pause();
       }
     };
-  }, [appState.sessionState.raisedHand]);
+  }, [raisedHand]);
 
   const sendReaction = (
     sender: string,
@@ -618,23 +647,28 @@ export default function MeetingControl({
     meetingManager.audioVideo?.realtimeSendDataMessage("reaction", message);
   };
 
-  const broadCastRecording = (value: boolean) => {
+  const broadCastRecording = (externaluserId: string, value: boolean) => {
     // Update local state immediately
-    setAppState((prevState) => ({
-      ...prevState,
-      sessionState: {
-        ...prevState.sessionState,
-        recordMeeeting: value,
-      },
-    }));
+    // setAppState((prevState) => ({
+    //   ...prevState,
+    //   sessionState: {
+    //     ...prevState.sessionState,
+    //     recordMeeting: value,
+    //   },
+    // }));
+
+    const recordingData = { externaluserId: externaluserId, value: value };
 
     // Check if audioVideo is available
     if (!audioVideo) return;
 
     // Create and send the message
-    const message = JSON.stringify(value);
+    const recordingMessage = JSON.stringify(recordingData);
 
-    meetingManager.audioVideo?.realtimeSendDataMessage("recording", message);
+    meetingManager.audioVideo?.realtimeSendDataMessage(
+      "recording",
+      recordingMessage
+    );
   };
 
   useEffect(() => {
@@ -650,7 +684,7 @@ export default function MeetingControl({
         ...prevState,
         sessionState: {
           ...prevState.sessionState,
-          recordMeeeting: parsedMessage,
+          recordingJustStopped: parsedMessage,
         },
       }));
     };
@@ -677,12 +711,9 @@ export default function MeetingControl({
       // const attendeeDetailItems = appState.sessionState.meetingAttendees.find(
       //   (att) => att.user_id === appState.sessionState.reaction.senderExternalId
       // );
-      const attendeeDetailItems = Array.isArray(
-        appState.sessionState.meetingAttendees
-      )
-        ? appState.sessionState.meetingAttendees.find(
-            (att) =>
-              att.user_id === appState.sessionState.reaction.senderExternalId
+      const attendeeDetailItems = Array.isArray(meetingAttendees)
+        ? meetingAttendees.find(
+            (att) => att.user_id === reaction.senderExternalId
           )
         : null; // Return null or handle the case where it's not an array
       function getRandomNumber(): number {
@@ -693,24 +724,23 @@ export default function MeetingControl({
 
       root.render(
         <div className=" flex flex-col justify-center items-center">
-          {appState.sessionState.reaction.lottieCode &&
-            appState.sessionState.reaction.senderExternalId && (
+          {reaction.lottieCode && reaction.senderExternalId && (
+            <div>
               <div>
-                <div>
-                  <lottie-player
-                    id={`${appState.sessionState.reaction.lottieCode}`}
-                    autoplay
-                    loop={false}
-                    mode="normal"
-                    src={`https://fonts.gstatic.com/s/e/notoemoji/latest/${appState.sessionState.reaction.lottieCode}/lottie.json`}
-                    style={{ width: "30px", height: "30px", margin: "auto" }}
-                  />
-                </div>
-                <div className="text-cs-grey-50 rounded-lg text-xs font-medium px-2 py-1 bg-cs-purple-650 mt-2">
-                  {attendeeDetailItems?.full_name}
-                </div>
+                <lottie-player
+                  id={`${reaction.lottieCode}`}
+                  autoplay
+                  loop={false}
+                  mode="normal"
+                  src={`https://fonts.gstatic.com/s/e/notoemoji/latest/${reaction.lottieCode}/lottie.json`}
+                  style={{ width: "30px", height: "30px", margin: "auto" }}
+                />
               </div>
-            )}
+              <div className="text-cs-grey-50 rounded-lg text-xs font-medium px-2 py-1 bg-cs-purple-650 mt-2">
+                {attendeeDetailItems?.full_name}
+              </div>
+            </div>
+          )}
         </div>
       );
       container.appendChild(lottieEl);
@@ -743,7 +773,7 @@ export default function MeetingControl({
     };
     handleEmojiClick();
     // }, [appState.sessionState.reaction, audioVideo]);
-  }, [appState.sessionState.reaction]);
+  }, [reaction]);
 
   useEffect(() => {
     if (!audioVideo) return;
@@ -815,11 +845,11 @@ export default function MeetingControl({
     };
   }, []);
 
-  console.log(appState.sessionState.raisedHand);
-
   return (
     <>
+      {/* big screen */}
       <div className="hidden md:flex justify-between items-center px-2 py-4 bg-cs-grey-45 border-t border-solid border-t-cs-grey-55 metro-medium">
+        {/* meeting name and time */}
         <div className="flex gap-x-2 lg:gap-x-3 flex-2">
           <div
             className="hidden lg:block text-cs-grey-800 font-normal text-base lg:text-[20px]"
@@ -827,11 +857,12 @@ export default function MeetingControl({
           ></div>
           <div className="hidden lg:block w-[1px] bg-cs-grey-200"></div>
           <h3 className=" text-cs-grey-800 font-normal text-base lg:text-[20px]">
-            {appState.sessionState.sessionName}
+            {sessionName}
           </h3>
         </div>
 
         <div className="flex justify-center flex-3">
+          {/* audio toggle */}
           <div className=" flex gap-x-3 lg:gap-x-6">
             <div className="text-center cursor-pointer" onClick={toggleMute}>
               <div
@@ -866,6 +897,7 @@ export default function MeetingControl({
               </h6>
             </div>
 
+            {/* video toggle */}
             <div className="text-center cursor-pointer" onClick={toggleVideo}>
               <div
                 className={`p-3 ${
@@ -891,6 +923,7 @@ export default function MeetingControl({
               </h6>
             </div>
 
+            {/* share screen */}
             <div
               className="text-center cursor-pointer"
               onClick={() => toggleContentShare()}
@@ -911,44 +944,33 @@ export default function MeetingControl({
               </h6>
             </div>
 
+            {/* record meeting */}
             {meetingDetails?.meeting_info?.MeetingHostId === externalID &&
               externalID && (
                 <div
                   className="text-center cursor-pointer"
-                  onClick={() => {
-                    if (mediaPipeLineId === "") {
-                      handleStartRecording();
-                    } else {
-                      handleStopRecording();
-                    }
-                  }}
+                  onClick={() => handleOtherViews("Record")}
                 >
                   <div
                     className={`p-3 rounded-md max-w-12 mx-auto ${
-                      otherViews.includes("Record")
-                        ? "bg-[#5E29B7]"
-                        : "bg-[#E1C6FF4D]"
+                      recordMeeting ? "bg-[#5E29B7]" : "bg-[#E1C6FF4D]"
                     }`}
                   >
                     <RecordCircle
                       size="24"
-                      color={
-                        otherViews.includes("Record") ? "#FAFAFA" : "#5E29B7"
-                      }
+                      color={recordMeeting ? "#FAFAFA" : "#5E29B7"}
                       // color="#5E29B7"
                       // color="#e1c6ff"
                       className="mx-auto max-w-5"
                     />
                   </div>
                   <h6 className=" text-cs-grey-100 font-medium text-xs">
-                    {otherViews.includes("Record")
-                      ? "Stop recording"
-                      : "Record"}
+                    {recordMeeting ? "Stop recording" : "Record"}
                   </h6>
-                  {/* <h6 className=" text-[#e1c6ff] font-medium text-xs">Record</h6> */}
                 </div>
               )}
 
+            {/* reaction button */}
             <div className=" relative">
               <div
                 className="text-center cursor-pointer "
@@ -1006,6 +1028,7 @@ export default function MeetingControl({
               </div>
             </div>
 
+            {/* raise hand button */}
             <div
               className="text-center cursor-pointer"
               onClick={() =>
@@ -1027,7 +1050,7 @@ export default function MeetingControl({
                   src={
                     otherViews.includes("Raise-Hand")
                       ? raisedHandWhite
-                      : raisedHand
+                      : raisedHandImage
                   }
                   alt="hand"
                   width={18}
@@ -1040,6 +1063,7 @@ export default function MeetingControl({
               </h6>
             </div>
 
+            {/* end meeting or leave meeting */}
             {meetingDetails?.meeting_info?.MeetingHostId === externalID &&
             externalID ? (
               <div className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer group relative min-w-[86px] transition-all hover:bg-[#E1C6FF4D] text-nowrap">
@@ -1050,8 +1074,14 @@ export default function MeetingControl({
 
                 <div className="bg-white absolute hidden group-hover:block shadow-1xl bottom-11 -right-2 py-3 px-4 rounded-lg z-10">
                   <div
-                    className=" text-cs-grey-50 bg-cs-red text-sm font-semibold py-3 px-4 rounded-lg mb-2"
-                    onClick={handleEndMeeting}
+                    className={` ${
+                      recordMeeting
+                        ? "text-cs-grey-50 bg-[#D11C1C66]"
+                        : "text-cs-grey-50 bg-cs-red"
+                    }  text-sm font-semibold py-3 px-4 rounded-lg mb-2`}
+                    onClick={() => {
+                      !recordMeeting && handleEndMeeting();
+                    }}
                   >
                     End meeting for all
                   </div>
@@ -1080,6 +1110,7 @@ export default function MeetingControl({
           </div>
         </div>
 
+        {/* caption button */}
         <div className=" flex gap-x-4 lg:gap-x-6 flex-2 justify-end cursor-pointer">
           <div
             className="text-center relative"
@@ -1154,9 +1185,9 @@ export default function MeetingControl({
               />
             </div>
             <h6 className=" text-cs-grey-100 font-medium text-xs">Caption</h6>
-            {/*<h6 className=" text-[#e1c6ff] font-medium text-xs">Caption</h6> */}
           </div>
 
+          {/* participants button */}
           <div
             className="text-center cursor-pointer"
             onClick={() => handleLocalSideView("Participants")}
@@ -1185,6 +1216,7 @@ export default function MeetingControl({
             </h6>
           </div>
 
+          {/* chat button */}
           <div
             className="text-center cursor-pointer"
             onClick={() => handleLocalSideView("Chat")}
@@ -1213,10 +1245,8 @@ export default function MeetingControl({
 
           <div className="text-center">
             <div className="p-3 bg-[#E1C6FF4D] rounded-md max-w-12 mx-auto">
-              {/* <Coffee size="24" color="#5E29B7" className="mx-auto max-w-5" /> */}
               <Coffee size="24" color="#e1c6ff" className="mx-auto max-w-5" />
             </div>
-            {/* <h6 className=" text-cs-grey-100 font-medium text-xs">Activity</h6> */}
             <h6 className=" text-[#e1c6ff] font-medium text-xs">Activity</h6>
           </div>
         </div>
@@ -1226,6 +1256,7 @@ export default function MeetingControl({
       <div className=" md:hidden py-4 relative bg-cs-grey-45 border-t border-solid border-t-cs-grey-55 metro-medium">
         <div className="px-4 sm:px-24">
           <div className=" flex justify-between ">
+            {/* audioButton */}
             <div className="text-center cursor-pointer" onClick={toggleMute}>
               <div
                 className={`p-3 ${
@@ -1252,6 +1283,7 @@ export default function MeetingControl({
               </div>
             </div>
 
+            {/* video button */}
             <div className="text-center cursor-pointer" onClick={toggleVideo}>
               <div
                 className={`p-3 ${
@@ -1265,7 +1297,7 @@ export default function MeetingControl({
                 )}
               </div>
             </div>
-
+            {/* reaction button */}
             <div className="text-center cursor-pointer relative">
               <div
                 className={`p-3 ${
@@ -1282,6 +1314,7 @@ export default function MeetingControl({
                 )}
               </div>
             </div>
+            {/* reaction emojis */}
             <div
               className={`absolute left-0 right-0 top-[-56px] flex justify-center overflow-x-hidden px-6 ${
                 otherViews.includes("React") ? " " : "-z-10"
@@ -1317,6 +1350,7 @@ export default function MeetingControl({
               </div>
             </div>
 
+            {/* raise hand button      */}
             <div
               className="text-center cursor-pointer"
               onClick={() =>
@@ -1338,7 +1372,7 @@ export default function MeetingControl({
                   src={
                     otherViews.includes("Raise-Hand")
                       ? raisedHandWhite
-                      : raisedHand
+                      : raisedHandImage
                   }
                   alt="hand"
                   width={18}
@@ -1348,6 +1382,7 @@ export default function MeetingControl({
               </div>
             </div>
 
+            {/* more action icon button */}
             <div
               className="text-center cursor-pointer"
               onClick={() => handleOtherViews("mobile-drawer")}
@@ -1362,6 +1397,7 @@ export default function MeetingControl({
               </div>
             </div>
 
+            {/* mobile drawer container */}
             {otherViews.includes("mobile-drawer") && (
               <div className="fixed inset-0 z-10 overflow-y-auto modal no-scrollbar">
                 <div className="flex items-end min-h-screen">
@@ -1393,15 +1429,6 @@ export default function MeetingControl({
                               color="#e1c6ff"
                               className="max-w-5"
                             />
-                            {/* <h6
-                              className={` font-medium text-xs ${
-                                isLocalUserSharing
-                                  ? "text-cs-grey-50"
-                                  : "text-cs-grey-dark"
-                              }`}
-                            >
-                              Share screen
-                            </h6> */}
                             <h6
                               className={` font-medium text-xs text-[#e1c6ff]`}
                             >
@@ -1415,45 +1442,28 @@ export default function MeetingControl({
                           externalID && (
                             <div
                               className="text-center max-w-[215px] cursor-pointer"
-                              onClick={() => {
-                                if (mediaPipeLineId === "") {
-                                  handleStartRecording();
-                                } else {
-                                  handleStopRecording();
-                                }
-                              }}
+                              onClick={() => handleOtherViews("Record")}
                             >
                               <div
                                 className={`p-3 ${
-                                  otherViews.includes("Record")
-                                    ? "bg-cs-purple-650"
-                                    : ""
+                                  recordMeeting ? "bg-cs-purple-650" : ""
                                 }  rounded flex items-center gap-x-3 border border-solid border-cs-grey-55 justify-center`}
                               >
                                 <RecordCircle
                                   size="24"
-                                  color={
-                                    otherViews.includes("Record")
-                                      ? "#FAFAFA"
-                                      : "#333333"
-                                  }
+                                  color={recordMeeting ? "#FAFAFA" : "#333333"}
                                   // color="#e1c6ff"
                                   className="max-w-5"
                                 />
                                 <h6
                                   className={` ${
-                                    otherViews.includes("Record")
+                                    recordMeeting
                                       ? "text-cs-grey-50"
                                       : "text-cs-grey-dark"
                                   } font-medium text-xs`}
                                 >
-                                  {otherViews.includes("Record")
-                                    ? "Stop recording"
-                                    : "Record"}
+                                  {recordMeeting ? "Stop recording" : "Record"}
                                 </h6>
-                                {/* <h6 className=" text-[#e1c6ff] font-medium text-xs">
-                              Record
-                            </h6> */}
                               </div>
                             </div>
                           )}
@@ -1519,8 +1529,15 @@ export default function MeetingControl({
                         </div>
 
                         <div
-                          className="text-center max-w-[215px] cursor-pointer"
-                          onClick={() => handleLocalSideView("Caption")}
+                          className="text-center max-w-[215px] cursor-pointer relative"
+                          onClick={() => {
+                            handleLocalSideView("Caption");
+                            setOtherViews((prevOtherViews) =>
+                              prevOtherViews.filter(
+                                (item) => item !== "mobile-drawer"
+                              )
+                            );
+                          }}
                         >
                           <div
                             className={`p-3 ${
@@ -1555,7 +1572,76 @@ export default function MeetingControl({
                 </div>
               </div>
             )}
+            {sideView === "Caption" && (
+              <div
+                className=" fixed inset-0 z-10 overflow-y-auto modal no-scrollbar "
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className=" flex items-end min-h-screen">
+                  <div
+                    className="fixed inset-0 transition-opacity bg-cs-modal-100 cursor-pointer"
+                    onClick={() => handleLocalSideView("Caption")}
+                  ></div>
+                  <div className=" transition-all transform w-full">
+                    <div className=" bg-white rounded-t-2xl px-6 py-6">
+                      <div>
+                        <div className=" flex items-center gap-x-4">
+                          <ArrowLeft
+                            size="20"
+                            color="#080808"
+                            onClick={() => handleLocalSideView("Caption")}
+                          />
+                          <div className=" relative w-full">
+                            <SearchNormal1
+                              size="16"
+                              color="#677489"
+                              className=" absolute top-[32%] left-[5%]"
+                            />
+                            <input
+                              type="text"
+                              name=""
+                              id=""
+                              placeholder="Search for language"
+                              className=" placeholder:text-sm placeholder:text-cs-slate-400 metro-light border border-cs-slate-300 outline-none rounded-md block py-[12px] pl-[43px] pr-[6px] text-left w-full"
+                            />
+                          </div>
+                        </div>
+                        <div
+                          className=" text-left text-cs-grey-dark metro-light my-4 flex gap-x-2"
+                          onClick={stopTranscriptionProp}
+                        >
+                          <button>Off</button>
+                          {!transcriptionStatus && (
+                            <Image
+                              src={greenCheck}
+                              alt="hand"
+                              width={12}
+                              height={8}
+                            />
+                          )}
+                        </div>
+                        <div
+                          className=" text-left text-cs-grey-dark metro-light my-4 flex gap-x-2"
+                          onClick={startTranscriptionProp}
+                        >
+                          <button>English (Auto-generated)</button>
+                          {transcriptionStatus && (
+                            <Image
+                              src={greenCheck}
+                              alt="hand"
+                              width={12}
+                              height={8}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
+            {/* leave and end meeting buttons */}
             {meetingDetails?.meeting_info?.MeetingHostId === externalID &&
             externalID ? (
               <>
@@ -1602,6 +1688,25 @@ export default function MeetingControl({
         <source src="" type="audio/mpeg" />
         Your browser does not support the audio element.
       </audio>
+
+      {otherViews.includes("Record") && (
+        <RecordingConsentModal
+          onClose={() => handleOtherViews("Record")}
+          onRecord={() => {
+            if (mediaPipeLineId === "") {
+              handleStartRecording();
+            } else {
+              handleStopRecording();
+            }
+          }}
+          activeRecording={mediaPipeLineId !== ""}
+        />
+      )}
+      {failedRecording && (
+        <RecordingConsentFailedModal
+          onClose={() => setFailedRecording(false)}
+        />
+      )}
     </>
   );
 }

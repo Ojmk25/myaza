@@ -1,34 +1,20 @@
 "use client";
-import Image from "next/image";
-import closeIconPurple from "@/public/assets/images/closeIconPurple.svg";
 import { SetStateAction, useEffect, useRef, useState } from "react";
 import {
   useRemoteVideoTileState,
   useRosterState,
-  useContentShareControls,
   ContentShare,
   useContentShareState,
   useAudioVideo,
   MeetingManager,
   useMeetingManager,
-  useAttendeeStatus,
+  RosterAttendeeType,
+  useActiveSpeakersState,
 } from "amazon-chime-sdk-component-library-react";
 import { RemoteAttendeeCard } from "./RemoteAttendeeCard";
 import { LocalAttendeeCard } from "./LocalAttendeeCard";
-import {
-  Message,
-  DataMessage,
-  DefaultRealtimeController,
-  TranscriptEvent,
-  TranscriptionStatus,
-  Transcript,
-  ConsoleLogger,
-  TranscriptResult,
-} from "amazon-chime-sdk-js";
 import Chat from "./IncallMessage";
 import { getRemoteInitials } from "@/utils/meetingFunctions";
-import ShowVisualizer from "./ShowVisualizer";
-import capturePurple from "@/public/assets/images/capturePurple.svg";
 import Participants from "./Participants";
 import Conference from "./Conference";
 import {
@@ -37,9 +23,9 @@ import {
 } from "@/services/meetingServices";
 import { useAppContext } from "@/context/StoreContext";
 import RaisedHandQueue from "./RaisedHandQueue";
-import { useRouter } from "next/router";
-import { RecordCircle } from "iconsax-react";
+import { RecordCircle, Status } from "iconsax-react";
 import TranscriptComponent from "./TranscriptDisplay";
+import RecordingJustEnded from "../RecordingJustEnded";
 
 type DynamicWidth = {
   width: number | string;
@@ -100,6 +86,10 @@ export default function MeetingSection({
   const { appState, setAppState } = useAppContext();
   const [rosterArray, setRosterArray] = useState<any[]>([]);
   const captionNotifierRef = useRef<HTMLDivElement>(null);
+  const activeSpeakers = useActiveSpeakersState();
+  const [removeRecordingBot, setRemoveRecordingBot] = useState<any>(null);
+  const { recordMeeting, recordMeetingLoading, recordingJustStopped } =
+    appState.sessionState;
   console.log(appState.sessionState.meetingAttendees, attendees);
 
   useEffect(() => {
@@ -138,81 +128,6 @@ export default function MeetingSection({
   // useEffect(() => {
   //   captionScroll.current!.scrollTop = captionScroll.current!.scrollHeight;
   // }, []);
-
-  const transcriptionPayload = {
-    meeting_id: meetingManager.meetingId as string,
-    // meeting_id: meetingDetails?.meeting_info?.ExternalMeetingId,
-    // meeting_id: `meeting_${router.query.link as string}`,
-    // meeting_id: "e3a29246-53b9-4e96-9352-98b195312713",
-    attendee_id: attendeIDString as string,
-  };
-
-  const handleStartTranscription = async () => {
-    // setLoading(true)
-    // const clearAll = () => {
-    //   setLoading(false)
-    //   setTimeout(() => {
-    //     setSuccessRes("")
-    //     setOpenModal(false)
-    //   }, 2000)
-    // }
-    try {
-      const transcriptionPayload = {
-        meeting_id: meetingManager.meetingId as string,
-        // meeting_id: `meeting_${router.query.link as string}`,
-        // meeting_id: router.query.link as string,
-        // meeting_id: "e3a29246-53b9-4e96-9352-98b195312713",
-        attendee_id: attendeIDString as string,
-      };
-      const data = await startTranscription(transcriptionPayload);
-      console.log(transcriptionPayload);
-
-      // setCaptionOn(true);
-      // setLoading(true)
-      // setSuccessRes(data.data.body)
-      // setOpenModal(true)
-      // setTimeout(() => {
-      //   updateSignUpUser(registerPayload.email)
-      //   data.data.body.status === 'Success' && navigate.push("/auth/verify");
-      // }, 3000)
-      console.log(data);
-    } catch (error) {
-      // setLoading(true)
-      console.log(error);
-    } finally {
-      // clearAll()
-    }
-  };
-
-  const handleStopTranscription = async () => {
-    // setLoading(true)
-    // const clearAll = () => {
-    //   setLoading(false)
-    //   setTimeout(() => {
-    //     setSuccessRes("")
-    //     setOpenModal(false)
-    //   }, 2000)
-    // }
-    try {
-      const data = await stopTranscription(transcriptionPayload);
-      console.log(transcriptionPayload);
-
-      // setCaptionOn(true);
-      // setLoading(true)
-      // setSuccessRes(data.data.body)
-      // setOpenModal(true)
-      // setTimeout(() => {
-      //   updateSignUpUser(registerPayload.email)
-      //   data.data.body.status === 'Success' && navigate.push("/auth/verify");
-      // }, 3000)
-      console.log(data);
-    } catch (error) {
-      // setLoading(true)
-      console.log(error);
-    } finally {
-      // clearAll()
-    }
-  };
 
   const chunkArray = (array: any, size: number) => {
     const chunks = [];
@@ -299,94 +214,6 @@ export default function MeetingSection({
       }
     });
   };
-
-  // const getAttendeesFromSessionStorage = (externalUserId: string) => {
-  //   const storedData = sessionStorage.getItem("meetingAttendees");
-  //   console.log(storedData);
-
-  //   if (!storedData)
-  //     return {
-  //       full_name: "Unknown User",
-  //       picture: null,
-  //       user_id: "no data yet",
-  //     };
-  //   if (storedData) {
-  //     const parsedArray = JSON.parse(storedData);
-
-  //     const attendeeDetailItems = parsedArray.find(
-  //       (att: any) => att.user_id === externalUserId
-  //     );
-  //     console.log(attendeeDetailItems);
-
-  //     if (attendeeDetailItems) {
-  //       return attendeeDetailItems;
-  //     } else {
-  //       return {
-  //         full_name: "Unknown User",
-  //         picture: null,
-  //         user_id: "no external Id matches",
-  //       };
-  //     }
-  //   }
-  // };
-  // const attendeeItems = attendees.map((attendee, i) => {
-  //   const tilerId = attendeeIdToTileId[attendee.chimeAttendeeId];
-  //   const { externalUserId } = attendee;
-  //   const userObject = getAttendeesFromSessionStorage(externalUserId as string);
-  //   console.log(userObject);
-
-  //   if (i === 0) {
-  //     return (
-  //       <LocalAttendeeCard
-  //         key={i}
-  //         attendeeId={attendee.chimeAttendeeId}
-  //         ref={(el: any) => (tileRefs.current[i] = el)}
-  //         name={externalUserId}
-  //         videoTildId={1}
-  //         nameID={attendee.externalUserId as string}
-  //         // audioState={
-  //         //   <ShowVisualizer
-  //         //     attendee={attendee}
-  //         //     meetingManager={meetingManager}
-  //         //     // attendeeId={attendee.chimeAttendeeId}
-  //         //     // audioVideo={audioVideo}
-  //         //   />
-  //         //   // <AudioVisualizerContainer
-  //         //   //   attendee={attendee}
-  //         //   //   meetingManager={meetingM}
-  //         //   // />
-  //         // }
-  //         // attendeeDetails={attendeeDetailItems}
-  //         userOject={userObject}
-  //         meetingManager={meetingManager}
-  //         sideView={sideView}
-  //       />
-  //     );
-  //   } else {
-  //     return (
-  //       <RemoteAttendeeCard
-  //         key={attendee.chimeAttendeeId}
-  //         attendeeId={attendee.chimeAttendeeId}
-  //         ref={(el: any) => (tileRefs.current[i] = el)}
-  //         name={externalUserId}
-  //         videoTildId={tilerId}
-  //         nameID={attendee.externalUserId as string}
-  //         // audioState={
-  //         //   <ShowVisualizer
-  //         //     attendee={attendee}
-  //         //     meetingManager={meetingManager}
-  //         //   />
-  //         //   // <AudioVisualizerContainer
-  //         //   //   attendee={attendee}
-  //         //   //   meetingManager={meetingM}
-  //         //   // />
-  //         // }
-  //         sideView={sideView}
-  //         // attendeeDetails={attendeeDetailItems}
-  //       />
-  //     );
-  //   }
-  // });
 
   const attendeeItems = rosterArray.map((item, i) => {
     const tilerId = attendeeIdToTileId[item.attendeeId];
@@ -492,40 +319,6 @@ export default function MeetingSection({
     setBigContainerWidth(bigContainerTileRef?.current?.clientWidth as number);
     setBigContainerHeight(bigContainerTileRef?.current?.clientHeight as number);
 
-    // const transcriptEventHandler = (transcriptEvent: TranscriptEvent): void => {
-    //   // `transcriptEvent` could be either a `Transcript` or `TranscriptionStatus`
-    //   // if it is `Transcript`, then it should contain transcription results
-    //   // else you need to handle the logic of `TranscriptionStatus` changes (start/ stop/ ...)
-    //   console.log(transcriptEvent);
-
-    //   if (transcriptEvent instanceof TranscriptionStatus) {
-    //     // Print Transcript Status, could be `STARTED`, `INTERRUPTED`, `RESUMED`, `STOPPED` or `FAILED`
-    //     console.log(transcriptEvent.type);
-    //   } else if (transcriptEvent instanceof Transcript) {
-    //     // Print Transcript result collection
-    //     console.log(transcriptEvent.results);
-    //   }
-    // };
-    // const audioVideo = meetingManager.audioVideo;
-    // if (audioVideo?.transcriptionController) {
-    //   audioVideo.transcriptionController.subscribeToTranscriptEvent(
-    //     // (transcriptEvent: Transcript | TranscriptionStatus) => {
-    //     //   console.log(transcriptEvent);
-    //     //   if (transcriptEvent.type === 'Transcript') {
-    //     //     transcriptEvent.results.forEach(result => {
-    //     //         const transcriptText = result.alternatives[0].transcript;
-    //     //         console.log('Transcription: ', transcriptText);
-    //     //     });
-    //     // }
-    //     // }
-    //     transcriptEventHandler
-    //   );
-    // }
-
-    // audioVideo?.transcriptionController?.subscribeToTranscriptEvent(
-    //   transcriptEventHandler
-    // );
-
     const resizeObserver = new ResizeObserver((entries) => {
       for (let entry of entries) {
         if (entry.target === bigContainerTileRef.current) {
@@ -605,6 +398,43 @@ export default function MeetingSection({
     }
   };
 
+  const calculateChildDimensions = (
+    containerWidth: number,
+    containerHeight: number,
+    numberOfChildren: number
+  ) => {
+    if (numberOfChildren === 0)
+      return { minWidth: 0, maxWidth: 0, minHeight: 0, maxHeight: 0 };
+
+    // Estimate the number of columns and rows
+    const aspectRatio = containerWidth / containerHeight;
+    const columns = Math.ceil(Math.sqrt(numberOfChildren * aspectRatio));
+    const rows = Math.ceil(numberOfChildren / columns);
+
+    // Calculate child dimensions
+    const minWidth = containerWidth / columns;
+    const minHeight = containerHeight / rows;
+    const maxWidth = minWidth * 1.2; // Optionally add some flexibility
+    const maxHeight = minHeight * 1.2;
+
+    const minWidthClass = `min-w-[${minWidth}px]`;
+
+    console.log(
+      "minwidth:",
+      minWidth,
+      "minHeight:",
+      minHeight,
+      "maxWidth:",
+      maxWidth,
+      "maxHeight:",
+      maxHeight,
+      "from the useEffect"
+    );
+    return { minWidth, maxWidth, minHeight, maxHeight };
+    // return `min-w-[${minWidth}px] min-h-[${minHeight}px] max-w-[${maxWidth}px] max-h-[${maxHeight}px]`;
+    // return `${minWidthClass}`;
+  };
+
   const returName = (string: any) => {
     // const details = appState.sessionState.meetingAttendees.find(
     //   (att) => att.user_id === string
@@ -673,46 +503,46 @@ export default function MeetingSection({
   //   console.log(sortedAttendeeItems);
   // }, [appState.sessionState.audioState, audioVideo, meetingM]);
   // console.log(sortedAttendeeItems);
-  useEffect(() => {
-    // After rendering, we can access the refs and get class names
-    const attendeesWithClass = tileRefs.current
-      .map((ref, index) => {
-        if (ref) {
-          const className = ref.className;
+  // useEffect(() => {
+  //   // After rendering, we can access the refs and get class names
+  //   const attendeesWithClass = tileRefs.current
+  //     .map((ref, index) => {
+  //       if (ref) {
+  //         const className = ref.className;
 
-          return {
-            // attendee: attendeeItems[index], // Store the attendee item
-            attendee: rosterArray[index], // Store the attendee item
-            className, // Capture the class name
-            index, // Store the index if needed for debugging or other purposes
-          };
-        }
-        return null;
-      })
-      .filter(Boolean); // Remove any null or undefined items
+  //         return {
+  //           // attendee: attendeeItems[index], // Store the attendee item
+  //           attendee: rosterArray[index], // Store the attendee item
+  //           className, // Capture the class name
+  //           index, // Store the index if needed for debugging or other purposes
+  //         };
+  //       }
+  //       return null;
+  //     })
+  //     .filter(Boolean); // Remove any null or undefined items
 
-    // Exclude the first attendee (local attendee) from the filtering process
-    const nonLocalAttendees = attendeesWithClass.slice(1);
+  //   // Exclude the first attendee (local attendee) from the filtering process
+  //   const nonLocalAttendees = attendeesWithClass.slice(1);
 
-    // Separate the attendees based on their classNames
-    const attendeesWithDeviceEnabled = nonLocalAttendees.filter((item) =>
-      item?.className.includes("device_Enabled")
-    );
-    const attendeesWithoutDeviceEnabled = nonLocalAttendees.filter(
-      (item) => !item?.className.includes("device_Enabled")
-    );
+  //   // Separate the attendees based on their classNames
+  //   const attendeesWithDeviceEnabled = nonLocalAttendees.filter((item) =>
+  //     item?.className.includes("device_Enabled")
+  //   );
+  //   const attendeesWithoutDeviceEnabled = nonLocalAttendees.filter(
+  //     (item) => !item?.className.includes("device_Enabled")
+  //   );
 
-    // Rearrange the array: Keep the first item constant, then move 'device_Enabled' attendees to the front
-    const reshuffledAttendeeItems = [
-      rosterArray[0], // First item remains the same (local attendee)
-      ...attendeesWithDeviceEnabled.map((item) => item?.attendee),
-      ...attendeesWithoutDeviceEnabled.map((item) => item?.attendee),
-    ];
-    // Update the sorted state
-    setSortedAttendeeItems(
-      reshuffledAttendeeItems as SetStateAction<JSX.Element[]>
-    );
-  }, [appState.sessionState.audioState, audioVideo, meetingM, sideView]);
+  //   // Rearrange the array: Keep the first item constant, then move 'device_Enabled' attendees to the front
+  //   const reshuffledAttendeeItems = [
+  //     rosterArray[0], // First item remains the same (local attendee)
+  //     ...attendeesWithDeviceEnabled.map((item) => item?.attendee),
+  //     ...attendeesWithoutDeviceEnabled.map((item) => item?.attendee),
+  //   ];
+  //   // Update the sorted state
+  //   // setSortedAttendeeItems(
+  //   //   reshuffledAttendeeItems as SetStateAction<JSX.Element[]>
+  //   // );
+  // }, [appState.sessionState.audioState, audioVideo, meetingM, sideView]);
 
   useEffect(() => {
     setAppState((prevState) => {
@@ -729,39 +559,129 @@ export default function MeetingSection({
         sessionState: {
           ...prevState.sessionState,
           audioState: updatedAudioState,
+          recordMeeeting: removeRecordingBot !== null,
         },
       };
     });
   }, [attendees.length]);
 
   useEffect(() => {
+    const removeRecordingBotId = attendees.find((attendee) =>
+      attendee.externalUserId?.startsWith("aws:MediaPipeline")
+    )?.chimeAttendeeId;
+
     const sortedAttendees = appState.sessionState.audioState.sort((a, b) => {
-      // Always prioritize attendeeId "1121"
+      // Always prioritize attendeeId local user
       if (a.attendeeId === attendeIDString) return -1;
       if (b.attendeeId === attendeIDString) return 1;
 
       // Sort based on video or audio being true for other attendees
-      const aHasMedia = a.video || !a.mute;
-      const bHasMedia = b.video || !b.mute;
+      // const aHasMedia = a.video || !a.mute;
+      // const bHasMedia = b.video || !b.mute;
+
+      const aHasMedia = a.video || activeSpeakers.includes(a.attendeeId);
+      const bHasMedia = b.video || activeSpeakers.includes(b.attendeeId);
+      console.log(aHasMedia, bHasMedia);
 
       return aHasMedia === bHasMedia ? 0 : aHasMedia ? -1 : 1;
     });
-    setRosterArray(sortedAttendees);
-  }, [appState.sessionState.audioState]);
-  console.log(attendees);
+    const updatedRosterArray = sortedAttendees.filter(
+      (attendee) => attendee.attendeeId !== removeRecordingBotId
+    );
+    if (
+      removeRecordingBotId &&
+      attendees.some((a) => a.chimeAttendeeId === removeRecordingBotId)
+    ) {
+      // If recording bot is found, set it in a separate state
+      setRemoveRecordingBot(
+        attendees.find((a) => a.chimeAttendeeId === removeRecordingBotId)
+      );
+    } else {
+      // If not found, reset the state for the recording bot
+      setRemoveRecordingBot(null);
+    }
+
+    // Step 4: Update the roster array
+    setRosterArray(updatedRosterArray);
+
+    // setRosterArray(sortedAttendees);
+  }, [appState.sessionState.audioState, JSON.stringify(activeSpeakers)]);
+
+  // useEffect(() => {
+  //   const { audioState } = appState.sessionState;
+  //   // Filter out attendees whose name starts with "aws:MediaPipeline which is the recording bot"
+  //   // const filteredAttendees = attendees.filter((attendee) => {
+  //   //   if (attendee.externalUserId?.startsWith("aws:MediaPipeline")) {
+  //   //     setRecordingBot(attendee); // Save the media pipeline attendee in recordingBot state
+  //   //     return false;
+  //   //   }
+  //   //   return true;
+  //   // });
+
+  //   // Sort the remaining attendees
+  //   const sorted = attendees.sort((a, b) => {
+  //     // Check if the attendee is the local user
+  //     const isLocalUserA = a.chimeAttendeeId === attendeIDString;
+  //     const isLocalUserB = b.chimeAttendeeId === attendeIDString;
+
+  //     if (isLocalUserA && !isLocalUserB) return -1;
+  //     if (!isLocalUserA && isLocalUserB) return 1;
+
+  //     // Check if the video is on for the attendees based on the status as saved on global state
+  //     const videoA = audioState.find(
+  //       (v) => v.attendeeId === a.chimeAttendeeId
+  //     )?.video;
+  //     const videoB = audioState.find(
+  //       (v) => v.attendeeId === b.chimeAttendeeId
+  //     )?.video;
+
+  //     if (videoA && !videoB) return -1;
+  //     if (!videoA && videoB) return 1;
+
+  //     // Check if the attendee is a speaker
+  //     const isSpeakerA = activeSpeakers.includes(a.chimeAttendeeId);
+  //     const isSpeakerB = activeSpeakers.includes(b.chimeAttendeeId);
+
+  //     if (isSpeakerA && !isSpeakerB) return -1;
+  //     if (!isSpeakerA && isSpeakerB) return 1;
+
+  //     // If all else is equal, maintain the original order
+  //     return 0;
+  //   });
+
+  //   console.log(sorted);
+
+  //   setRosterArray(sorted);
+  // }, [appState.sessionState.audioState, attendees, activeSpeakers]);
+
+  console.log(attendees, activeSpeakers, rosterArray, removeRecordingBot);
 
   return (
     <>
-      {appState.sessionState.recordMeeeting && (
-        <div className=" flex gap-x-2 bg-cs-black-200 items-center p-1 rounded mx-2">
-          <div className="p-[4px] bg-cs-grey-50 rounded-lg w-7">
+      {removeRecordingBot && removeRecordingBot !== null && (
+        <div className=" flex gap-x-2 bg-transparent items-center p-1 rounded mx-2">
+          <div className="p-[4px] bg-cs-grey-50 border border-solid border-cs-purple-650 rounded-lg">
             <RecordCircle size="20" color="#CB3A32" variant="Bulk" />
           </div>
-          <div className=" text-cs-grey-50 font-normal">
-            Call is being recorded
+          <div className=" text-cs-grey-dark font-medium metro-medium">
+            Recording
           </div>
         </div>
       )}
+      {recordMeetingLoading && (
+        <div className=" flex gap-x-2 bg-transparent items-center p-1 rounded mx-2">
+          <div className="p-[4px] ">
+            <Status size="20" color="#5E29B7" variant="TwoTone" />
+          </div>
+          <div className=" text-cs-grey-dark font-medium metro-medium">
+            Starting recording...
+          </div>
+        </div>
+      )}
+      {recordingJustStopped.value &&
+        externalID !== recordingJustStopped.externaluserId && (
+          <RecordingJustEnded />
+        )}
 
       <div className=" flex-4 overflow-hidden hidden md:flex metro-medium meetingSection relative overflow-x-hidden">
         {/* big screen share screen */}
@@ -794,7 +714,7 @@ export default function MeetingSection({
 
         <div className="flex-6 flex">
           <div
-            className={`w-full @container/meetingTiles  ${
+            className={`w-full @container/meetingTiles transition-all delay-700 will-change-auto duration-300 ease-in-out ${
               screenWidth < 1024 &&
               sideView !== "" &&
               sideView !== "Caption" &&
@@ -824,31 +744,9 @@ export default function MeetingSection({
                     return (
                       <div
                         key={index}
-                        className={`${
-                          getClassNames(rosterArray.length)
-                          // calculateElementSize(
-                          //   bigContainerWidth,
-                          //   bigContainerHeight,
-                          //   attendeeItems.length,
-                          //   16 / 9
-                          // )
-                        } @container/meetingCard `}
-                        // style={{
-                        //   maxWidth: calculateElementSize(
-                        //     bigContainerWidth,
-                        //     bigContainerHeight,
-                        //     // attendeeItems.length,
-                        //     rosterArray.length,
-                        //     16 / 9
-                        //   ),
-                        //   maxHeight: calculateElementHeight(
-                        //     bigContainerWidth,
-                        //     bigContainerHeight,
-                        //     // attendeeItems.length,
-                        //     rosterArray.length,
-                        //     16 / 9
-                        //   ),
-                        // }}
+                        className={`${getClassNames(
+                          rosterArray.length
+                        )} @container/meetingCard `}
                       >
                         <LocalAttendeeCard
                           // key={index}
@@ -866,29 +764,9 @@ export default function MeetingSection({
                     return (
                       <div
                         key={index}
-                        className={`${
-                          getClassNames(rosterArray.length)
-                          // calculateElementSize(
-                          //   bigContainerWidth,
-                          //   bigContainerHeight,
-                          //   attendeeItems.length,
-                          //   16 / 9
-                          // )
-                        } @container/meetingCard `}
-                        // style={{
-                        //   maxWidth: calculateElementSize(
-                        //     bigContainerWidth,
-                        //     bigContainerHeight,
-                        //     rosterArray.length,
-                        //     16 / 9
-                        //   ),
-                        //   maxHeight: calculateElementHeight(
-                        //     bigContainerWidth,
-                        //     bigContainerHeight,
-                        //     rosterArray.length,
-                        //     16 / 9
-                        //   ),
-                        // }}
+                        className={`${getClassNames(
+                          rosterArray.length
+                        )} @container/meetingCard `}
                       >
                         <RemoteAttendeeCard
                           // key={item.attendeeId}
@@ -979,6 +857,7 @@ export default function MeetingSection({
                     marginLeft: 16,
                     paddingTop: 8,
                     marginRight: 8,
+                    marginBottom: 8,
                   }
                 : {
                     width: "0px",
@@ -1006,7 +885,10 @@ export default function MeetingSection({
               }
             >
               <Participants
-                attendees={attendees}
+                attendees={attendees.filter(
+                  (attendee) =>
+                    !attendee.externalUserId?.startsWith("aws:MediaPipeline")
+                )}
                 sideViewFunc={sideViewFunc}
                 meetingManager={meetingManager}
               />
@@ -1036,128 +918,6 @@ export default function MeetingSection({
                 />
               )}
             </div>
-
-            {/* <div
-              style={
-                sideView === "Caption"
-                  ? {
-                      width: "100%",
-                      height: "100%",
-                      overflow: "visible",
-                    }
-                  : {
-                      width: "0",
-                      height: "0",
-                      overflow: "hidden",
-                    }
-              }
-            >
-              <div
-                className={` h-full bg-cs-grey-50 border-solid border border-[#F1F1F1] rounded-[4px] px-2 @[300px]/bigScreenSideCards:px-4 pt-5 overflow-y-scroll no-scrollbar`}
-              >
-                <div className=" flex justify-between items-center">
-                  <h3 className=" text-cs-grey-dark font-medium @[300px]/bigScreenSideCards:text-2xl">
-                    Caption
-                  </h3>
-                  <Image
-                    src={closeIconPurple}
-                    alt="close-icon"
-                    onClick={() => sideViewFunc("")}
-                    className="cursor-pointer w-5 @[300px]/bigScreenSideCards:w-6"
-                  />
-                </div>
-
-                {!captionOn && (
-                  <div className="h-full flex justify-center items-center">
-                    <div>
-                      <div
-                        className={`p-3 bg-[#E1C6FF4D] rounded-[15px] w-fit mx-auto bg-gradient-to-t from-[#E1C6FF33] to-[#E1C6FF4D]`}
-                      >
-                        <Image
-                          src={capturePurple}
-                          alt="hand"
-                          width={20}
-                          height={20}
-                          className="min-w-8 max-w-8"
-                        />
-                      </div>
-                      <h3 className=" font-medium text-lg text-cs-grey-dark my-3">
-                        Captions are not enabled yet
-                      </h3>
-                      <div className="mx-auto w-fit">
-                        <button
-                          className=" text-cs-purple-650 font-bold text-sm rounded-[10px] border border-cs-grey-150 p-3"
-                          onClick={handleSignUpSubmit}
-                        >
-                          Turn on caption
-                        </button>
-                        <button
-                          className=" text-cs-purple-650 font-bold text-sm rounded-[10px] border border-cs-grey-150 p-3"
-                          onClick={handleStopTranscription}
-                        >
-                          Turn off caption
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {captionOn && (
-                  <div
-                    className="flex flex-col overflow-y-scroll h-full no-scrollbar"
-                    ref={captionScroll}
-                  >
-                    <div className=" align-bottom">
-                      <div className=" flex py-1 gap-x-1">
-                       
-                        <div className=" bg-cs-grey-800 w-6 h-6 min-w-6  rounded-full flex justify-center items-center text-cs-grey-50 text-xs uppercase">
-                          {getRemoteInitials("Emmanue Kalu")}
-                        </div>
-                        <div>
-                          <div className=" flex items-center gap-x-2 mt-[3px]">
-                            <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">
-                              Emmanuel
-                            </h4>
-                          </div>
-                          <p className=" text-xs font-normal text-cs-grey-800">
-                            Lorem ipsum dolor sit amet consectetur. Vulputate
-                            erat massa nunc ornare ornare orci. Tellus turpis
-                            ipsum in in. Neque amet leo odio ut tortor odio
-                            nulla tempor non. Et feugiat dictum neque nisi eget
-                            nisi at nulla feugiat. Molestie bibendum cursus leo
-                            egestas.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className=" align-bottom">
-                      <div className=" flex py-1 gap-x-1">
-                    
-                        <div className=" bg-cs-grey-800 w-6 h-6 min-w-6  rounded-full flex justify-center items-center text-cs-grey-50 text-xs uppercase">
-                          {getRemoteInitials("Emmanue Kalu")}
-                        </div>
-                        <div>
-                          <div className=" flex items-center gap-x-2 mt-[3px]">
-                            <h4 className=" text-cs-grey-dark font-medium text-xs capitalize">
-                              Emmanuel
-                            </h4>
-                          </div>
-                          <p className=" text-xs font-normal text-cs-grey-800">
-                            Lorem ipsum dolor sit amet consectetur. Vulputate
-                            erat massa nunc ornare ornare orci. Tellus turpis
-                            ipsum in in. Neque amet leo odio ut tortor odio
-                            nulla tempor non. Et feugiat dictum neque nisi eget
-                            nisi at nulla feugiat. Molestie bibendum cursus leo
-                            egestas.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div> */}
 
             {sideView === "Conference Info" && (
               <Conference
@@ -1325,7 +1085,10 @@ export default function MeetingSection({
         >
           {sideView === "Participants" && (
             <Participants
-              attendees={attendees}
+              attendees={attendees.filter(
+                (attendee) =>
+                  !attendee.externalUserId?.startsWith("aws:MediaPipeline")
+              )}
               sideViewFunc={sideViewFunc}
               meetingManager={meetingManager}
             />

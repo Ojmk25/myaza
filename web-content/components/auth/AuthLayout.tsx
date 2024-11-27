@@ -16,49 +16,51 @@ export default function AuthLayout({
       <h1 className=" text-2xl lg:text-3xl text-cs-purple-650 font-bold text-center metro-medium">
         <Link href="/">CecureStream</Link>
       </h1>
-      <div
-        className={` max-w-[510px] mx-auto mt-10 p-6 bg-white rounded-[10px] relative z-10`}
-      >
+      <div className="  max-w-[510px] mx-auto mt-10 relative">
         <div
-          className={` flex bg-cs-grey-60-light border border-solid border-cs-grey-60 p-1 gap-x-1 rounded-md mb-3 ${
-            pathname !== "/auth/login" && pathname !== "/auth/signup"
-              ? "hidden"
-              : ""
-          }`}
+          className={` max-w-[510px] mx-auto mt-10 p-6 bg-white rounded-[10px] relative z-10`}
         >
-          <Link
-            href={"/auth/login"}
-            className={` ${
-              pathname === "/auth/login"
-                ? " text-cs-grey-50 bg-cs-purple-650"
-                : " text-cs-grey-400 bg-transparent"
-            }  rounded-[4px] py-3 px-4 font-medium max-h-[52px] w-full text-center`}
+          <div
+            className={` flex bg-cs-grey-60-light border border-solid border-cs-grey-60 p-1 gap-x-1 rounded-md mb-3 ${
+              pathname !== "/auth/login" && pathname !== "/auth/signup"
+                ? "hidden"
+                : ""
+            }`}
           >
-            Sign in
-          </Link>
-          <Link
-            href={"/auth/signup"}
-            className={` ${
-              pathname === "/auth/signup"
-                ? " text-cs-grey-50 bg-cs-purple-650"
-                : " text-cs-grey-400 bg-transparent"
-            } rounded-[4px] py-3 px-4 font-medium max-h-[52px] w-full text-center`}
-          >
-            Sign up
-          </Link>
+            <Link
+              href={"/auth/login"}
+              className={` ${
+                pathname === "/auth/login"
+                  ? " text-cs-grey-50 bg-cs-purple-650"
+                  : " text-cs-grey-400 bg-transparent"
+              }  rounded-[4px] py-3 px-4 font-medium max-h-[52px] w-full text-center`}
+            >
+              Sign in
+            </Link>
+            <Link
+              href={"/auth/signup"}
+              className={` ${
+                pathname === "/auth/signup"
+                  ? " text-cs-grey-50 bg-cs-purple-650"
+                  : " text-cs-grey-400 bg-transparent"
+              } rounded-[4px] py-3 px-4 font-medium max-h-[52px] w-full text-center`}
+            >
+              Sign up
+            </Link>
+          </div>
+          {children}
         </div>
-        {children}
+        <Image
+          src={userBg}
+          alt="bg"
+          className="absolute top-[110px] left-[24%] sm:left-[-30px] md:left-[-80px] lg:left-[-90px] w-[220px] h-[220px]"
+        />
+        <Image
+          src={crabBg}
+          alt="bg"
+          className="absolute top-[250px] right-[25.9%] sm:right-[1px] md:right-[-80px] lg:right-[-90px] w-[220px] h-[220px]"
+        />
       </div>
-      <Image
-        src={userBg}
-        alt="bg"
-        className="absolute top-[110px] left-[24%] sm:left-[-30px] md:left-[35px] lg:left-[18%] xl:left-[23%] w-[220px] h-[220px]"
-      />
-      <Image
-        src={crabBg}
-        alt="bg"
-        className="absolute top-[250px] right-[25.9%] sm:right-[1px] md:right-[40px] lg:right-[20%] xl:right-[25%] w-[220px] h-[220px]"
-      />
     </main>
   );
 }

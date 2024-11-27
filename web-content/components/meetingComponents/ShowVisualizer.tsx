@@ -6,7 +6,6 @@ import {
   useMeetingManager,
   useAttendeeStatus,
 } from "amazon-chime-sdk-component-library-react";
-import ReactDOM from "react-dom/client";
 import { useAppContext } from "@/context/StoreContext";
 
 const ShowVisualizer = ({
@@ -14,11 +13,13 @@ const ShowVisualizer = ({
   meetingManager,
   noBackground,
   externalUserId,
+  side,
 }: {
   chimeAttendeeId: string;
   meetingManager?: MeetingManager;
   noBackground?: boolean;
   externalUserId: string;
+  side?: string;
 }) => {
   const { appState, setAppState } = useAppContext();
   const meetingM = useMeetingManager();
@@ -42,7 +43,6 @@ const ShowVisualizer = ({
       if (attendeeId === chimeAttendeeId) {
         volumeRef.current = volume || 0;
         muteRef.current = muted || false;
-
         setAppState((prevState) => {
           const existingAttendee = prevState.sessionState.audioState.find(
             (item) => item.attendeeId === `${attendeeId}`
@@ -257,32 +257,6 @@ const ShowVisualizer = ({
     };
   }, [meetingM, chimeAttendeeId, muted, muteRef.current]);
 
-  // return (
-  //   // <div className={`visualizer-${chimeAttendeeId}`}>
-  //   //   {testMute === true ? (
-  //   //     <div
-  //   //       className={`flex justify-center items-end p-[6px] ${
-  //   //         noBackground ? "bg-transparent" : "bg-[#333333]"
-  //   //       } rounded-full w-[30px] h-[30px]`}
-  //   //     >
-  //   //       <MicrophoneSlash1
-  //   //         size="18"
-  //   //         color={noBackground ? "#5E29B7" : "#FAFAFA"}
-  //   //       />
-  //   //     </div>
-  //   //   ) : (
-  //   //     <div className="flex justify-center items-center p-[6px] bg-[#6c3ec2] rounded-full w-[30px] h-[30px] gap-x-[2px]">
-  //   //       {[...Array(5)].map((_, index) => (
-  //   //         <div
-  //   //           key={index}
-  //   //           className="bar bg-cs-grey-50 transition-all test"
-  //   //           style={{ width: "4px", height: "3px" }}
-  //   //         />
-  //   //       ))}
-  //   //     </div>
-  //   //   )}
-  //   // </div>
-  // );
   if (localMute === true || localMute === undefined) {
     return (
       <div className={`visualizer-${chimeAttendeeId}`}>
@@ -306,7 +280,7 @@ const ShowVisualizer = ({
         {[...Array(5)].map((_, index) => (
           <div
             key={index}
-            className="bar bg-cs-grey-50 transition-all test"
+            className={`bar bg-cs-grey-50 transition-all test ${side}`}
             style={{ width: "4px", height: "3px" }}
           />
         ))}

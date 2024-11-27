@@ -6,7 +6,7 @@ import { AuthInput } from "@/components/auth/AuthInput";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 
 import googleIcon from "@/public/assets/images/googleIcon.svg";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ValidateEmail,
   ValidatePassword,
@@ -19,6 +19,8 @@ import { FailureSlideIn } from "@/components/FailureSlideIn";
 import LoadingScreen from "@/components/modals/LoadingScreen";
 import { updateSignUpUser } from "@/config";
 import { useSearchParams } from "next/navigation";
+// import { googleLogout, useGoogleLogin } from "@react-oauth/google";
+// import axios from "axios";
 
 export default function Login() {
   const navigate = useRouter();
@@ -39,6 +41,8 @@ export default function Login() {
     email: false,
     password: false,
   });
+  const [user, setUser] = useState([]);
+  const [profile, setProfile] = useState([]);
   const searchParams = useSearchParams();
   const lastPart = searchParams.get("prevpage");
 
@@ -124,7 +128,7 @@ export default function Login() {
       setOpenModal(true);
       setTimeout(() => {
         updateSignUpUser(loginPayload.email);
-        if (data?.response?.statusCode) {
+        if (data?.response?.statusCode && data?.response?.statusCode === 200) {
           if (lastPart !== null) {
             navigate.push(`/${lastPart}`);
           } else {
@@ -140,6 +144,36 @@ export default function Login() {
       clearAll();
     }
   };
+
+  // const login = useGoogleLogin({
+  //   onSuccess: (codeResponse) => setUser(codeResponse),
+  //   onError: (error) => console.log("Login Failed:", error),
+  // });
+
+  // useEffect(() => {
+  //   if (user) {
+  //     axios
+  //       .get(
+  //         `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user.access_token}`,
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${user.access_token}`,
+  //             Accept: "application/json",
+  //           },
+  //         }
+  //       )
+  //       .then((res) => {
+  //         setProfile(res.data);
+  //       })
+  //       .catch((err) => console.log(err));
+  //   }
+  // }, [user]);
+
+  // // log out function to log the user out of google and set the profile array to null
+  // const logOut = () => {
+  //   googleLogout();
+  //   setProfile(null);
+  // };
 
   return (
     <AuthLayout>

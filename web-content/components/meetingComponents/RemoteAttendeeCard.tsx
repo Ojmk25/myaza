@@ -46,7 +46,6 @@ export const RemoteAttendeeCard = forwardRef<
   const audioStatusFromState = appState.sessionState.audioState.find(
     (att) => att.externalUserId === props.nameID
   );
-  console.log(videoEnabled, props.attendeeId, attendeeDetailItems);
   const AudioComp = () => {
     return (
       <>
@@ -62,7 +61,7 @@ export const RemoteAttendeeCard = forwardRef<
             {[...Array(5)].map((_, index) => (
               <div
                 key={index}
-                className="bar bg-cs-grey-50 transition-all"
+                className="bar bg-cs-grey-50 transition-all remote"
                 style={{ width: "4px", height: "3px" }}
               />
             ))}
@@ -128,23 +127,10 @@ export const RemoteAttendeeCard = forwardRef<
           <div className=" flex w-full h-full justify-center items-center @container/imageWrapper">
             <div className=" max-w-full whitespace-nowrap">
               {!videoEnabled && (
-                // // <Image src={avatar} alt="" className=" max-w-[50px] max-h-[297px] @[300px]/imageWrapper:max-w-[100px] rounded-full m-auto" />
-                // <div className=" bg-cs-grey-800 @[230px]/meetingCard:w-[80px] @[230px]/meetingCard:h-[80px]  rounded-full flex justify-center items-center text-cs-grey-55 font-semibold  m-auto @[100px]/meetingCard:w-[40px] @[100px]/meetingCard:h-[40px] @[100px]/meetingCard:text-xl @[230px]/meetingCard:text-[28px]">
-                //   {getRemoteInitials(processString(name as string))}
-
-                // </div>
                 <>
                   {attendeeDetailItems?.picture &&
                   attendeeDetailItems?.picture !== "" ? (
                     <div>
-                      {/* <Image
-                  src={`${attendeeDetails.picture}`}
-                  alt=""
-                  // width={50}
-                  // height={50}
-  
-                  layout="fill"
-                /> */}
                       <img
                         src={attendeeDetailItems && attendeeDetailItems.picture}
                         alt={

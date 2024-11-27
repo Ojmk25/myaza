@@ -1,5 +1,6 @@
 "use client";
 import {
+  DeviceLabels,
   useAudioVideo,
   useMeetingManager,
   useMeetingStatus,
@@ -212,10 +213,14 @@ export default function MeetingPage({
             logger,
             deviceController
           );
+          const options = {
+            deviceLabels: DeviceLabels.AudioAndVideo,
+          };
 
           setMeetingSession(meetingSession);
-          await meetingManager.join(meetingSessionConfiguration);
+          await meetingManager.join(meetingSessionConfiguration, options);
           await meetingManager.start();
+          meetingManager.invokeDeviceProvider(DeviceLabels.AudioAndVideo);
           setHostExternalId(
             meetingManager.meetingSessionConfiguration?.credentials
               ?.externalUserId as string

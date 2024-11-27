@@ -7,8 +7,9 @@ import {
 } from "amazon-chime-sdk-component-library-react";
 import { ThemeProvider } from "styled-components";
 import { VideoFxConfig } from "amazon-chime-sdk-js";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
-type AtteendeeDetailsProp = {
+export type AtteendeeDetailsProp = {
   full_name: string;
   picture?: string;
   user_id?: string;
@@ -42,7 +43,9 @@ type SessionState = {
   guestLastName: string;
   meetingAttendees: AtteendeeDetailsProp[];
   audioState: AudioState[];
-  recordMeeeting: boolean;
+  recordMeeting: boolean;
+  recordMeetingLoading: boolean;
+  recordingJustStopped: { externaluserId: string; value: boolean };
   filterClick: string;
   filterConfig: VideoFxConfig;
 };
@@ -73,7 +76,9 @@ export const AppCtx = createContext<AppContextType>({
       guestLastName: "",
       meetingAttendees: [],
       audioState: [],
-      recordMeeeting: false,
+      recordMeeting: false,
+      recordMeetingLoading: false,
+      recordingJustStopped: { externaluserId: "", value: false },
       filterClick: "",
       filterConfig: {
         backgroundBlur: { isEnabled: false, strength: "medium" },
@@ -108,7 +113,9 @@ export const StoreContext: React.FC<{ children: React.ReactNode }> = ({
       guestLastName: "",
       meetingAttendees: [],
       audioState: [],
-      recordMeeeting: false,
+      recordMeeting: false,
+      recordMeetingLoading: false,
+      recordingJustStopped: { externaluserId: "", value: false },
       filterClick: "",
       filterConfig: {
         backgroundBlur: { isEnabled: false, strength: "medium" },
@@ -134,12 +141,18 @@ export const MeetingProviderComponent = ({
   children: React.ReactNode;
 }) => {
   return (
-    <ThemeProvider theme={lightTheme}>
-      <GlobalStyles />
-      <MeetingProvider>
-        <StoreContext>{children}</StoreContext>
-      </MeetingProvider>
-    </ThemeProvider>
+    <GoogleOAuthProvider
+      clientId={
+        "761443472453-fjqcn1g6k620r341vklrt23ncrc7ctsq.apps.googleusercontent.com"
+      }
+    >
+      <ThemeProvider theme={lightTheme}>
+        <GlobalStyles />
+        <MeetingProvider>
+          <StoreContext>{children}</StoreContext>
+        </MeetingProvider>
+      </ThemeProvider>
+    </GoogleOAuthProvider>
   );
 };
 

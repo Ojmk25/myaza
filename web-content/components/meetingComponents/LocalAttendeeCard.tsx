@@ -4,6 +4,7 @@ import {
   useAttendeeStatus,
   useLocalVideo,
   MeetingManager,
+  useToggleLocalMute,
 } from "amazon-chime-sdk-component-library-react";
 import Image from "next/image";
 import dottedLine from "@/public/assets/images/dottedLine.svg";
@@ -28,9 +29,8 @@ export const LocalAttendeeCard = forwardRef<
 >(function LocalAttendeeCard(props, ref) {
   const { isVideoEnabled } = useLocalVideo();
   const { appState, setAppState } = useAppContext();
-  const { videoEnabled, sharingContent, muted } = useAttendeeStatus(
-    props.attendeeId
-  );
+  const { videoEnabled, sharingContent } = useAttendeeStatus(props.attendeeId);
+  const { muted, toggleMute } = useToggleLocalMute();
 
   const attendeeDetailItems = appState.sessionState.meetingAttendees.find(
     (att: any) => att.user_id === props.nameID
@@ -39,13 +39,16 @@ export const LocalAttendeeCard = forwardRef<
     (att) => att.externalUserId === props.nameID
   );
 
-  console.log(appState.sessionState.meetingAttendees);
+  console.log(
+    appState.sessionState.meetingAttendees,
+    appState.sessionState.audioState,
+    props.attendeeId
+  );
 
   const AudioComp = () => {
     return (
       <>
-        {audioStatusFromState?.mute ||
-        audioStatusFromState?.mute === undefined ? (
+        {muted ? (
           <div
             className={`flex justify-center items-end p-[6px] bg-[#333333] rounded-full w-[30px] h-[30px]`}
           >
@@ -56,7 +59,7 @@ export const LocalAttendeeCard = forwardRef<
             {[...Array(5)].map((_, index) => (
               <div
                 key={index}
-                className="bar bg-cs-grey-50 transition-all"
+                className="bar bg-cs-grey-50 transition-all local"
                 style={{ width: "4px", height: "3px" }}
               />
             ))}
