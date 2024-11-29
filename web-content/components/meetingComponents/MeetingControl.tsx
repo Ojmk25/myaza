@@ -28,7 +28,6 @@ import {
 } from "amazon-chime-sdk-component-library-react";
 import raisedHandImage from "@/public/assets/images/raisedHand.svg";
 import raisedHandWhite from "@/public/assets/images/raisedHandWhite.svg";
-import captureGray from "@/public/assets/images/captureGray.svg";
 
 import { useRouter } from "next/router";
 import { useAppContext } from "@/context/StoreContext";
@@ -648,15 +647,6 @@ export default function MeetingControl({
   };
 
   const broadCastRecording = (externaluserId: string, value: boolean) => {
-    // Update local state immediately
-    // setAppState((prevState) => ({
-    //   ...prevState,
-    //   sessionState: {
-    //     ...prevState.sessionState,
-    //     recordMeeting: value,
-    //   },
-    // }));
-
     const recordingData = { externaluserId: externaluserId, value: value };
 
     // Check if audioVideo is available
@@ -708,9 +698,6 @@ export default function MeetingControl({
       const lottieEl = document.createElement("div");
       lottieEl.classList.add("emoji-animate");
       const root = ReactDOM.createRoot(lottieEl);
-      // const attendeeDetailItems = appState.sessionState.meetingAttendees.find(
-      //   (att) => att.user_id === appState.sessionState.reaction.senderExternalId
-      // );
       const attendeeDetailItems = Array.isArray(meetingAttendees)
         ? meetingAttendees.find(
             (att) => att.user_id === reaction.senderExternalId
@@ -772,7 +759,6 @@ export default function MeetingControl({
       lottieAnimation.onfinish = () => lottieEl.remove();
     };
     handleEmojiClick();
-    // }, [appState.sessionState.reaction, audioVideo]);
   }, [reaction]);
 
   useEffect(() => {
@@ -810,28 +796,11 @@ export default function MeetingControl({
 
   useLayoutEffect(() => {
     return () => {
-      // setAppState((prevState) => ({
-      //   ...prevState,
-      //   sessionState: {
-      //     ...prevState.sessionState,
-      //     raisedHand: {
-      //       timestamp: timestampVar,
-      //       message: attendee,
-      //       externalUserID: raiseHandExternalUserID,
-      //     },
-      //   },
-      // }));
       setAppState((prevState) => ({
         ...prevState,
         sessionState: {
           ...prevState.sessionState,
-          raisedHand: [
-            // {
-            //   timestamp: "",
-            //   message: "",
-            //   externalUserID: "",
-            // },
-          ],
+          raisedHand: [],
           reaction: {
             sender: "",
             message: "",
@@ -1094,12 +1063,6 @@ export default function MeetingControl({
                 </div>
               </div>
             ) : (
-              // <div
-              //   className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer"
-              //   onClick={handleLeaveMeeting}
-              // >
-              //   <span>End</span>
-              // </div>
               <div
                 className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer"
                 onClick={handleLeaveMeeting}
@@ -1414,10 +1377,7 @@ export default function MeetingControl({
                   <div className=" transition-all transform w-full">
                     <div className=" bg-white rounded-t-2xl px-6 py-6">
                       <div className="grid grid-cols-2 gap-x-12 justify-between gap-y-6">
-                        <div
-                          className="text-center max-w-[215px]"
-                          // onClick={() => toggleContentShare()}
-                        >
+                        <div className="text-center max-w-[215px]">
                           <div
                             className={`p-3 ${
                               isLocalUserSharing ? "bg-cs-purple-650" : ""
@@ -1425,7 +1385,6 @@ export default function MeetingControl({
                           >
                             <Monitor
                               size="24"
-                              // color={isLocalUserSharing ? "#FAFAFA" : "#333333"}
                               color="#e1c6ff"
                               className="max-w-5"
                             />
@@ -1452,7 +1411,6 @@ export default function MeetingControl({
                                 <RecordCircle
                                   size="24"
                                   color={recordMeeting ? "#FAFAFA" : "#333333"}
-                                  // color="#e1c6ff"
                                   className="max-w-5"
                                 />
                                 <h6
@@ -1561,9 +1519,6 @@ export default function MeetingControl({
                             >
                               Caption
                             </h6>
-                            {/* <h6 className=" text-[#e1c6ff] font-medium text-xs">
-                              Caption
-                            </h6> */}
                           </div>
                         </div>
                       </div>
@@ -1653,8 +1608,14 @@ export default function MeetingControl({
 
                   <div className="bg-white absolute hidden group-hover:block shadow-1xl bottom-11 -right-2 py-3 px-4 rounded-lg z-10">
                     <div
-                      className=" text-cs-grey-50 bg-cs-red text-sm font-semibold py-3 px-4 rounded-lg mb-2"
-                      onClick={handleEndMeeting}
+                      className={` text-sm font-semibold py-3 px-4 rounded-lg mb-2 ${
+                        recordMeeting
+                          ? "text-cs-grey-50 bg-[#D11C1C66]"
+                          : "text-cs-grey-50 bg-cs-red"
+                      }`}
+                      onClick={() => {
+                        !recordMeeting && handleEndMeeting();
+                      }}
                     >
                       End meeting for all
                     </div>
@@ -1666,12 +1627,6 @@ export default function MeetingControl({
                     </div>
                   </div>
                 </div>
-                {/* <div
-                  className=" bg-cs-red text-center rounded-lg py-3 px-5 text-white font-bold text-sm h-fit cursor-pointer"
-                  onClick={handleLeaveMeeting}
-                >
-                  <span>End</span>
-                </div> */}
               </>
             ) : (
               <div

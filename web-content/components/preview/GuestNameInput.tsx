@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { MutableRefObject, useContext, useEffect, useState } from "react";
 import { AuthInput } from "../auth/AuthInput";
 import { ValidateText } from "@/utils/Validators";
 import {
@@ -13,8 +13,16 @@ import { useAppContext } from "@/context/StoreContext";
 import { useSessionStorage } from "@/hooks/useStorage";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import RecordingConsentPreviewModal from "../modals/RecordingConsentPreviewModal";
+import ReactDOM from "react-dom";
+import { InfoCircle } from "iconsax-react";
+import { listAttendees } from "@/services/meetingServices";
 
-export default function GuestNameInput() {
+export default function GuestNameInput({
+  recordingConsentTextRef,
+}: {
+  recordingConsentTextRef: MutableRefObject<HTMLDivElement | null>;
+}) {
   const [errMessage, setErrMessage] = useState({
     "First name": "",
     "Last name": "",
@@ -28,10 +36,10 @@ export default function GuestNameInput() {
   });
   const [activateButton, setActivateButton] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
-  const [profilePic, setProfilePic] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [openRecordingConsent, setOpenRecordingConsent] = useState(false);
   const { first_name, surname, picture } = getClientInfo();
   const navigate = useRouter();
-  const [url, setUrl] = useState("");
   const { setAppState } = useAppContext();
   const [expressJoin, setExpressJoin] = useSessionStorage(
     "meetingJoiner",
@@ -43,6 +51,55 @@ export default function GuestNameInput() {
     setLoggedIn(IsAuthenticated());
     getNameAbbreviation();
   }, []);
+
+  useEffect(() => {
+    // Call the function immediately when the screen loads
+    checkIsRecording();
+
+    //Call the function at 10 seconds intervaal
+    const intervalId = setInterval(() => {
+      checkIsRecording();
+    }, 10000);
+
+    // Cleanup function to clear the interval when the component unmounts
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const checkIsRecording = async () => {
+    let allAttendees: any[] = []; // Array to hold all the attendees
+    let nextToken: string | null = null;
+
+    try {
+      do {
+        // Make the API call with the current next_token (or without it for the first call)
+        const response = await listAttendees({
+          meeting_id: `meeting_${localStorage.getItem("meetingLink")}`,
+          next_token: nextToken, // Pass the token, if it's null, it will be ignored
+        });
+
+        if (response) {
+          const { data } = response.data.body;
+
+          // Merge current page of attendees with the allAttendees array
+          allAttendees = [...allAttendees, ...data?.attendees];
+
+          // Update the nextToken, which will control the loop
+          nextToken = data?.next_token || null;
+        }
+      } while (nextToken !== null); // Continue while there is a next_token
+
+      //check the array for the meeting recording bot
+      const isUserRecording = allAttendees.some((user) =>
+        user.user_id?.startsWith("aws:MediaPipeline")
+      );
+      setIsRecording(isUserRecording);
+      // Return the complete array of attendees
+      return allAttendees;
+    } catch (error) {
+      console.log("Error fetching attendees:", error);
+      return []; // Return an empty array in case of an error
+    }
+  };
 
   const handleInput = (input: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = input.target;
@@ -84,12 +141,6 @@ export default function GuestNameInput() {
       setActivateButton(false);
     }
   }, [authData]);
-  // useEffect(() => {
-  //   if (navigate.isReady) {
-  //     const { query } = navigate;
-  //     localStorage.getItem("meetingLink")
-  //   }
-  // }, [navigate.isReady, navigate.asPath]);
 
   const handleRoute = () => {
     setAppState((prevState) => ({
@@ -103,7 +154,11 @@ export default function GuestNameInput() {
     // sessionStorage.setItem("meetingJoiner", "no");
     setExpressJoin("yes");
     // window.history.replaceState(null, "", "/");
-    navigate.push(`/meet/${localStorage.getItem("meetingLink")}`);
+    if (isRecording) {
+      setOpenRecordingConsent(true);
+    } else {
+      navigate.push(`/meet/${localStorage.getItem("meetingLink")}`);
+    }
   };
 
   return (
@@ -184,6 +239,28 @@ export default function GuestNameInput() {
               </Link>
             </p>
           </form>
+          {openRecordingConsent && (
+            <RecordingConsentPreviewModal
+              onClose={() => {
+                setOpenRecordingConsent(false);
+              }}
+              joinMeeting={() => {
+                navigate.push(`/meet/${localStorage.getItem("meetingLink")}`);
+              }}
+            />
+          )}
+
+          {recordingConsentTextRef.current &&
+            isRecording &&
+            ReactDOM.createPortal(
+              <div className=" my-6 text-cs-error-600 metro-medium flex items-center justify-center gap-x-2">
+                <InfoCircle size="18" color="#cb3a32" />
+                <p className=" font-medium text-sm md:text-base">
+                  This meeting is being recorded
+                </p>
+              </div>,
+              recordingConsentTextRef.current
+            )}
         </div>
       )}
     </>

@@ -1,12 +1,10 @@
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import closeIcon from "@/public/assets/images/closeIcon.svg";
 import { Calendar, Clock, UserAdd } from "iconsax-react";
 
 import style from "./style.module.css";
 
-import copyTextToClipboard from "@/utils/clipBoard";
-import { generateCustomId } from "@/utils/customIDGenerator";
 import { createScheduleMeeting } from "@/services/meetingServices";
 import LoadingScreen from "./LoadingScreen";
 import { SuccessSlideIn } from "../SuccessSlideIn";
@@ -26,8 +24,6 @@ interface FormData {
 }
 
 const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
-  const [token, setToken] = useState("");
-  const [tooltipMessage, setTooltipMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [successRes, setSuccessRes] = useState<any>();
   const [openModal, setOpenModal] = useState(false);
@@ -36,15 +32,11 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
   const [activateEmailButton, setActivateEmailButton] =
     useState<boolean>(false);
 
-  useEffect(() => {
-    setToken(generateCustomId());
-  }, []);
-
   const [formData, setFormData] = useState<FormData>({
     meetingName: "",
     email: "",
-    startTime: "" || "12:00",
-    endTime: "" || "14:00",
+    startTime: "12:00",
+    endTime: "14:00",
     date: formatDate(new Date()),
     emailList: [],
   });
@@ -130,20 +122,6 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
     return `${day}/${month}/${year}`;
   }
 
-  const handleCopyClick = (value: string) => {
-    copyTextToClipboard(
-      value,
-      () => {
-        setTooltipMessage("copied");
-        setTimeout(() => setTooltipMessage(""), 2000);
-      },
-      () => {
-        setTooltipMessage("Failed to copy!");
-        setTimeout(() => setTooltipMessage(""), 2000);
-      }
-    );
-  };
-
   const handleScheduleMeeting = async () => {
     const scheduleMeetingPayload = {
       meeting_name: formData.meetingName,
@@ -205,23 +183,7 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
               />
             </div>
 
-            {/* <div className='px-6'>
-              <div className=' flex items-center justify-between mt-6 relative'>
-                <div className=' flex items-center gap-x-1'>
-                  <Video size="25" color="#7133CF" variant="Bold" />
-                  <p className=' text-cs-grey-800 font-medium text-sm lg:text-base'>cecurestream.com/{token}</p>
-                </div>
-                <div className=' lg:hidden' onClick={async () => handleCopyClick(`https://cecurecast.com/${token}`)}>
-                  <Copy size="25" color="#7133CF" />
-                </div>
-                <p className=' text-cs-purple-400 font-medium cursor-pointer underline hidden lg:block' onClick={async () => handleCopyClick(`https://cecurecast.com/${token}`)}>copy link</p>
-              </div>
-              {tooltipMessage && <div className=" absolute text-xs text-cs-grey-50 p-2 bg-cs-purple-650 z-10 rounded">{tooltipMessage}</div>}
-            </div> */}
-
             <form className="px-6">
-              {/* <AuthInput label='Meeting name' action={handleInput} errorMessage='' inputType='text' inputName='meetingName' placeHolder='My meeting' /> */}
-
               <div
                 className="flex flex-col mt-[22px] w-full"
                 id="calendarStyle"
@@ -280,7 +242,7 @@ const ScheduleMeeting = ({ onClose }: { onClose: () => void }) => {
                 </div>
                 <p className="text-sm text-cs-error-500 mt-1"></p>
               </div>
-              {/* onInput={e => formatDate((e.target as HTMLInputElement).value)}  */}
+
               <div className=" flex gap-x-4">
                 <div
                   className="flex flex-col mt-[22px] w-full lg:w-[441px]"

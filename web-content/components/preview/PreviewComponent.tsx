@@ -8,7 +8,10 @@ import {
   VideoFxProcessor,
 } from "amazon-chime-sdk-js";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useMeetingManager } from "amazon-chime-sdk-component-library-react";
+import {
+  useMeetingManager,
+  useRosterState,
+} from "amazon-chime-sdk-component-library-react";
 import { useRouter } from "next/navigation";
 import { ToggleVideoButton } from "@/components/meetingComponents/meetingControlButtons/ToggleVideo";
 import { ToggleAudio } from "@/components/meetingComponents/meetingControlButtons/ToggleAudio";
@@ -32,9 +35,11 @@ export default function PreviewComponent() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const navigate = useRouter();
   const audioLevelDisplayRef = useRef<HTMLDivElement | null>(null);
+  const recordingConsentTextRef = useRef<HTMLDivElement | null>(null);
   const meetingManager = useMeetingManager();
   const profileRef = useRef<HTMLDivElement | null>(null);
   const { picture, first_name, surname } = getClientInfo();
+  const { roster } = useRosterState();
 
   const logger = new ConsoleLogger("MyLogger");
 
@@ -50,6 +55,8 @@ export default function PreviewComponent() {
   // const deviceController = new DefaultDeviceController(logger);
 
   useLayoutEffect(() => {
+    console.log(roster, "LOGGIN ROSTER DURING PREVIEW");
+
     return () => {
       const videoElement = videoRef.current as HTMLVideoElement;
       const unMountCamera = async () => {
@@ -230,6 +237,7 @@ export default function PreviewComponent() {
                   {/* <ToggleVideoBgButton /> */}
                   <div className="" ref={audioLevelDisplayRef}></div>
                 </div>
+                <div ref={recordingConsentTextRef}></div>
 
                 {/* Video controls */}
                 <div className=" flex justify-center my-6">
@@ -249,7 +257,7 @@ export default function PreviewComponent() {
                 </div>
               </div>
             </div>
-            <GuestNameInput />
+            <GuestNameInput recordingConsentTextRef={recordingConsentTextRef} />
           </div>
         </main>
       )}
