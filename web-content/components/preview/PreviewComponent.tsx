@@ -55,8 +55,6 @@ export default function PreviewComponent() {
   // const deviceController = new DefaultDeviceController(logger);
 
   useLayoutEffect(() => {
-    console.log(roster, "LOGGIN ROSTER DURING PREVIEW");
-
     return () => {
       const videoElement = videoRef.current as HTMLVideoElement;
       const unMountCamera = async () => {

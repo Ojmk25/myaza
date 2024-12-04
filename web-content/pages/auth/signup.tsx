@@ -12,7 +12,7 @@ import {
   ValidateText,
   activateButton,
 } from "@/utils/Validators";
-import { registerUser } from "@/services/authService";
+import { registerUser, resendVerificationOTP } from "@/services/authService";
 // import { subDomain } from "@/utils/getDomain";
 import { updateSignUpUser } from "@/config";
 import { SuccessSlideIn } from "@/components/SuccessSlideIn";
@@ -165,10 +165,47 @@ export default function Signup() {
       setTimeout(() => {
         updateSignUpUser(registerPayload.email);
         data.data.body.status === "Success" && navigate.push("/auth/verify");
+        if (
+          data.data?.statusCode === 400 &&
+          data.data.body.message === "User is not confirmed."
+        ) {
+          handleResendVerifyPassword();
+          navigate.push("/auth/verify");
+        }
       }, 3000);
     } catch (error) {
       setLoading(true);
       console.log(error);
+    } finally {
+      clearAll();
+    }
+  };
+
+  const handleResendVerifyPassword = async () => {
+    setLoading(true);
+    const clearAll = () => {
+      setLoading(false);
+      setTimeout(() => {
+        setSuccessRes("");
+        setOpenModal(false);
+      }, 2000);
+    };
+    try {
+      const email = formData.email;
+      if (!email) {
+        throw new Error("No email found in session storage");
+      }
+
+      const payload = { email: email };
+
+      const { data } = await resendVerificationOTP(payload);
+      setLoading(true);
+      setSuccessRes(data);
+      setOpenModal(true);
+    } catch (error) {
+      console.log(error);
+      setLoading(true);
+      setOpenModal(true);
     } finally {
       clearAll();
     }

@@ -559,10 +559,11 @@ export default function MeetingSection({
         sessionState: {
           ...prevState.sessionState,
           audioState: updatedAudioState,
-          recordMeeeting: removeRecordingBot !== null,
+          // recordMeeting: removeRecordingBot !== null,
         },
       };
     });
+    console.log("Were you called at all");
   }, [attendees.length]);
 
   useEffect(() => {
@@ -653,8 +654,6 @@ export default function MeetingSection({
 
   //   setRosterArray(sorted);
   // }, [appState.sessionState.audioState, attendees, activeSpeakers]);
-
-  console.log(attendees, activeSpeakers, rosterArray, removeRecordingBot);
 
   return (
     <>

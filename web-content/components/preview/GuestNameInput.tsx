@@ -1,4 +1,10 @@
-import { MutableRefObject, useContext, useEffect, useState } from "react";
+import {
+  MutableRefObject,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from "react";
 import { AuthInput } from "../auth/AuthInput";
 import { ValidateText } from "@/utils/Validators";
 import {
@@ -154,11 +160,12 @@ export default function GuestNameInput({
     // sessionStorage.setItem("meetingJoiner", "no");
     setExpressJoin("yes");
     // window.history.replaceState(null, "", "/");
-    if (isRecording) {
-      setOpenRecordingConsent(true);
-    } else {
-      navigate.push(`/meet/${localStorage.getItem("meetingLink")}`);
-    }
+    // if (isRecording) {
+    //   setOpenRecordingConsent(true);
+    // } else {
+    //   navigate.push(`/meet/${localStorage.getItem("meetingLink")}`);
+    // }
+    navigate.push(`/meet/${localStorage.getItem("meetingLink")}`);
   };
 
   return (
@@ -239,7 +246,7 @@ export default function GuestNameInput({
               </Link>
             </p>
           </form>
-          {openRecordingConsent && (
+          {/* {openRecordingConsent && (
             <RecordingConsentPreviewModal
               onClose={() => {
                 setOpenRecordingConsent(false);
@@ -248,7 +255,7 @@ export default function GuestNameInput({
                 navigate.push(`/meet/${localStorage.getItem("meetingLink")}`);
               }}
             />
-          )}
+          )} */}
 
           {recordingConsentTextRef.current &&
             isRecording &&

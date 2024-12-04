@@ -301,6 +301,7 @@ export default function MeetingPage({
           meetingManager.meetingSession?.audioVideo.stop();
         }
       }
+      console.log(meetingStatus, attendees);
     };
   }, [meetingSession]);
 
@@ -333,6 +334,8 @@ export default function MeetingPage({
   //     return () => observer.disconnect();
   //   }
   // }, [meetingSession, dynamicElementId]);
+
+  console.log(meetingStatus, attendees);
 
   useEffect(() => {
     const callback: MutationCallback = (mutationsList, observer) => {
@@ -380,27 +383,27 @@ export default function MeetingPage({
     }
   };
 
-  useEffect(() => {
-    const observer: AudioVideoObserver = {
-      connectionHealthDidChange: (
-        connectionHealthData: ConnectionHealthData
-      ) => {
-        const missedPongsThreshold = 10;
-        if (
-          connectionHealthData.consecutiveMissedPongs >= missedPongsThreshold
-        ) {
-          setNoNetwork(true);
-        } else {
-          setNoNetwork(false);
-        }
-      },
-    };
-    meetingManager?.audioVideo?.addObserver(observer);
+  // useEffect(() => {
+  //   const observer: AudioVideoObserver = {
+  //     connectionHealthDidChange: (
+  //       connectionHealthData: ConnectionHealthData
+  //     ) => {
+  //       const missedPongsThreshold = 10;
+  //       if (
+  //         connectionHealthData.consecutiveMissedPongs >= missedPongsThreshold
+  //       ) {
+  //         setNoNetwork(true);
+  //       } else {
+  //         setNoNetwork(false);
+  //       }
+  //     },
+  //   };
+  //   meetingManager?.audioVideo?.addObserver(observer);
 
-    return () => {
-      meetingManager?.audioVideo?.removeObserver(observer);
-    };
-  }, [meetingManager.audioVideo]);
+  //   return () => {
+  //     meetingManager?.audioVideo?.removeObserver(observer);
+  //   };
+  // }, [meetingManager.audioVideo]);
 
   return (
     <div className="w-full flex items-center flex-col">
@@ -567,7 +570,7 @@ export default function MeetingPage({
             closeModal={() => {}}
           />
           {loading && <LoadingScreen />}
-          {noNetwork && <LoadingScreen />}
+          {/* {noNetwork && <LoadingScreen />} */}
           {endeMeetingRef.current && <EndedMeetingModal />}
         </main>
       </div>

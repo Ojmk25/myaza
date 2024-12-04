@@ -25,6 +25,7 @@ import {
   MeetingManager,
   useAudioVideo,
   useToggleLocalMute,
+  useRosterState,
 } from "amazon-chime-sdk-component-library-react";
 import raisedHandImage from "@/public/assets/images/raisedHand.svg";
 import raisedHandWhite from "@/public/assets/images/raisedHandWhite.svg";
@@ -34,6 +35,7 @@ import { useAppContext } from "@/context/StoreContext";
 import { useSessionStorage } from "@/hooks/useStorage";
 import {
   endMeetingForAll,
+  getMeeting,
   listAttendees,
   startRecording,
   stopRecording,
@@ -94,6 +96,8 @@ export default function MeetingControl({
     "meetingJoiner",
     "no"
   );
+  const { roster } = useRosterState();
+  const attendees = Object.values(roster);
   const previousRaisedHandLength = useRef<number>(0);
   const [miniroster, setMiniRoster] = useState<string[]>([]);
   const [prevLength, setPrevLength] = useState(0);
@@ -111,6 +115,35 @@ export default function MeetingControl({
       setRaiseHandAdded(false);
     }
   }, [otherViews]);
+
+  useEffect(() => {
+    const updateCurrentRecordingView = () => {
+      const removeRecordingBotId = attendees.find((attendee) =>
+        attendee.externalUserId?.startsWith("aws:MediaPipeline")
+      )?.chimeAttendeeId;
+
+      if (removeRecordingBotId === "" || removeRecordingBotId === undefined) {
+        setAppState((prevState) => ({
+          ...prevState,
+          sessionState: {
+            ...prevState.sessionState,
+            recordMeeting: false,
+          },
+        }));
+      } else {
+        setAppState((prevState) => ({
+          ...prevState,
+          sessionState: {
+            ...prevState.sessionState,
+            recordMeeting: true,
+          },
+        }));
+      }
+      return removeRecordingBotId;
+    };
+    // Update the time initially
+    updateCurrentRecordingView();
+  }, [attendees.length]);
 
   useEffect(() => {
     const updateCurrentTime = () => {
@@ -546,6 +579,7 @@ export default function MeetingControl({
           ...prevState,
           sessionState: {
             ...prevState.sessionState,
+            // recordMeeting: true,
             recordMeeting: true,
           },
         }));
@@ -567,9 +601,18 @@ export default function MeetingControl({
 
   const handleStopRecording = async () => {
     try {
+      let getMediaId: string | undefined;
+      if (!mediaPipeLineId) {
+        const getArn = await getMeeting({ meeting_id: sessionName });
+        if (getArn?.data.statusCode === 200) {
+          getMediaId = getArn?.data.body.data.media_pipeline_arn;
+        }
+      }
       const data = await stopRecording({
-        media_pipeline_arn: mediaPipeLineId,
-        media_pipeline_id: getIdFromArn(mediaPipeLineId) as string,
+        media_pipeline_arn: mediaPipeLineId || (getMediaId as string),
+        media_pipeline_id:
+          (getIdFromArn(mediaPipeLineId) as string) ||
+          (getIdFromArn(getMediaId as string) as string),
       });
       if (data?.data.statusCode === 200) {
         broadCastRecording(externalID as string, true);
@@ -807,10 +850,12 @@ export default function MeetingControl({
             senderExternalId: "",
             lottieCode: "",
           },
+          recordMeeting: false,
         },
       }));
       setExpressJoin("no");
       updateSessionStorageArray("meetingAttendees", []);
+      // handleStopRecording();
     };
   }, []);
 
@@ -1648,13 +1693,13 @@ export default function MeetingControl({
         <RecordingConsentModal
           onClose={() => handleOtherViews("Record")}
           onRecord={() => {
-            if (mediaPipeLineId === "") {
+            if (!recordMeeting) {
               handleStartRecording();
             } else {
               handleStopRecording();
             }
           }}
-          activeRecording={mediaPipeLineId !== ""}
+          activeRecording={recordMeeting}
         />
       )}
       {failedRecording && (

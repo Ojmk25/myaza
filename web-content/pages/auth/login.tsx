@@ -13,14 +13,14 @@ import {
   activateButton,
 } from "@/utils/Validators";
 import { useRouter } from "next/router";
-import { loginUser } from "@/services/authService";
+import { loginUser, resendVerificationOTP } from "@/services/authService";
 import { SuccessSlideIn } from "@/components/SuccessSlideIn";
 import { FailureSlideIn } from "@/components/FailureSlideIn";
 import LoadingScreen from "@/components/modals/LoadingScreen";
 import { updateSignUpUser } from "@/config";
 import { useSearchParams } from "next/navigation";
-// import { googleLogout, useGoogleLogin } from "@react-oauth/google";
-// import axios from "axios";
+import { googleLogout, useGoogleLogin } from "@react-oauth/google";
+import axios from "axios";
 
 export default function Login() {
   const navigate = useRouter();
@@ -41,7 +41,7 @@ export default function Login() {
     email: false,
     password: false,
   });
-  const [user, setUser] = useState([]);
+  const [user, setUser] = useState<any>([]);
   const [profile, setProfile] = useState([]);
   const searchParams = useSearchParams();
   const lastPart = searchParams.get("prevpage");
@@ -134,6 +134,17 @@ export default function Login() {
           } else {
             navigate.push(`/`);
           }
+        } else if (
+          data.response?.statusCode === 400 &&
+          data.response?.body.message === "User is not confirmed."
+        ) {
+          handleResendVerifyPassword();
+          navigate.push("/auth/verify");
+        } else if (
+          data.response?.statusCode === 400 &&
+          data.response?.body.message === "Password reset required for the user"
+        ) {
+          navigate.push("/auth/forgot-password");
         }
       }, 3000);
     } catch (error) {
@@ -145,35 +156,66 @@ export default function Login() {
     }
   };
 
-  // const login = useGoogleLogin({
-  //   onSuccess: (codeResponse) => setUser(codeResponse),
-  //   onError: (error) => console.log("Login Failed:", error),
-  // });
+  const handleResendVerifyPassword = async () => {
+    setLoading(true);
+    const clearAll = () => {
+      setLoading(false);
+      setTimeout(() => {
+        setSuccessRes("");
+        setOpenModal(false);
+      }, 2000);
+    };
+    try {
+      const email = formData.email;
+      if (!email) {
+        throw new Error("No email found in session storage");
+      }
 
-  // useEffect(() => {
-  //   if (user) {
-  //     axios
-  //       .get(
-  //         `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user.access_token}`,
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${user.access_token}`,
-  //             Accept: "application/json",
-  //           },
-  //         }
-  //       )
-  //       .then((res) => {
-  //         setProfile(res.data);
-  //       })
-  //       .catch((err) => console.log(err));
-  //   }
-  // }, [user]);
+      const payload = { email: email };
 
-  // // log out function to log the user out of google and set the profile array to null
+      const { data } = await resendVerificationOTP(payload);
+      setLoading(true);
+      setSuccessRes(data);
+      setOpenModal(true);
+    } catch (error) {
+      console.log(error);
+      setLoading(true);
+      setOpenModal(true);
+    } finally {
+      clearAll();
+    }
+  };
+
+  const login = useGoogleLogin({
+    onSuccess: (codeResponse) => setUser(codeResponse),
+    onError: (error) => console.log("Login Failed:", error),
+  });
+
+  useEffect(() => {
+    if (user) {
+      axios
+        .get(
+          `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user.access_token}`,
+          {
+            headers: {
+              Authorization: `Bearer ${user.access_token}`,
+              Accept: "application/json",
+            },
+          }
+        )
+        .then((res) => {
+          setProfile(res.data);
+        })
+        .catch((err) => console.log(err));
+    }
+  }, [user]);
+
+  // log out function to log the user out of google and set the profile array to null
   // const logOut = () => {
   //   googleLogout();
-  //   setProfile(null);
+  //   setProfile([null]);
   // };
+  console.log(user);
 
   return (
     <AuthLayout>
@@ -219,7 +261,10 @@ export default function Login() {
         <span className=" text-center text-cs-grey-400 text-sm">or</span>
         <div className=" h-[1px] bg-cs-grey-55 col-start-5 col-end-8"></div>
       </div>
-      <div className="border border-solid border-cs-grey-150 rounded-lg flex items-center justify-center w-full py-[10px] text-cs-grey-dark font-medium">
+      <div
+        className="border border-solid border-cs-grey-150 rounded-lg flex items-center justify-center w-full py-[10px] text-cs-grey-dark font-medium"
+        onClick={() => login()}
+      >
         <Image src={googleIcon} alt="google" className=" mr-2" /> Sign in with
         Google
       </div>
