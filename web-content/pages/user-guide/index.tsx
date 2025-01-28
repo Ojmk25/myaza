@@ -15,6 +15,8 @@ import emojiReaction from "@/public/assets/images/emojiReaction.png"
 import recordMeetingOne from "@/public/assets/images/recordMeetingOne.png"
 import recordMeetingTwo from "@/public/assets/images/recordMeetingTwo.png"
 import recordMeetingThree from "@/public/assets/images/recordMeetingThree.png"
+import Header from "@/components/Header";
+
 const UserGuide = () => {
   const onboarding = React.useRef(null);
   const createSessionSection = React.useRef(null);
@@ -50,6 +52,10 @@ const UserGuide = () => {
 
   return (
     <>
+      <div className="pt-4">
+      <Header />
+
+      </div>
       <div>
         <div className="bg-gray-50">
           <section className="container flex items-center flex-col  pt-12 py-[60px] mx-auto text-cila-slate-700">
