@@ -21,8 +21,6 @@ phases:
                               --scan $CODEBUILD_SRC_DIR/web-content \
                               --exclude $CODEBUILD_SRC_DIR/dependency-check/
       - echo "OWASP Dependency Check analysis completed."
-      - cd results
-      - cat results.xml
   post_build:
     commands:
       - echo "Starting the post_build phase..."
@@ -30,5 +28,6 @@ phases:
 reports:
   sca-reports:
     files:
-      - dependency-check/bin/results/results.xml
+      - dependency-check/bin/results/*
+
     file-format: JUNITXML
