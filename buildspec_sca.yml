@@ -2,21 +2,24 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo "install phase....."
+      - echo "Installing required dependencies..."
+      - yum install -y java-1.8.0-openjdk
+      - echo "Dependencies installed successfully."
   pre_build:
     commands:
-      - chmod -R 775 $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh
-      - echo "stage pre_build completed"
+      - chmod 755 $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh
+      - echo "Pre-build phase completed."
   build:
     commands: 
-      - cd dependency-check/bin
-      - mkdir results
-      - $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh --project "wordpress" --format JUNIT --out results/results.xml --prettyPrint --enableExperimental --scan $CODEBUILD_SRC_DIR/web-content --exclude '$CODEBUILD_SRC_DIR/dependency-check/'
-      - echo "OWASP dependency check analysis status is completed..."
+      - cd $CODEBUILD_SRC_DIR/dependency-check/bin
+      - mkdir -p results
+      - ./dependency-check.sh --project "wordpress" --format JUNIT --out results/results.xml --prettyPrint --enableExperimental --scan $CODEBUILD_SRC_DIR/web-content --exclude "$CODEBUILD_SRC_DIR/dependency-check/"
+      - echo "OWASP Dependency Check analysis completed."
       - cd results
-      - cat results.xml
+      - cat results.xml || echo "No results.xml file found."
   post_build:
     commands:
+      - echo "Post-build phase completed successfully."
 reports:
   sca-reports:
     files:
