@@ -1,20 +1,24 @@
 version: 0.2
-
 phases:
   install:
     commands:
-      - curl -sSL https://github.com/jeremylong/DependencyCheck/releases/download/v12.0.1/dependency-check-12.0.1-release.zip -o dependency-check.zip
-      - unzip dependency-check.zip -d dependency-check
+      - echo "install phase....."
   pre_build:
     commands:
-      - chmod 755 $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh
-      - npm install --prefix $CODEBUILD_SRC_DIR/web-content
-      - echo "Pre-build phase completed."
+      - chmod -R 775 $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh
+      - echo "stage pre_build completed"
   build:
+    commands: 
+      - cd dependency-check/bin
+      - mkdir results
+      - $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh --project "wordpress" --format JUNIT --out results/results.xml --prettyPrint --enableExperimental --scan $CODEBUILD_SRC_DIR/web-content --exclude '$CODEBUILD_SRC_DIR/depedency-check/'
+      - echo "OWASP dependency check analysis status is completed..."
+      - cd results
+      - cat results.xml
+  post_build:
     commands:
-      - cd $CODEBUILD_SRC_DIR/dependency-check/bin
-      - mkdir -p results
-      - ./dependency-check.sh --project "wordpress" --format JUNIT --out results/results.xml --prettyPrint --enableExperimental --disableAnalyzer NodeAuditAnalyzer --scan $CODEBUILD_SRC_DIR/web-content --exclude "$CODEBUILD_SRC_DIR/dependency-check/"
-artifacts:
-  files:
-    - dependency-check/bin/results/*
+reports:
+  sca-reports:
+    files:
+      - dependency-check/bin/results/results.xml
+    file-format: "JUNITXML"
