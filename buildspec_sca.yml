@@ -1,37 +1,24 @@
 version: 0.2
-
 phases:
   install:
     commands:
-      - echo "Installing required dependencies..."
-      - apt-get update && apt-get install -y unzip curl
-      - echo "Downloading and updating Dependency-Check to version 12.0.1..."
-      - curl -L -o dependency-check.zip https://github.com/jeremylong/DependencyCheck/releases/download/v12.0.1/dependency-check-12.0.1-release.zip
-      - unzip dependency-check.zip -d $CODEBUILD_SRC_DIR/dependency-check
-      - chmod +x $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh
-      - rm dependency-check.zip
+      - echo "install phase....."
   pre_build:
     commands:
-      - echo "Setting up Node.js dependencies..."
-      - cd $CODEBUILD_SRC_DIR/web-content
-      - npm install
+      - chmod -R 775 $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh
+      - echo "stage pre_build completed"
   build:
-    commands:
-      - echo "Running Dependency-Check security scan..."
-      - $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh \
-          --project "wordpress" \
-          --format JUNIT \
-          --out $CODEBUILD_SRC_DIR/results/results.xml \
-          --prettyPrint \
-          --enableExperimental \
-          --scan $CODEBUILD_SRC_DIR/web-content \
-          --exclude $CODEBUILD_SRC_DIR/dependency-check/
+    commands: 
+      - cd dependency-check/bin
+      - mkdir results
+      - $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh --project "wordpress" --format JUNIT --out results/results.xml --prettyPrint --enableExperimental --scan $CODEBUILD_SRC_DIR/web-content --exclude '$CODEBUILD_SRC_DIR/dependency-check/'
+      - echo "OWASP dependency check analysis status is completed..."
+      - cd results
+      - cat results.xml
   post_build:
     commands:
-      - echo "Build completed. Verifying results..."
-      - cat $CODEBUILD_SRC_DIR/results/results.xml
-
-artifacts:
-  files:
-    - results/results.xml
-  discard-paths: yes
+reports:
+  sca-reports:
+    files:
+      - dependency-check/bin/results/results.xml
+    file-format: "JUNITXML"
