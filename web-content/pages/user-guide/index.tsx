@@ -1,5 +1,5 @@
 import React,{useEffect, useState} from "react";
-import Image from "next/image"
+import Image from "next/image";
 import landingPage from "@/public/assets/images/landingPage.png"
 import signUpOne from "@/public/assets/images/signUpOne.png"
 import signUpTwo from "@/public/assets/images/signUpTwo.png"
@@ -11,20 +11,16 @@ import troubleShootTwo from "@/public/assets/images/troubleShootTwo.png"
 import createNewSession from "@/public/assets/images/createNewSession.png"
 import turnOnOffCamera from "@/public/assets/images/turnOnOffCamera.png"
 import emojiReaction from "@/public/assets/images/emojiReaction.png"
-import Header from "@/components/Header";
+
 import recordMeetingOne from "@/public/assets/images/recordMeetingOne.png"
 import recordMeetingTwo from "@/public/assets/images/recordMeetingTwo.png"
 import recordMeetingThree from "@/public/assets/images/recordMeetingThree.png"
-import { useSessionStorage } from "@/hooks/useStorage";
+import Header from "@/components/Header";
 import { IsAuthenticated,  } from "@/services/authService";
-import verifyAccount from "@/public/assets/images/verifyAccount.png"
+import { useSessionStorage } from "@/hooks/useStorage";
 
-const TermsofEngage = () => {
-  const [expressJoin, setExpressJoin] = useSessionStorage(
-    "meetingJoiner",
-    "yes"
-  );
-const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+const UserGuide = () => {
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
 
   const onboarding = React.useRef(null);
   const createSessionSection = React.useRef(null);
@@ -47,6 +43,10 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const noteSection = React.useRef(null);
   const profileEditSection = React.useRef(null);
   const updateProfileSection = React.useRef(null);
+    const [expressJoin, setExpressJoin] = useSessionStorage(
+    "meetingJoiner",
+    "yes"
+  );
   const scrollDown = ( ref: any) => {
     const offset = 106; // Adjust this value as needed
     const targetPosition =
@@ -57,7 +57,6 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
       behavior: "smooth",
     });
   };
-
   useEffect(() => {
     setLoggedIn(IsAuthenticated());
   }, []);
@@ -328,7 +327,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
               <div className="mt-[40px]">
                 <div className=" ">
                   <div ref={signUpDection}>
-                    <span className="text-zinc-900 text-xl font-bold">
+                    <span className="text-zinc-900 text-xl font-bold  font-bold">
                       2
                       <span className="ml-[5px] font-bold">Sign Up</span>
                     </span>
@@ -356,13 +355,11 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                     <li className="mb-3 list-decimal">Verify your account by inputting the OTP sent to your email address</li>
                     <li className="list-decimal">Once verified, log in to start using the platform.</li>
                   </ul>
-                  <div className="mt-[15px]">
+                  <div className="mt-[15px] ml-6">
                     <Image src={signUpOne} width={0} height={0} alt="Cecure stream landing Page" className="mb-2" />
                     <Image src={signUpTwo} width={0} height={0} alt="Cecure stream landing Page" className="mb-2" />
-                    <Image src={verifyAccount} width={0} height={0} alt="Cecure stream landing Page" className="mb-2" />
+                    <Image src={signUpThree} width={0} height={0} alt="Cecure stream landing Page" />
 
-                        <Image src={signUpThree} width={0} height={0} alt="Cecure stream landing Page" />
-                    
                   </div>
                 </div>
 
@@ -392,7 +389,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                       <ol className="list-decimal mb-2">Click <span className="font-bold"> Login</span> to enter your dashboard.
                       </ol>
                     </ul>
-                    <div className="mt-[15px]">
+                    <div className="mt-[15px] ml-6">
                       <Image src={signInOne} width={0} height={0} alt="Cecure stream landing Page" className="mb-2" />
                       <Image src={signInTwo} width={0} height={0} alt="Cecure stream landing Page" className="mb-2" />
                     </div>
@@ -408,7 +405,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                     <li className="list-disc">Follow the instructions sent to your email to regain access.
                     </li>
                   </ul>
-                  <div className="mt-[15px]">
+                  <div className="mt-[15px] ml-6">
                     <Image src={troubleShootOne} width={0} height={0} alt="Cecure stream landing Page" className="mb-2" />
                     <Image src={troubleShootTwo} width={0} height={0} alt="Cecure stream landing Page" className="mb-2" />
                   </div>
@@ -437,7 +434,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                       <li className=" list-disc"><span className="font-bold">Join an Ongoing Session:</span>  Input a meeting link or meeting ID in the <span className="font-bold">Join</span> field and click <span className="font-bold">Join</span> to enter an existing session.
                       </li>
                     </ul>
-                    <div className="mt-[15px]">
+                    <div className="mt-[15px] ml-6">
                       <Image src={createNewSession} width={0} height={0} alt="Cecure stream create new session" className="mb-2" />
                     </div>
                   </div>
@@ -477,7 +474,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                     </li>
 
                   </ul>
-                  <div className="mt-[15px]">
+                  <div className="mt-[15px] ml-6">
                     <Image src={turnOnOffCamera} width={0} height={0} alt="Cecure stream create new session" className="mb-2" />
                   </div>
 
@@ -551,7 +548,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                       </li>
 
                     </ul>
-                    <div className="mt-8">
+                    <div className="mt-8 ml-6">
                       <Image src={recordMeetingOne} width={0} height={0} alt="Cecure stream emoji reaction" className="mb-2" />
                       <Image src={recordMeetingTwo} width={0} height={0} alt="Cecure stream emoji reaction" className="mb-2" />
                       <Image src={recordMeetingThree} width={0} height={0} alt="Cecure stream emoji reaction" className="mb-2" />
@@ -618,4 +615,4 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
     </>
   );
 }
-export default TermsofEngage
+export default UserGuide
