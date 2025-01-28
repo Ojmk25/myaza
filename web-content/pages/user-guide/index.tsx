@@ -17,6 +17,7 @@ import recordMeetingTwo from "@/public/assets/images/recordMeetingTwo.png"
 import recordMeetingThree from "@/public/assets/images/recordMeetingThree.png"
 import Header from "@/components/Header";
 import { IsAuthenticated,  } from "@/services/authService";
+import { useSessionStorage } from "@/hooks/useStorage";
 
 const UserGuide = () => {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
