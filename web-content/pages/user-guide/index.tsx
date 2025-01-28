@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useEffect, useState} from "react";
 import Image from "next/image";
 import landingPage from "@/public/assets/images/landingPage.png"
 import signUpOne from "@/public/assets/images/signUpOne.png"
@@ -16,8 +16,11 @@ import recordMeetingOne from "@/public/assets/images/recordMeetingOne.png"
 import recordMeetingTwo from "@/public/assets/images/recordMeetingTwo.png"
 import recordMeetingThree from "@/public/assets/images/recordMeetingThree.png"
 import Header from "@/components/Header";
+import { IsAuthenticated,  } from "@/services/authService";
 
 const UserGuide = () => {
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+
   const onboarding = React.useRef(null);
   const createSessionSection = React.useRef(null);
   const startingMeetingSection = React.useRef(null);
@@ -39,6 +42,10 @@ const UserGuide = () => {
   const noteSection = React.useRef(null);
   const profileEditSection = React.useRef(null);
   const updateProfileSection = React.useRef(null);
+    const [expressJoin, setExpressJoin] = useSessionStorage(
+    "meetingJoiner",
+    "yes"
+  );
   const scrollDown = ( ref: any) => {
     const offset = 106; // Adjust this value as needed
     const targetPosition =
@@ -49,10 +56,15 @@ const UserGuide = () => {
       behavior: "smooth",
     });
   };
-
+  useEffect(() => {
+    setLoggedIn(IsAuthenticated());
+  }, []);
   return (
     <>
-      <div className="pt-4">
+      {
+        loggedIn !== null &&
+        <>
+        <div className="pt-4">
       <Header />
 
       </div>
@@ -597,6 +609,8 @@ const UserGuide = () => {
           </div>
         </section>
       </div>
+        </>
+      }
     </>
   );
 }
