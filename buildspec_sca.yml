@@ -3,14 +3,15 @@ phases:
   install:
     commands:
       - echo "Installing required dependencies..."
-      - yum install -y java-1.8.0-openjdk
+      - apt-get update
+      - apt-get install -y openjdk-8-jdk
       - echo "Dependencies installed successfully."
   pre_build:
     commands:
       - chmod 755 $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh
       - echo "Pre-build phase completed."
   build:
-    commands: 
+    commands:
       - cd $CODEBUILD_SRC_DIR/dependency-check/bin
       - mkdir -p results
       - ./dependency-check.sh --project "wordpress" --format JUNIT --out results/results.xml --prettyPrint --enableExperimental --scan $CODEBUILD_SRC_DIR/web-content --exclude "$CODEBUILD_SRC_DIR/dependency-check/"
