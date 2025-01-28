@@ -344,14 +344,15 @@ export default function Header() {
         className=" w-fit fixed bottom-10 right-4 z-50 text-white flex items-center gap-2"
         ref={widgetRef}
       >
-           <div className="flex items-center gap-[6px] p-[10px]">
-              <InfoCircle
+             <Link  className="flex items-center gap-[6px] p-[10px]" href="/user-guide">
+                <InfoCircle
                       size="16"
                       color="#7133CF"
                       className="mx-auto max-w-5"
                     />
                 <p className="text-cs-purple-500 text-[14px]  lg:text-base leading-[18px] font-medium border-b-[1px] border-dashed border-cs-purple-500">User Guide</p>
-              </div>
+             
+             </Link>
         <div className="bg-cs-purple-650 text-cs-grey-60-light p-[10px] rounded-lg font-semibold flex items-center md:gap-x-2 cursor-pointer">
           <MessageQuestion size="20" color="#FAF0FF" className="m-auto" />
           <p className="hidden md:block">Feedback?</p>
