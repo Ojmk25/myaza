@@ -6,17 +6,31 @@ phases:
   pre_build:
     commands:
       - chmod -R 775 $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh
+      - ls -la $CODEBUILD_SRC_DIR/dependency-check/bin/
       - echo "stage pre_build completed"
   build:
     commands: 
-      - mkdir -p $CODEBUILD_SRC_DIR/dependency-check/bin/results
-      - $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh --project "wordpress" --format JUNIT --out $CODEBUILD_SRC_DIR/dependency-check/bin/results/results.xml --prettyPrint --enableExperimental --scan $CODEBUILD_SRC_DIR/web-content --exclude $CODEBUILD_SRC_DIR/dependency-check
+      - mkdir -p results
+      # Debug commands
+      - echo "Current directory: $(pwd)"
+      - echo "Checking if web-content exists:"
+      - ls -la $CODEBUILD_SRC_DIR/web-content
+      - echo "Checking dependency-check directory:"
+      - ls -la $CODEBUILD_SRC_DIR/dependency-check
+      # Simplified command with relative paths
+      - ./dependency-check/bin/dependency-check.sh --project "wordpress" \
+        --format JUNIT \
+        --out results/results.xml \
+        --prettyPrint \
+        --enableExperimental \
+        --scan web-content \
+        --exclude dependency-check
       - echo "OWASP dependency check analysis status is completed..."
-      - cat $CODEBUILD_SRC_DIR/dependency-check/bin/results/results.xml
+      - cat results/results.xml
   post_build:
     commands:
 reports:
   sca-reports:
     files:
-      - dependency-check/bin/results/results.xml
+      - results/results.xml
     file-format: "JUNITXML"
