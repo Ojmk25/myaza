@@ -1,28 +1,20 @@
 version: 0.2
+
 phases:
   install:
     commands:
-      - echo "Installing required dependencies..."
-      - apt-get update
-      - apt-get install -y openjdk-8-jdk
-      - echo "Dependencies installed successfully."
+      - curl -sSL https://github.com/jeremylong/DependencyCheck/releases/latest/download/dependency-check-7.4.4-release.zip -o dependency-check.zip
+      - unzip dependency-check.zip -d dependency-check
   pre_build:
     commands:
       - chmod 755 $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh
+      - npm install --prefix $CODEBUILD_SRC_DIR/web-content
       - echo "Pre-build phase completed."
   build:
     commands:
       - cd $CODEBUILD_SRC_DIR/dependency-check/bin
       - mkdir -p results
-      - ./dependency-check.sh --project "wordpress" --format JUNIT --out results/results.xml --prettyPrint --enableExperimental --scan $CODEBUILD_SRC_DIR/web-content --exclude "$CODEBUILD_SRC_DIR/dependency-check/"
-      - echo "OWASP Dependency Check analysis completed."
-      - cd results
-      - cat results.xml || echo "No results.xml file found."
-  post_build:
-    commands:
-      - echo "Post-build phase completed successfully."
-reports:
-  sca-reports:
-    files:
-      - dependency-check/bin/results/results.xml
-    file-format: "JUNITXML"
+      - ./dependency-check.sh --project "wordpress" --format JUNIT --out results/results.xml --prettyPrint --enableExperimental --disableAnalyzer NodeAuditAnalyzer --scan $CODEBUILD_SRC_DIR/web-content --exclude "$CODEBUILD_SRC_DIR/dependency-check/"
+artifacts:
+  files:
+    - dependency-check/bin/results/*
