@@ -3,18 +3,28 @@ phases:
   install:
     commands:
       - echo "install phase....."
+      - apt-get update && apt-get install -y default-jdk
+
   pre_build:
     commands:
-      - chmod -R 775 $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh
+      - chmod +x $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh
+      - echo "stage pre_build completed"
+
   build:
-    commands:
+    commands: 
+      - cd dependency-check/bin
       - mkdir -p results
-      - ./dependency-check/bin/dependency-check.sh --project "wordpress" --format JUNIT --out results/results.xml --prettyPrint --enableExperimental --scan web-content --exclude dependency-check
+      - ./dependency-check.sh --project "wordpress" --format JUNIT --out results/results.xml --prettyPrint --enableExperimental --scan $CODEBUILD_SRC_DIR/web-content --exclude $CODEBUILD_SRC_DIR/dependency-check/
+      - echo "OWASP dependency check analysis status is completed..."
+      - cd results
+      - cat results.xml
+
   post_build:
     commands:
-      - echo "Post build completed"
+      - echo "Post-build phase completed."
+
 reports:
   sca-reports:
     files:
-      - results/results.xml
+      - dependency-check/bin/results/results.xml
     file-format: "JUNITXML"
