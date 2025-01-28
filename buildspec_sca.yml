@@ -11,24 +11,17 @@ phases:
   build:
     commands: 
       - mkdir -p results
-      # Debug commands
       - echo "Current directory: $(pwd)"
       - echo "Checking if web-content exists:"
       - ls -la $CODEBUILD_SRC_DIR/web-content
       - echo "Checking dependency-check directory:"
       - ls -la $CODEBUILD_SRC_DIR/dependency-check
-      # Simplified command with relative paths
-      - ./dependency-check/bin/dependency-check.sh --project "wordpress" \
-        --format JUNIT \
-        --out results/results.xml \
-        --prettyPrint \
-        --enableExperimental \
-        --scan web-content \
-        --exclude dependency-check
+      - ./dependency-check/bin/dependency-check.sh --project "wordpress" --format JUNIT --out results/results.xml --prettyPrint --enableExperimental --scan web-content --exclude dependency-check
       - echo "OWASP dependency check analysis status is completed..."
       - cat results/results.xml
   post_build:
     commands:
+      - echo "Post build phase completed"
 reports:
   sca-reports:
     files:
