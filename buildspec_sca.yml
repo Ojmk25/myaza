@@ -1,30 +1,37 @@
 version: 0.2
+
 phases:
   install:
     commands:
-      - echo "install phase....."
-      - apt-get update && apt-get install -y default-jdk
-
+      - echo "Installing required dependencies..."
+      - apt-get update && apt-get install -y unzip curl
+      - echo "Downloading and updating Dependency-Check to version 12.0.1..."
+      - curl -L -o dependency-check.zip https://github.com/jeremylong/DependencyCheck/releases/download/v12.0.1/dependency-check-12.0.1-release.zip
+      - unzip dependency-check.zip -d $CODEBUILD_SRC_DIR/dependency-check
+      - chmod +x $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh
+      - rm dependency-check.zip
   pre_build:
     commands:
-      - chmod +x $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh
-      - echo "stage pre_build completed"
-
+      - echo "Setting up Node.js dependencies..."
+      - cd $CODEBUILD_SRC_DIR/web-content
+      - npm install
   build:
-    commands: 
-      - cd dependency-check/bin
-      - mkdir -p results
-      - ./dependency-check.sh --project "wordpress" --format JUNIT --out results/results.xml --prettyPrint --enableExperimental --scan $CODEBUILD_SRC_DIR/web-content --exclude $CODEBUILD_SRC_DIR/dependency-check/
-      - echo "OWASP dependency check analysis status is completed..."
-      - cd results
-      - cat results.xml
-
+    commands:
+      - echo "Running Dependency-Check security scan..."
+      - $CODEBUILD_SRC_DIR/dependency-check/bin/dependency-check.sh \
+          --project "wordpress" \
+          --format JUNIT \
+          --out $CODEBUILD_SRC_DIR/results/results.xml \
+          --prettyPrint \
+          --enableExperimental \
+          --scan $CODEBUILD_SRC_DIR/web-content \
+          --exclude $CODEBUILD_SRC_DIR/dependency-check/
   post_build:
     commands:
-      - echo "Post-build phase completed."
+      - echo "Build completed. Verifying results..."
+      - cat $CODEBUILD_SRC_DIR/results/results.xml
 
-reports:
-  sca-reports:
-    files:
-      - dependency-check/bin/results/results.xml
-    file-format: "JUNITXML"
+artifacts:
+  files:
+    - results/results.xml
+  discard-paths: yes
