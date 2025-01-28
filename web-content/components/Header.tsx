@@ -340,20 +340,19 @@ export default function Header() {
         </div>
       )}
       {showModal === "settings" && <Settings onClose={handleCloseModal} />}
-     <div
-        className=" w-fit fixed bottom-10 right-4 z-50 text-white flex items-center gap-4"
-       
-      >
-             <Link  className="flex items-center gap-[6px] p-[10px]" href="/user-guide">
-                <InfoCircle
+         <Link  className="w-fit fixed bottom-9 right-40 z-50 flex items-center gap-[6px] p-[10px]" href="/user-guide">
+             <InfoCircle
                       size="16"
                       color="#7133CF"
                       className="mx-auto max-w-5"
                     />
                 <p className="text-cs-purple-500 text-[14px]  lg:text-base leading-[18px] font-medium border-b-[1px] border-dashed border-cs-purple-500">User Guide</p>
-             
-             </Link>
-        <div  ref={widgetRef} className="bg-cs-purple-650 text-cs-grey-60-light p-[10px] rounded-lg font-semibold flex items-center md:gap-x-2 cursor-pointer">
+              </Link>
+      <div    ref={widgetRef}
+        className=" w-fit fixed bottom-10 right-4 z-50 text-white"
+      >
+        <div   
+className="bg-cs-purple-650 text-cs-grey-60-light p-[10px] rounded-lg font-semibold flex items-center md:gap-x-2 cursor-pointer">
           <MessageQuestion size="20" color="#FAF0FF" className="m-auto" />
           <p className="hidden md:block">Feedback?</p>
         </div>
