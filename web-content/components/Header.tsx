@@ -189,7 +189,7 @@ export default function Header() {
   return (
     <>
       {loggedIn !== null && (
-        <div className="flex justify-between items-center w-full  px-6 pb-6 shadow-1xl">
+        <div className="flex justify-between items-center w-full  px-6 pb-6 shadow-1xl mb-6">
           <Link href={"/"} className=" md:hidden">
             <Image src={cecureStreamSmall} alt="logo" />
           </Link>
