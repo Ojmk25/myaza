@@ -353,10 +353,11 @@ export default function Header() {
               </Link>
       }
         
-      <div    ref={widgetRef}
-        className=" w-fit fixed bottom-10 right-4 z-50 text-white"
+    <div
+        className=" w-fit fixed bottom-5 right-4 z-50 text-white"
+        ref={widgetRef}
       >
-        <div   
+        <div     
 className="bg-cs-purple-650 text-cs-grey-60-light p-[10px] rounded-lg font-semibold flex items-center md:gap-x-2 cursor-pointer">
           <MessageQuestion size="20" color="#FAF0FF" className="m-auto" />
           <p className="hidden md:block">Feedback?</p>
