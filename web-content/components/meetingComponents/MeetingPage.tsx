@@ -14,6 +14,7 @@ import {
   DefaultMeetingSession,
   LogLevel,
   MeetingSessionConfiguration,
+  AudioVideoObserver
 } from 'amazon-chime-sdk-js'
 import MeetingSection from '@/components/meetingComponents/MeetingSection'
 import MeetingControl from '@/components/meetingComponents/MeetingControl'
