@@ -9,16 +9,11 @@ import {
   useRosterState
 } from 'amazon-chime-sdk-component-library-react'
 import {
-  AudioVideoObserver,
-  ConnectionHealthData,
   ConsoleLogger,
   DefaultDeviceController,
   DefaultMeetingSession,
   LogLevel,
   MeetingSessionConfiguration,
-  VideoAdaptiveProbePolicy,
-  VideoPriorityBasedPolicy,
-  VideoTileState
 } from 'amazon-chime-sdk-js'
 import MeetingSection from '@/components/meetingComponents/MeetingSection'
 import MeetingControl from '@/components/meetingComponents/MeetingControl'
@@ -49,6 +44,9 @@ import { FailureSlideIn } from '../FailureSlideIn'
 import LoadingScreen from '../modals/LoadingScreen'
 import { useAppContext } from '@/context/StoreContext'
 import EndedMeetingModal from '../modals/EndedMeeting'
+import {
+  configureVideoPreferences, setupBandwidthMonitoring
+} from '../../utils/videoConfig';
 
 type AtteendeeDetailsProp = {
   full_name: string
@@ -218,45 +216,33 @@ export default function MeetingPage ({
             logger,
             deviceController
           )
-          // Set initial bandwidth parameters
-          meetingSession.audioVideo.setVideoMaxBandwidthKbps(1500)
-          // Create observer for bandwidth and connection monitoring
-          const observer: AudioVideoObserver = {
-            connectionHealthDidChange: (
-              connectionHealth: ConnectionHealthData
-            ) => {
-              if (connectionHealth.consecutiveMissedPongs > 4) {
-                setNoNetwork(true)
-                meetingSession.audioVideo.setVideoMaxBandwidthKbps(200)
-              } else {
-                setNoNetwork(false)
-                meetingSession.audioVideo.setVideoMaxBandwidthKbps(1500)
-              }
-            },
+           
+           await configureVideoPreferences(meetingSession)
+
+           setupBandwidthMonitoring(meetingSession)
+
+           const observer: AudioVideoObserver = {
             videoTileDidUpdate: (tileState: VideoTileState) => {
               if (tileState.boundAttendeeId) {
-                console.log(
-                  `Video tile updated for attendee: ${tileState.boundAttendeeId}`
-                )
+                console.log(`Video tile updated for attendee: ${tileState.boundAttendeeId}`);
               }
             },
-            
+            connectionHealthDidChange: (connectionHealth: ConnectionHealthData) => {
+              const currentDownstreamPacketLoss = connectionHealth.currentDownstreamPacketLoss || 0;
+              setNoNetwork(currentDownstreamPacketLoss > 4);
+            },
+            // Required methods to satisfy AudioVideoObserver interface
             audioVideoDidStart: () => {},
-            audioVideoDidStop: () => {},
-            videoTileWasRemoved: () => {},
-            videoSendDidBecomeUnavailable: () => {
-              setNoNetwork(true)
-              console.log('Video send became unavailable')
-            }
-          }
+            audioVideoDidStop: () => {}
+          };
 
-          meetingSession.audioVideo.addObserver(observer)
-
+          // Add the observer to the audioVideo instance
+          meetingSession.audioVideo.addObserver(observer);
+ 
           const options = {
-            deviceLabels: DeviceLabels.AudioAndVideo
+             deviceLabels: DeviceLabels.AudioAndVideo
           }
           setMeetingSession(meetingSession)
-
           await meetingManager.join(meetingSessionConfiguration, options)
           await meetingManager.start()
           meetingManager.invokeDeviceProvider(DeviceLabels.AudioAndVideo)
