@@ -13,8 +13,7 @@ import {
   DefaultDeviceController,
   DefaultMeetingSession,
   LogLevel,
-  MeetingSessionConfiguration,
-  AudioVideoObserver
+  MeetingSessionConfiguration
 } from 'amazon-chime-sdk-js'
 import MeetingSection from '@/components/meetingComponents/MeetingSection'
 import MeetingControl from '@/components/meetingComponents/MeetingControl'
@@ -46,8 +45,9 @@ import LoadingScreen from '../modals/LoadingScreen'
 import { useAppContext } from '@/context/StoreContext'
 import EndedMeetingModal from '../modals/EndedMeeting'
 import {
-  configureVideoPreferences, setupBandwidthMonitoring
-} from '../../utils/videoConfig';
+  configureVideoPreferences,
+  setupBandwidthMonitoring
+} from '../../utils/videoConfig'
 
 type AtteendeeDetailsProp = {
   full_name: string
@@ -217,31 +217,35 @@ export default function MeetingPage ({
             logger,
             deviceController
           )
-           
-           await configureVideoPreferences(meetingSession)
 
-           setupBandwidthMonitoring(meetingSession)
+          await configureVideoPreferences(meetingSession)
 
-           const observer: AudioVideoObserver = {
-            videoTileDidUpdate: (tileState: VideoTileState) => {
+          setupBandwidthMonitoring(meetingSession)
+
+          const observer = {
+            videoTileDidUpdate: (tileState: any) => {
               if (tileState.boundAttendeeId) {
-                console.log(`Video tile updated for attendee: ${tileState.boundAttendeeId}`);
+                console.log(
+                  `Video tile updated for attendee: ${tileState.boundAttendeeId}`
+                )
               }
             },
-            connectionHealthDidChange: (connectionHealth: ConnectionHealthData) => {
-              const currentDownstreamPacketLoss = connectionHealth.currentDownstreamPacketLoss || 0;
-              setNoNetwork(currentDownstreamPacketLoss > 4);
+            connectionHealthDidChange: (connectionHealth: any) => {
+              const currentDownstreamPacketLoss =
+                connectionHealth.fractionPacketsLostInboundInLastMinute?.[0] ||
+                0
+              setNoNetwork(currentDownstreamPacketLoss > 4)
             },
             // Required methods to satisfy AudioVideoObserver interface
             audioVideoDidStart: () => {},
             audioVideoDidStop: () => {}
-          };
+          }
 
           // Add the observer to the audioVideo instance
-          meetingSession.audioVideo.addObserver(observer);
- 
+          meetingSession.audioVideo.addObserver(observer)
+
           const options = {
-             deviceLabels: DeviceLabels.AudioAndVideo
+            deviceLabels: DeviceLabels.AudioAndVideo
           }
           setMeetingSession(meetingSession)
           await meetingManager.join(meetingSessionConfiguration, options)
