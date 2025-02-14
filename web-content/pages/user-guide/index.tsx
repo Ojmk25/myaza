@@ -78,9 +78,9 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
       <div>
         <div className="bg-gray-50">
           <section className="container flex items-center flex-col  pt-12 py-[60px] mx-auto text-cila-slate-700">
-            <p className="text-center text-blue-800 md:text-lg text-xs sora-semi">
+            <h1 className="text-center text-blue-800 md:text-lg text-xs sora-semi">
               User Guide for CecureStream
-            </p>
+            </h1>
             <p className="text-center text-[20px] my-4 leading-[26px] text-cila-blue-400 mx-auto px-2 lg:w-3/6">Welcome to CecureStream! This guide will walk you through the key features, from onboarding to utilizing for effective communication and collaboration.</p>
           </section>
         </div>
