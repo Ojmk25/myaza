@@ -18,6 +18,7 @@ import recordMeetingThree from "@/public/assets/images/recordMeetingThree.png"
 import { useSessionStorage } from "@/hooks/useStorage";
 import { IsAuthenticated,  } from "@/services/authService";
 import verifyAccount from "@/public/assets/images/verifyAccount.png"
+import Head from "next/head";
 
 const TermsofEngage = () => {
   const [expressJoin, setExpressJoin] = useSessionStorage(
@@ -63,6 +64,10 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   }, []);
   return (
     <>
+          <Head>
+        <title>User guide</title>
+        <meta name="description" content="Web video conferencing tool" />
+      </Head>
       {
         loggedIn !== null &&
         <>
