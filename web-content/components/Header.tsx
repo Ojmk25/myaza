@@ -348,7 +348,7 @@ const [showTerms,setShowTerms] = useState(false)
         pathname !== "/privacy-policy" &&
         pathname !== "/terms-of-service"
         &&
-         <button onClick={()=>setShowTerms(!showTerms)}  className="w-fit fixed bottom-3 right-14 md:right-40 z-50 flex items-center gap-[6px] p-[10px]">
+         <button onMouseEnter={()=>setShowTerms(!showTerms)} onMouseLeave={()=>setShowTerms(!showTerms)}  className="w-fit fixed bottom-3 right-14 md:right-40 z-50 flex items-center gap-[6px] p-[10px]">
              <InfoCircle
                       size="16"
                       color="#7133CF"

@@ -745,14 +745,10 @@ const TermsofEngage = () => {
                         
                         <ul className="mb-2 pl-5 lg:pl-[44px]">
                           <li className="mb-3 list-disc leading-5 font-bold">
+                            The Nigeria Data Protection Act
+                          </li>
+                          <li className="mb-3 list-disc leading-5 font-bold">
                           General Data Protection Regulation (GDPR)
-                          </li>
-                          <li className="mb-3 list-disc leading-5 font-bold">
-                          California Consumer Privacy Act (CCPA)
-                          </li>
-                          <li className="mb-3 list-disc leading-5 font-bold">
-                            Health Insurance Portability and Accountability Act (HIPAA)
-                         
                           </li>
                           <li className="mb-2 list-disc leading-5">
                         <span className="font-bold"> ISO/IEC 27701: </span> Privacy Information Management System                          </li>
@@ -859,6 +855,9 @@ const TermsofEngage = () => {
                       </div>
                       <div className="mt-[15px] ml-6" ref={termsSection}>
                       <ul className="mb-2 pl-5 lg:pl-[44px]">
+                      <li className="mb-3 list-decimal">   
+                            <a href="https://ndpc.gov.ng/resources/#flipbook-df_2442/1/" target="_blank" className="font-bold text-cs-purple-500 underline "> Nigeria Data Protection Act </a>   
+                          </li>
                           <li className="mb-3 list-decimal"> <span className="font-bold">ISO/IEC 27001
 
 2022 –</span>  Information Security Management Systems
@@ -869,13 +868,6 @@ Requirements: <a href="https://www.iso.org/obp/ui/en/#iso:std:iso-iec:27001:ed-3
                           <li className="mb-3 list-decimal"><span className="font-bold">GDPR</span> – General Data Protection Regulation:
                           <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32016R0679" target="_blank" className="font-bold text-cs-purple-500 underline"> GDPR </a>   
                           </li>
-                          <li className="mb-3 list-decimal "> <span className="font-bold">HIPAA</span> Requirements for suppliers handling PHI:
-                          <a href="https://www.hhs.gov/hipaa/index.html" target="_blank" className="font-bold text-cs-purple-500 underline">HIPAA </a>   
-                            </li>
-                            <li className="mb-3 list-decimal "> <span className="font-bold">California Consumer Privacy Act (CCPA):</span>
-                            <a href="https://oag.ca.gov/privacy/ccpa" target="_blank" className="font-bold text-cs-purple-500 underline"> CCPA
-                             </a>   
-                        </li>
                         </ul>
                       </div>
 

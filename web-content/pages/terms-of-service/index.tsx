@@ -269,7 +269,7 @@ const TermsofEngage = () => {
                 <p className="text-lg my-4 text-cs-grey-800 px-2 ">
                   We know it’s tempting to skip these Terms of Service, but it’s important to establish what you can expect from us as you use <span className="font-semibold text-[#333333] text-base">CecureStream</span> , and what we expect from you. Understanding these terms is important because,by accessing or using <span className="font-semibold text-[#333333] text-base">CecureStream</span> , you’re agreeing to these terms.     </p>
                 <p className=" text-lg my-4 text-cs-grey-800  px-2 ">
-                  Besides these terms, we also publish a <Link className="text-cs-purple-500 font-semibold" href="/privacy-policy">CIL Privacy Policy v1.0.pdf .</Link>  Although it’s not part of these terms, we encourage you to read it to better understand how you can update, manage, export, and delete your information.                </p>
+                  Besides these terms, we also publish a <Link className="text-cs-purple-500 font-semibold" href="/privacy-policy">Privacy Policy.</Link>  Although it’s not part of these terms, we encourage you to read it to better understand how you can update, manage, export, and delete your information.                </p>
                 <p className=" text-lg my-2 font-bold text-cs-grey-800 px-2 ">
 
                   Terms of Service
@@ -388,7 +388,7 @@ const TermsofEngage = () => {
                           </li>
                         </ul>
                         <p className="ml-[8px] mb-2 text-cs-grey-800 text-base font-light font-lota ">
-                          Our Acceptable Use Policy <Link className="text-cs-purple-500 font-semibold" href="/acceptance-policy">CIL Acceptable Use Policy v1.0.pdf</Link>  provides additional details about appropriate conduct that everyone using our services must follow. If you find that others aren’t following these rules, our services allow you to report abuse.   </p>
+                           <Link className="text-cs-purple-500 font-semibold" href="/acceptance-policy">Our Acceptable Use Policy </Link>  provides additional details about appropriate conduct that everyone using our services must follow. If you find that others aren’t following these rules, our services allow you to report abuse.   </p>
 
                       </div>
                       <div className="mt-[15px] ml-6" ref={abuseSection}>
@@ -455,7 +455,7 @@ const TermsofEngage = () => {
                       </div>
                       <div className="mt-[15px] ml-6">
                         <p className="ml-[8px] mb-2 text-cs-grey-800 text-base font-light font-lota leading-relaxed">
-                        To provide you with our services, we sometimes send you service announcements and other information. To learn more about how we communicate with you, see our Privacy Policy <Link className="text-cs-purple-500 font-semibold" href="/privacy-policy">CIL Privacy Policy v1.0.pdf .</Link>                        </p>
+                        To provide you with our services, we sometimes send you service announcements and other information. To learn more about how we communicate with you, see  <Link className="text-cs-purple-500 font-semibold" href="/privacy-policy">our Privacy Policy</Link>                        </p>
                         <p className="ml-[8px] mb-2 text-cs-grey-800 text-base font-light font-lota leading-relaxed">
                         If you choose to give us feedback, such as suggestions to improve our services, we may act on your feedback without obligation to you. </p>
                      
