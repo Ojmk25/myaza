@@ -433,8 +433,8 @@ const TermsofEngage = () => {
                           <li className="mb-3 list-disc leading-5">
                             Data collection is minimised to what is strictly necessary for the stated
                             purposes.                          </li>
-                          <li className=" list-disc leading-5 mb-3">Data collection is minimised to what is strictly necessary for the stated
-                            purposes.
+                          <li className=" list-disc leading-5 mb-3">Consent is obtained before collecting personal data, except where other legal
+bases apply (e.g., contract, legal obligation).
                           </li>
                         </ul>
                       </div>
