@@ -69,7 +69,7 @@ const TermsofEngage = () => {
           </div>
           <div>
             <section className=" md:pb-[177px] px-2">
-            <h1 className="text-center mt-4 font-bold text-xl lg:text-5xl text-[#080808]">Privacy Policy</h1>
+            <h1 className="text-center mt-12 font-bold text-xl lg:text-5xl text-[#080808]">Privacy Policy</h1>
               <p className=" text-xl text-center my-4 leading-[26px] text-cs-purple-500 px-2 ">
                   Last Updated January, 2025
                 </p>
@@ -160,13 +160,6 @@ const TermsofEngage = () => {
                               <span className="ml-[5px]">4.5 Data Collection and Minimization
                               </span>
                             </div>
-                            // <div
-                            //   className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
-                            //   onClick={() => scrollDown(dataSecuritySection)}
-                            // >
-                            //   <span className="ml-[5px]">4.6 Data Security
-                            //   </span>
-                            // </div>
                             <div
                               className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                               onClick={() => scrollDown(dataBreachSection)}
