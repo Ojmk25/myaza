@@ -157,7 +157,7 @@ const TermsofEngage = () => {
                               className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                               onClick={() => scrollDown(dataCollectionSection)}
                             >
-                              <span className="ml-[5px]">4.5 Data Security
+                              <span className="ml-[5px]">4.5 Data Collection and Minimization
                               </span>
                             </div>
                             <div
@@ -504,29 +504,22 @@ bases apply (e.g., contract, legal obligation).
 
                         </ul>
                       </div>
-                      <div className="mt-[15px] ml-6" ref={dataCollectionSection}>
+ <div className="mt-[15px] ml-6" ref={dataCollectionSection}>
                         <p className="ml-[5px] font-semibold mb-4">
-                        4.5 Data Security
+                        4.5 Data Collection and Minimization
                         </p>
                         <ul className="pl-[5px] lg:pl-[44px] mb-4">
                           <li className="mb-3 list-disc leading-5 ">
-                           Personal data is protected by technical and organisational measures, including:
-                            <ul className="pl-[5px] lg:pl-[44px] my-4">
-                        
-                                                   <li className="mb-3 list-disc leading-5 "><span className="font-bold">Encryption: </span> Data in transit and at rest must be encrypted using
-industry-standard protocols (e.g., AES-256).</li>
-                          <li className="mb-3 list-disc leading-5 "><span className="font-bold">Access Control: </span> Role-based access ensures that only authorised
-personnel handle sensitive data.</li>
-   <li className="mb-3 list-disc leading-5 "><span className="font-bold">Monitoring: </span> Systems are monitored to detect unauthorised access or
-anomalies.</li>  
-<li className="mb-3 list-disc leading-5 "><span className="font-bold">Secure Development Practices: </span> Privacy-by-design principles are
-applied in all system developments.</li>
+                            Personal data is collected only for legitimate, specific, and lawful purposes.
+                          </li>
+                          <li className="mb-3 list-disc leading-5">
+                            Data collection is minimised to what is strictly necessary for the stated
+                            purposes.                          </li>
+                          <li className=" list-disc leading-5 mb-3">Data collection is minimised to what is strictly necessary for the stated
+                            purposes.
+                          </li>
                         </ul>
-                           </li>
-                         
-                        </ul>
-                      </div>
-                      <div className="mt-[15px] ml-6" ref={dataSecuritySection}>
+                      </div>                      <div className="mt-[15px] ml-6" ref={dataSecuritySection}>
                         <p className="ml-[5px] font-semibold mb-4">
                         4.6 Data Security
                         </p>
