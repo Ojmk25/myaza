@@ -19,6 +19,7 @@ import { useSessionStorage } from "@/hooks/useStorage";
 import { IsAuthenticated,  } from "@/services/authService";
 import verifyAccount from "@/public/assets/images/verifyAccount.png"
 import Head from "next/head";
+import TermsNav from "@/components/TermsNav";
 
 const TermsofEngage = () => {
   const [expressJoin, setExpressJoin] = useSessionStorage(
@@ -76,25 +77,25 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
 
       </div>
       <div>
-        <div className="bg-gray-50">
-          <section className="container flex items-center flex-col  pt-12 py-[60px] mx-auto text-cila-slate-700">
-            <h1 className="text-center text-blue-800 md:text-lg text-xs sora-semi">
-              User Guide for CecureStream
-            </h1>
-            <p className="text-center text-[20px] my-4 leading-[26px] text-cila-blue-400 mx-auto px-2 lg:w-3/6">Welcome to CecureStream! This guide will walk you through the key features, from onboarding to utilizing for effective communication and collaboration.</p>
-          </section>
-        </div>
+     
 
         <section className=" md:pb-[177px] px-2">
+       
+              <h1 className="text-center mt-4 font-bold text-xl lg:text-5xl text-[#080808]"> User Guide for CecureStream</h1>
+              <p className=" text-xl text-center my-4 leading-[26px] text-cs-purple-500 px-2 ">
+                  Last Updated January, 2025
+              </p>
+                            <TermsNav/>
+              
           <div className="container mx-auto md:flex">
 
             <div className="md:w-[30%] hidden lg:block pl-6">
               <div className="sticky top-[15%]">
                 <div className="h-[400px] overflow-y-auto px-[10px] ">
-                  <div className="mb-6  md:w-full text-zinc-800 text-base  font-normal">
+                  <div className="mb-6  md:w-full text-cs-grey-700 text-base  font-normal">
                     <div className="mb-[28px] ">
                       <div
-                        className="cursor-pointer hover:text-orange-600 hover:font-semibold"
+                        className="cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                         onClick={() => scrollDown(onboarding)}
                       >
                         1{" "}
@@ -102,13 +103,13 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                       </div>
                       <div className="ml-[24px] mt-[20px] flex gap-[20px] flex-col">
                         <div
-                          className=" cursor-pointer hover:text-orange-600 hover:font-semibold"
+                          className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                           onClick={() => scrollDown(gettingStartedSection)}
                         >
                           <span className="ml-[5px]">Getting Started</span>
                         </div>
                         <div
-                          className=" cursor-pointer hover:text-orange-600 hover:font-semibold"
+                          className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                           onClick={() => scrollDown(firstTimerSetup)}
                         >
                           <span className="ml-[5px]">First-Timer Setup</span>
@@ -117,7 +118,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                     </div>
                     <div className="mb-[28px] ">
                       <div
-                        className="cursor-pointer hover:text-orange-600 hover:font-semibold"
+                        className="cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                         onClick={() => scrollDown(signUpDection)}
                       >
                         2<span className="ml-[5px]">Sign Up</span>
@@ -125,7 +126,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                       <div className="ml-[24px] mt-[20px] flex gap-[20px] flex-col">
 
                         <div
-                          className=" cursor-pointer hover:text-orange-600 hover:font-semibold"
+                          className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                           onClick={() => scrollDown(creatingAccountSection)}
                         >
 
@@ -136,7 +137,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                     </div>
                     <div className="mb-[28px] ">
                       <div
-                        className="cursor-pointer hover:text-orange-600 hover:font-semibold"
+                        className="cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                         onClick={() => scrollDown(signInSection)}
                       >
                         3{" "}
@@ -146,7 +147,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                       </div>
                       <div className="ml-[24px] mt-[20px] flex gap-[20px] flex-col">
                         <div
-                          className=" cursor-pointer hover:text-orange-600 hover:font-semibold"
+                          className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                           onClick={() => scrollDown(accessingAccountSection)}
                         >
                           <span className="ml-[5px]">
@@ -155,7 +156,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                           </span>
                         </div>
                         <div
-                          className="cursor-pointer hover:text-orange-600 hover:font-semibold"
+                          className="cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                           onClick={() => scrollDown(trobleshootingSection)}
                         >
                           <span className="ml-[5px]">
@@ -168,7 +169,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                     </div>
                     <div className="mb-[28px] ">
                       <div
-                        className="cursor-pointer hover:text-orange-600 hover:font-semibold"
+                        className="cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                         onClick={() => scrollDown(createSessionSection)}
                       >
                         4{" "}
@@ -178,7 +179,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                       </div>
                       <div className="ml-[24px] mt-[20px] flex gap-[20px] flex-col">
                         <div
-                          className=" cursor-pointer hover:text-orange-600 hover:font-semibold"
+                          className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                           onClick={() => scrollDown(startingMeetingSection)}
                         >
                           <span className="ml-[5px]">Starting and Joining Meetings
@@ -188,7 +189,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                     </div>
                     <div className="mb-[28px] ">
                       <div
-                        className="cursor-pointer hover:text-orange-600 hover:font-semibold"
+                        className="cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                         onClick={() => scrollDown(switchCameraSection)}
                       >
                         5 <span className="ml-[5px]">Turn On and Off Camera and Microphone
@@ -196,14 +197,14 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                       </div>
                       <div className="ml-[24px] mt-[20px] flex gap-[20px] flex-col">
                         <div
-                          className=" cursor-pointer hover:text-orange-600 hover:font-semibold"
+                          className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                           onClick={() => scrollDown(manageCameraSection)}
                         >
                           <span className="ml-[5px]">Managing Camera and Mic
                           </span>
                         </div>
                         <div
-                          className="cursor-pointer hover:text-orange-600 hover:font-semibold"
+                          className="cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                           onClick={() => scrollDown(tipSection)}
                         >
                           Tips                          
@@ -213,7 +214,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                     </div>
                     <div className="mb-[28px] ">
                       <div
-                        className="cursor-pointer hover:text-orange-600 hover:font-semibold"
+                        className="cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                         onClick={() => scrollDown(emojiReactionSection)}
                       >
                         6<span className="ml-[5px]"> Emoji Reactions</span>
@@ -221,7 +222,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
 
                       <div className="ml-[24px] mt-[20px] flex gap-[20px] flex-col">
                         <div
-                          className=" cursor-pointer hover:text-orange-600 hover:font-semibold"
+                          className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                           onClick={() => scrollDown(usingEmojiSection)}
                         >
 
@@ -232,7 +233,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                     </div>
                     <div className="mb-[28px] ">
                       <div
-                        className="cursor-pointer hover:text-orange-600 hover:font-semibold"
+                        className="cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                         onClick={() => scrollDown(recordMeetingSection)}
                       >
                         7{" "}
@@ -242,7 +243,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                       </div>
                       <div className="ml-[24px] mt-[20px] flex gap-[20px] flex-col">
                         <div
-                          className=" cursor-pointer hover:text-orange-600 hover:font-semibold"
+                          className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                           onClick={() => scrollDown(switchRecordingSection)}
                         >
                           <span className="ml-[5px]">
@@ -250,14 +251,14 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                           </span>
                         </div>
                         <div
-                          className=" cursor-pointer hover:text-orange-600 hover:font-semibold"
+                          className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                           onClick={() => scrollDown(accessRecordingSection)}
                         >
                           <span className="ml-[5px]">Accessing Recordings
                           </span>
                         </div>
                         <div
-                          className=" cursor-pointer hover:text-orange-600 hover:font-semibold"
+                          className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                           onClick={() => scrollDown(noteSection)}
                         >
                           <span className="ml-[5px]">
@@ -267,7 +268,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                     </div>
                     <div className="mb-[28px] ">
                       <div
-                        className="cursor-pointer hover:text-orange-600 hover:font-semibold"
+                        className="cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                         onClick={() => scrollDown(profileEditSection)}
                       >
                         8{" "}
@@ -277,7 +278,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                       </div>
                       <div className="ml-[24px] mt-[20px] flex gap-[20px] flex-col">
                         <div
-                          className=" cursor-pointer hover:text-orange-600 hover:font-semibold"
+                          className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                           onClick={() => scrollDown(updateProfileSection)}
                         >
                           <span className="ml-[5px]"> Updating Your Profile
@@ -292,26 +293,33 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
               </div>
             </div>
 
-            <div className="lg:w-[70%] w-full lg:ml-[79px]  lg:mt-0 mb-[60px] lg:mb-0">
+                <div className="lg:w-[70%] w-full lg:ml-[79px]  lg:mt-0 mb-[60px] lg:mb-0">
+                     <div className="bg-gray-50">
+          <section className="text-cs-grey-800">
+            <p className="text-lg my-4  text-cs-grey-800 px-2 ">
+                 Welcome to CecureStream! This guide will walk you through the key features, from onboarding to utilizing for effective communication and collaboration. </p>
+                
+          </section>
+        </div>
 
               <div className="mt-[40px]">
                 <div className=" ">
                   <div>
                     <span
-                      className="text-zinc-900 text-xl font-bold"
+                      className="text-cs-grey-800 text-xl font-bold"
                       ref={onboarding}
                     >
                       1.<span className="ml-[5px] font-bold">Onboarding</span>
                     </span>
                   </div>
                   <div className="mt-[15px] ml-6" ref={gettingStartedSection}>
-                    <span className="ml-[8px] font-semibold text-zinc-900 text-base font-lota leading-relaxed">
+                    <span className="ml-[8px] font-semibold text-cs-grey-800 text-base font-lota leading-relaxed">
                       Getting Started
                     </span>
                   </div>
                 </div>
                 <div className="mt-[15px] ml-6">
-                  <p className="ml-[8px] text-zinc-900 text-base font-light font-lota leading-relaxed">
+                  <p className="ml-[8px] text-cs-grey-800 text-base font-light font-lota leading-relaxed">
                     Visit our official webapp <a className="text-cs-purple-500" href="https://cecurestream.com/" target="_blank" rel="noopener noreferrer">https://cecurestream.com/</a>
                   </p>
                 </div>
@@ -319,7 +327,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                   <Image src={landingPage} width={0} height={0} alt="Cecure stream landing Page" className="w-9/12" />
                 </div>
                 <div className="mt-[15px] ml-6" ref={firstTimerSetup}>
-                  <p className="ml-[8px] mb-6 text-zinc-900 text-base font-bold font-lota leading-relaxed">
+                  <p className="ml-[8px] mb-6 text-cs-grey-800 text-base font-bold font-lota leading-relaxed">
                     First-Time Setup
                   </p>
                   <ul className="pl-8">
@@ -333,7 +341,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
               <div className="mt-[40px]">
                 <div className=" ">
                   <div ref={signUpDection}>
-                    <span className="text-zinc-900 text-xl font-bold">
+                    <span className="text-cs-grey-800 text-xl font-bold">
                       2
                       <span className="ml-[5px] font-bold">Sign Up</span>
                     </span>
@@ -377,7 +385,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
               <div className="mt-[40px]">
                 <div className=" ">
                   <div ref={signInSection}>
-                    <span className="text-zinc-900 text-xl font-bold">
+                    <span className="text-cs-grey-800 text-xl font-bold">
                       3
                       <span className="ml-[5px] font-bold">
                         Sign in
@@ -422,7 +430,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
               <div className="mt-[40px]">
                 <div className=" ">
                   <div ref={createSessionSection}>
-                    <span className="text-zinc-900 text-xl font-bold">
+                    <span className="text-cs-grey-800 text-xl font-bold">
                       4
                       <span className="ml-[5px]">
                         Create a New Session
@@ -451,13 +459,13 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
               <div className="mt-[40px]">
                 <div className=" " ref={switchCameraSection}>
                   <div>
-                    <span className="text-zinc-900 text-xl  font-bold">
+                    <span className="text-cs-grey-800 text-xl  font-bold">
                       5
                       <span className="ml-[5px] font-bold">Turn On and Off Camera and Microphone</span>
                     </span>
                   </div>
                   <div className="mt-[15px] ml-6" ref={manageCameraSection}>
-                    <p className="text-zinc-900 text-base ml-[5px] mb-3 font-semibold font-lotar leading-relaxed">
+                    <p className="text-cs-grey-800 text-base ml-[5px] mb-3 font-semibold font-lotar leading-relaxed">
                       Managing Camera and Mic
                     </p>
                     <ul className="ml-[15px] mb-3">
@@ -471,13 +479,13 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                   </div>
                 </div>
                 <div className="mt-[15px] ml-6" ref={tipSection}>
-                  <p className="text-zinc-900 ml-[5px] first-letter:text-base font-semibold font-lotar leading-relaxed">
+                  <p className="text-cs-grey-800 ml-[5px] first-letter:text-base font-semibold font-lotar leading-relaxed">
 
                     Tips                  </p>
                   <ul className="ml-[15px] mb-3">
-                    <li className="mb-2 list-disc ml-[8px] text-zinc-900 text-base font-light font-lota leading-relaxed">Always mute your microphone when not speaking to reduce background noise.
+                    <li className="mb-2 list-disc ml-[8px] text-cs-grey-800 text-base font-light font-lota leading-relaxed">Always mute your microphone when not speaking to reduce background noise.
                     </li>
-                    <li className="mb-2 list-disc ml-[8px] text-zinc-900 text-base font-light font-lota leading-relaxed">Check your video frame before turning on the camera for a professional appearance.
+                    <li className="mb-2 list-disc ml-[8px] text-cs-grey-800 text-base font-light font-lota leading-relaxed">Check your video frame before turning on the camera for a professional appearance.
 
                     </li>
 
@@ -492,13 +500,13 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
               <div className="mt-[40px]">
                 <div className=" " ref={emojiReactionSection}>
                   <div>
-                    <span className="text-zinc-900 text-xl font-bold">
+                    <span className="text-cs-grey-800 text-xl font-bold">
                       6
                       <span className="ml-[5px] font-bold">Emoji Reactions</span>
                     </span>
                   </div>
                   <div className="mt-[15px] ml-6" ref={usingEmojiSection}>
-                    <p className="text-zinc-900 ml-[5px] mb-3 text-base font-semibold font-lotar leading-relaxed">
+                    <p className="text-cs-grey-800 ml-[5px] mb-3 text-base font-semibold font-lotar leading-relaxed">
 
                       Using Emoji
                     </p>
@@ -522,7 +530,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
               <div className="mt-[40px]">
                 <div className=" " ref={recordMeetingSection}>
                   <div>
-                    <span className="text-zinc-900 text-xl font-bold">
+                    <span className="text-cs-grey-800 text-xl font-bold">
                       7
                       <span className="ml-[5px] font-bold">
                         Recording Meetings
@@ -530,7 +538,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                     </span>
                   </div>
                   <div className="mt-[15px] ml-6 mb-4" ref={switchRecordingSection}>
-                    <p className="text-zinc-900 ml-[5px] mb-3 text-base font-semibold font-lotar leading-relaxed">
+                    <p className="text-cs-grey-800 ml-[5px] mb-3 text-base font-semibold font-lotar leading-relaxed">
                       Starting and Stopping a Recording
                     </p>
                     <ul className="mb-2 pl-6">
@@ -545,7 +553,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                   </div>
 
                   <div className="mt-[15px] ml-6" ref={accessRecordingSection}>
-                    <p className="text-zinc-900 ml-[5px] mb-3 text-base font-semibold font-lotar leading-relaxed">
+                    <p className="text-cs-grey-800 ml-[5px] mb-3 text-base font-semibold font-lotar leading-relaxed">
 
                       Accessing Recordings
                     </p>
@@ -564,7 +572,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                     </div>
                   </div>
                   <div ref={noteSection} className="mt-[15px] ml-12">
-                    <p className="text-zinc-900 mb-3 text-base font-semibold font-lotar leading-relaxed">
+                    <p className="text-cs-grey-800 mb-3 text-base font-semibold font-lotar leading-relaxed">
                       Note                    </p>
                     <ul className="mb-2 pl-3">
                       <li className="list-disc">Inform participants before starting a recording to ensure compliance with privacy guidelines.
@@ -577,7 +585,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
               <div className="mt-[40px]">
                 <div className=" " ref={profileEditSection}>
                   <div>
-                    <span className="text-zinc-900 text-xl font-bold">
+                    <span className="text-cs-grey-800 text-xl font-bold">
                       8
                       <span className="ml-[5px]">
                         Profile Edit:{" "}
@@ -585,7 +593,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                     </span>
                   </div>
                   <div className="mt-[15px] ml-6" ref={updateProfileSection}>
-                    <p className="text-zinc-900 ml-[5px] mb-4 text-base font-semibold font-lotar leading-relaxed">
+                    <p className="text-cs-grey-800 ml-[5px] mb-4 text-base font-semibold font-lotar leading-relaxed">
                       Updating Your Profile
                     </p>
                     <ul className="mb-2 pl-5">
