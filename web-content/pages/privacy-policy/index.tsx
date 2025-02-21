@@ -160,30 +160,30 @@ const TermsofEngage = () => {
                               <span className="ml-[5px]">4.5 Data Collection and Minimization
                               </span>
                             </div>
-                            <div
-                              className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
-                              onClick={() => scrollDown(dataSecuritySection)}
-                            >
-                              <span className="ml-[5px]">4.6 Data Security
-                              </span>
-                            </div>
+                            // <div
+                            //   className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
+                            //   onClick={() => scrollDown(dataSecuritySection)}
+                            // >
+                            //   <span className="ml-[5px]">4.6 Data Security
+                            //   </span>
+                            // </div>
                             <div
                               className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                               onClick={() => scrollDown(dataBreachSection)}
                             >
-                              <span className="ml-[5px]">4.7 Data Breach Management
+                              <span className="ml-[5px]">4.6 Data Breach Management
                               </span>
                             </div> <div
                               className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                               onClick={() => scrollDown(dataTransfer)}
                             >
-                              <span className="ml-[5px]">4.8 Cross-Border Data Transfers
+                              <span className="ml-[5px]">4.7 Cross-Border Data Transfers
                               </span>
                             </div> <div
                               className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                               onClick={() => scrollDown(dataProcessor)}
                             >
-                              <span className="ml-[5px]">4.9 Third-Party Data Processors
+                              <span className="ml-[5px]">4.8 Third-Party Data Processors
                               </span>
                             </div>
                           </div>
@@ -519,36 +519,10 @@ bases apply (e.g., contract, legal obligation).
                             purposes.
                           </li>
                         </ul>
-                      </div>                      <div className="mt-[15px] ml-6" ref={dataSecuritySection}>
-                        <p className="ml-[5px] font-semibold mb-4">
-                        4.6 Data Security
-                        </p>
-                        <ul className="pl-[5px] lg:pl-[44px] mb-4">
-                          <li className="mb-3 list-disc leading-5 ">
-                            Personal data is protected by technical and organisational measures,
-                            including:                          </li>
-                          <ul className="pl-[5px] lg:pl-[44px] mb-4">
-
-                            <li className="mb-3 list-disc leading-5"><span className="font-bold">Encryption:</span>
-                              Data in transit and at rest must be encrypted using
-                              industry-standard protocols (e.g., AES-256).                          </li>
-                            <li className=" list-disc leading-5 mb-3"><span className="font-bold">Access Control: </span>Role-based access ensures that only authorised
-                              personnel handle sensitive data.
-                            </li>
-                            <li className=" list-disc leading-5 mb-3"><span className="font-bold">Monitoring: </span>Systems are monitored to detect unauthorised access or
-                              anomalies.
-
-                            </li><li className=" list-disc leading-5 mb-3"><span className="font-bold">Secure Development Practices:</span>Privacy-by-design principles are
-                              applied in all system developments.
-
-                            </li>
-                          </ul>
-
-                        </ul>
-                      </div>
+                      </div> 
                       <div className="mt-[15px] ml-6" ref={dataBreachSection}>
                         <p className="ml-[5px] font-semibold mb-4">
-                        4.7  Data Breach Management                        </p>
+                        4.6  Data Breach Management                        </p>
                         <ul className="pl-[5px] lg:pl-[44px] mb-4">
                           <li className="mb-3 list-disc leading-5 ">
                             All data breaches are reported to the Data Protection Officer (DPO) within <span className="font-bold">24
@@ -562,7 +536,7 @@ bases apply (e.g., contract, legal obligation).
                       </div>
                       <div className="mt-[15px] ml-6" ref={dataTransfer}>
                         <p className="ml-[5px] font-semibold mb-4">
-                        4.8 Cross-Border Data Transfers                        </p>
+                        4.7 Cross-Border Data Transfers                        </p>
                         <ul className="pl-[5px] lg:pl-[44px] mb-4">
                           <li className="mb-3 list-disc leading-5 ">
                             Personal data transfers outside the organisation’s operational jurisdiction
@@ -576,7 +550,7 @@ bases apply (e.g., contract, legal obligation).
                       </div>
                       <div className="mt-[15px] ml-6" ref={dataProcessor}>
                         <p className="ml-[5px] font-semibold mb-4">
-                        4.9 Third-Party Data Processors                      </p>
+                        4.8 Third-Party Data Processors                      </p>
                         <ul className="pl-[5px] lg:pl-[44px] mb-4">
                           <li className="mb-3 list-disc leading-5 ">
                             Third-party processors handling personal data must sign Data Processing
