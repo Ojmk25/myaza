@@ -358,14 +358,14 @@ const [showTerms,setShowTerms] = useState(false)
             {
               showTerms &&
               <div className=" bg-white  rounded-[10px] absolute  -top-32 right-0 text-left  z-50 flex flex-col w-max p-4 shadow-md">
-              <Link href="/user-guide" className="mb-2">
+              <Link href="/user-guide" className="mb-2 hover:text-cs-purple-500 hover:font-bold">
                   User Guide
                 </Link>
-                <Link href="/privacy-policy"  className="mb-2">
+                <Link href="/privacy-policy"  className="mb-2 hover:text-cs-purple-500 hover:font-bold">
                  Privacy Policy
-              </Link><Link href="/terms-of-service"  className="mb-2">
+              </Link><Link href="/terms-of-service"  className="mb-2 hover:text-cs-purple-500 hover:font-bold">
                  Terms of Service
-              </Link><Link href="/acceptance-policy">
+              </Link><Link href="/acceptance-policy" className="hover:text-cs-purple-500 hover:font-bold">
                   Acceptance Policy
               </Link>
             </div>
