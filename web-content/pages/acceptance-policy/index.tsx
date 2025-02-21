@@ -255,8 +255,8 @@ const TermsofEngage = () => {
                     <div className="mt-[15px] ml-6">
 
                       <p className="ml-[8px] mb-2 text-zinc-900 text-base font-light font-lota leading-relaxed">This policy applies to all employees, contractors, consultants, temporary workers,
-                        If you believe that someone is violating the policies found below, report abuse by emailing  <a href="mailto:mdr@cil.support" target="_blank" className="font-bold text-cs-purple-500 underline">Managed Detect and Respond @CIL Support.</a>  </p>
-                      <p className="ml-[8px] mb-2 text-zinc-900 text-base font-light font-lota leading-relaxed">CIL may disable your ability to use CecureStream or disable accounts that are found to be in violation of these policies. If your service has been suspended or your account has been disabled, and you believe it was a mistake, please contact us at <a href="mailto:mdr@cil.support" target="_blank" className="font-bold text-cs-purple-500 underline">Managed Detect and Respond @CIL Support.</a></p>
+                        If you believe that someone is violating the policies found below, report abuse by emailing  <a href="mailto:helpdesk@cil.support" target="_blank" className="font-bold text-cs-purple-500 underline">helpdesk@cil.support.</a>  </p>
+                      <p className="ml-[8px] mb-2 text-zinc-900 text-base font-light font-lota leading-relaxed">CIL may disable your ability to use CecureStream or disable accounts that are found to be in violation of these policies. If your service has been suspended or your account has been disabled, and you believe it was a mistake, please contact us at <a href="mailto:helpdesk@cil.support" target="_blank" className="font-bold text-cs-purple-500 underline">helpdesk@cil.support.</a></p>
                     </div>
 
 
