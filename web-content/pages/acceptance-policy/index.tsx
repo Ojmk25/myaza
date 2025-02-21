@@ -279,7 +279,7 @@ const TermsofEngage = () => {
                           <li className="mb-3 list-disc leading-5 ">
                             Do not use CecureStream to create, upload, or distribute content that exploits or abuses children. This includes all child sexual abuse materials.                       </li>
                           <li className="mb-3 list-disc leading-5">
-                            More broadly, Cecure Stream prohibits the use of our products to endanger children. This includes but is not limited to predatory behavior towards children such as:                      </li>
+                            More broadly, CecureStream prohibits the use of our products to endanger children. This includes but is not limited to predatory behavior towards children such as:                      </li>
                           <ul className="pl-[5px] lg:pl-[44px] my-4">
                             <li className="mb-3 list-disc leading-5 ">
                               ‘Child grooming’(for example, befriending a child online to facilitate, either online or offline, sexual contact and/or exchanging sexual imagery with that child);    </li>
