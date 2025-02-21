@@ -512,7 +512,7 @@ bases apply (e.g., contract, legal obligation).
                           <li className="mb-3 list-disc leading-5 ">
                            Personal data is protected by technical and organisational measures, including:
                             <ul className="pl-[5px] lg:pl-[44px] my-4">
-                          <li className="mb-3 list-disc leading-5 "></li>
+                        
                                                    <li className="mb-3 list-disc leading-5 "><span className="font-bold">Encryption: </span> Data in transit and at rest must be encrypted using
 industry-standard protocols (e.g., AES-256).</li>
                           <li className="mb-3 list-disc leading-5 "><span className="font-bold">Access Control: </span> Role-based access ensures that only authorised
