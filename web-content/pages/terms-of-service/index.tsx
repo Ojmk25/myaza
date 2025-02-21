@@ -60,12 +60,15 @@ const TermsofEngage = () => {
           </div>
           <div>
             <section className=" md:pb-[177px] px-2">
-              <h1 className="text-center mt-12 font-bold text-xl lg:text-5xl text-[#080808]">Terms of Service</h1>
+                            <div className="bg-[#FAFAFA] my-20">
+
+              <h1 className="text-center mb-6 font-bold text-xl lg:text-5xl text-[#080808]">Terms of Service</h1>
               <p className=" text-xl text-center my-4 leading-[26px] text-cs-purple-500 px-2 ">
                   Last Updated January, 2025
                 </p>
-                            <TermsNav/>
-              
+                            </div>
+                                          <TermsNav/>
+
               <div className="container mx-auto md:flex">
 
                 <div className="md:w-[30%] hidden lg:block pl-6">
