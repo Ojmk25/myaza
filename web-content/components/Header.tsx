@@ -354,7 +354,7 @@ const [showTerms,setShowTerms] = useState(false)
                       color="#7133CF"
                       className="mx-auto max-w-5"
                     />
-                <p className="text-cs-purple-500 text-[14px]  lg:text-base leading-[18px] font-medium border-b-[1px] border-dashed border-cs-purple-500">User Guide</p>
+                <p className="text-cs-purple-500 text-[14px]  lg:text-base leading-[18px] font-medium border-b-[1px] border-dashed border-cs-purple-500">Policies</p>
             {
               showTerms &&
               <div className=" bg-white  rounded-[10px] absolute  -top-32 right-0 text-left  z-50 flex flex-col w-max p-4 shadow-md">
