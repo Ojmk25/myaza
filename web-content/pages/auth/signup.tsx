@@ -26,6 +26,7 @@ export default function Signup() {
     "Last name": "",
     email: "",
     password: "",
+    isChecked: false
   });
   const [errMessage, setErrMessage] = useState({
     "First name": "",
@@ -39,6 +40,7 @@ export default function Signup() {
     "Last name": false,
     email: false,
     password: false,
+    isChecked: false
   });
   const [subdomainLink, setSubdomainLink] = useState<string | null>(null);
   const navigate = useRouter();
@@ -210,7 +212,28 @@ export default function Signup() {
       clearAll();
     }
   };
-
+  
+const handleChecked = ()=>{
+       setFormData((prevState) => ({
+                  ...prevState,
+                  isChecked: !formData.isChecked,
+                }));
+                setValidateSuccess((prevState) => ({
+                  ...prevState,
+                  isChecked: !formData.isChecked,
+                }));
+                 if(formData.isChecked){
+                  setErrMessage((prevState) => ({
+                    ...prevState,
+                    isChecked: `Please agree to the terms and conditions`,
+                  }));
+                } else {
+                  setErrMessage((prevState) => ({
+                    ...prevState,
+                    isChecked: ``,
+                  }));
+                }
+}
   return (
     <AuthLayout>
       <h3 className=" text-2xl font-semibold text-cs-grey-dark mb-1 metro-medium">
@@ -259,7 +282,48 @@ export default function Signup() {
           placeHolder="123Abc%$"
           value={formData.password}
         />
+         <div className="flex gap-[12px]">
 
+          <label
+            htmlFor="isChecked"
+            className={`inline-block relative w-4 h-4 rounded cursor-pointer ${formData.isChecked ? "bg-cs-purple-500" : "border-[1px] border-solid border-cs-grey-400"}`}
+          >
+            <input
+              id="isChecked"
+              type="checkbox"
+              className="hidden"
+              onChange={handleChecked}
+              checked={formData.isChecked}
+              name="isChecked"
+            />
+            {formData.isChecked && (
+              <span
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-xs"
+              >
+                ✔
+              </span>
+            )}
+          </label>
+
+          <div>
+            <span className="text-xs font-medium leading-tight text-slate-700">
+              I have read and I agree to the  {" "}
+            </span>
+            <a
+              href="/privacy-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-bold leading-tight cursor-pointer underline text-cs-purple-500"
+            >
+              {" "}Privacy Policy
+            </a>
+          </div>
+        </div>
+  {
+          errMessage.isChecked && (
+            <span className="text-cs-error-500 text-xs">{errMessage.isChecked}</span>
+          )
+        }
         <div className="text-right"></div>
         <SubmitButton
           text="Sign up"
