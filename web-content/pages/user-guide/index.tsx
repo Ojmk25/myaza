@@ -108,13 +108,13 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                           className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                           onClick={() => scrollDown(gettingStartedSection)}
                         >
-                          <span className="ml-[5px]">Getting Started</span>
+                          <span className="ml-[5px]">1.1 Getting Started</span>
                         </div>
                         <div
                           className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                           onClick={() => scrollDown(firstTimerSetup)}
                         >
-                          <span className="ml-[5px]">First-Timer Setup</span>
+                          <span className="ml-[5px]">1.2 First-Timer Setup</span>
                         </div>
                       </div>
                     </div>
@@ -132,7 +132,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                           onClick={() => scrollDown(creatingAccountSection)}
                         >
 
-                          <span className="ml-[5px]">Creating Your Account</span>
+                          <span className="ml-[5px]">2.1 Creating Your Account</span>
                         </div>
 
                       </div>
@@ -153,7 +153,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                           onClick={() => scrollDown(accessingAccountSection)}
                         >
                           <span className="ml-[5px]">
-                            Accessing Your Account
+                            3.1  Accessing Your Account
 
                           </span>
                         </div>
@@ -283,7 +283,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                           className=" cursor-pointer hover:text-cs-purple-500 hover:font-semibold"
                           onClick={() => scrollDown(updateProfileSection)}
                         >
-                          <span className="ml-[5px]"> Updating Your Profile
+                          <span className="ml-[5px]">8.1 Updating Your Profile
                           </span>
                         </div>
 
@@ -316,13 +316,13 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                   </div>
                   <div className="mt-[15px] ml-6" ref={gettingStartedSection}>
                     <span className="ml-[8px] font-semibold text-cs-grey-800 text-base font-lota leading-relaxed">
-                      Getting Started
+                     1.1 Getting Started
                     </span>
                   </div>
                 </div>
                 <div className="mt-[15px] ml-6">
                   <p className="ml-[8px] text-cs-grey-800 text-base font-light font-lota leading-relaxed">
-                    Visit our official webapp <a className="text-cs-purple-500" href="https://cecurestream.com/" target="_blank" rel="noopener noreferrer">https://cecurestream.com/</a>
+                   1.2  Visit our official webapp <a className="text-cs-purple-500" href="https://cecurestream.com/" target="_blank" rel="noopener noreferrer">https://cecurestream.com/</a>
                   </p>
                 </div>
                 <div className="mt-[10px] ml-6">
@@ -353,7 +353,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
 
                 <div className="mt-[15px] ml-6" ref={creatingAccountSection}>
 
-                  <p className="ml-[5px] mb-4 font-semibold">Creating Your Account: </p>
+                  <p className="ml-[5px] mb-4 font-semibold">2.1 Creating Your Account: </p>
                   <ul className="pl-8">
                     <li className="list-decimal mb-3">
                       Click on the <span className="font-bold">Sign-Up</span>  button on the homepage.</li>
@@ -395,16 +395,16 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                     </span>
                   </div>
                   <div className="mt-[15px] ml-6" ref={accessingAccountSection}>
-                    <p className="ml-[5px] font-semibold mb-4">Accessing Your Account
+                    <p className="ml-[5px] font-semibold mb-4">3.1  Accessing Your Account
                     </p>
                     <ul className="pl-[5px] mb-3">
-                      <ol className="list-decimal mb-3">Click on the <span className="font-bold">Sign-in</span> button on the homepage.
+                      <ol className="list-disc mb-3">Click on the <span className="font-bold">Sign-in</span> button on the homepage.
                       </ol>
-                      <ol className="list-decimal mb-3">Enter your registered email and password.
+                      <ol className="list-disc mb-3">Enter your registered email and password.
                       </ol>
-                      <ol className="list-decimal mb-3">Optionally, enable the <span className="font-bold">Remember Me</span> checkbox for quicker access next time.
+                      <ol className="list-disc mb-3">Optionally, enable the <span className="font-bold">Remember Me</span> checkbox for quicker access next time.
                       </ol>
-                      <ol className="list-decimal mb-2">Click <span className="font-bold"> Login</span> to enter your dashboard.
+                      <ol className="list-disc mb-2">Click <span className="font-bold"> Login</span> to enter your dashboard.
                       </ol>
                     </ul>
                     <div className="mt-[15px]">
@@ -416,7 +416,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
 
                 <div className="mt-[15px] ml-6" ref={trobleshootingSection}>
 
-                  <p className="ml-[5px] font-semibold mb-3">Troubleshooting </p>
+                  <p className="ml-[5px] font-semibold mb-3">3.2 Troubleshooting </p>
                   <ul className="pl-8 mb-4">
                     <li className="mb-3 list-disc">If you forget your password, click on <span className="font-bold">Forgot Password?</span>  to reset it.
                     </li>
@@ -442,7 +442,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                   </div>
                   <div className="mt-[15px] ml-6" ref={startingMeetingSection}>
                     <p className="ml-[5px] font-semibold mb-4">
-                      Starting and Joining Meetings
+                      4.1  Starting and Joining Meetings
                     </p>
                     <ul className="pl-[5px] mb-4">
                       <li className="mb-3 list-disc"><span className="font-bold">Start an Instant Meeting:</span> Click the <span className="font-bold">Create New Session</span> button and select <span className="font-bold">Instant Meeting</span> to begin a meeting immediately.
@@ -468,7 +468,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                   </div>
                   <div className="mt-[15px] ml-6" ref={manageCameraSection}>
                     <p className="text-cs-grey-800 text-base ml-[5px] mb-3 font-semibold font-lotar leading-relaxed">
-                      Managing Camera and Mic
+                     5.1   Managing Camera and Mic
                     </p>
                     <ul className="ml-[15px] mb-3">
                       <li className="mb-3 list-disc"><span className="font-bold">Turning On/Off Camera:</span> Click the camera icon on the toolbar during a meeting. A slash through the icon indicates it is off.
@@ -483,7 +483,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                 <div className="mt-[15px] ml-6" ref={tipSection}>
                   <p className="text-cs-grey-800 ml-[5px] first-letter:text-base font-semibold font-lotar leading-relaxed">
 
-                    Tips                  </p>
+                   5.2  Tips                  </p>
                   <ul className="ml-[15px] mb-3">
                     <li className="mb-2 list-disc ml-[8px] text-cs-grey-800 text-base font-light font-lota leading-relaxed">Always mute your microphone when not speaking to reduce background noise.
                     </li>
@@ -510,7 +510,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                   <div className="mt-[15px] ml-6" ref={usingEmojiSection}>
                     <p className="text-cs-grey-800 ml-[5px] mb-3 text-base font-semibold font-lotar leading-relaxed">
 
-                      Using Emoji
+                     6.1  Using Emoji
                     </p>
                     <ul className="mb-2 pl-3">
                       <li className="mb-2 list-disc">Access the emoji panel by clicking the React button in the toolbar.
@@ -541,7 +541,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                   </div>
                   <div className="mt-[15px] ml-6 mb-4" ref={switchRecordingSection}>
                     <p className="text-cs-grey-800 ml-[5px] mb-3 text-base font-semibold font-lotar leading-relaxed">
-                      Starting and Stopping a Recording
+                     7.1  Starting and Stopping a Recording
                     </p>
                     <ul className="mb-2 pl-6">
                       <li className="mb-3 list-decimal">Click the <span className="font-bold">Record</span>  button on the toolbar to start recording.
@@ -557,7 +557,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                   <div className="mt-[15px] ml-6" ref={accessRecordingSection}>
                     <p className="text-cs-grey-800 ml-[5px] mb-3 text-base font-semibold font-lotar leading-relaxed">
 
-                      Accessing Recordings
+                     7.2  Accessing Recordings
                     </p>
                     <ul className="mb-4 pl-6">
                       <li className="mb-3 list-disc">Recordings will be saved to your account’s  <span className="font-bold">Recordings</span>  section or sent to your registered email, depending on your settings.
@@ -575,7 +575,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                   </div>
                   <div ref={noteSection} className="mt-[15px] ml-12">
                     <p className="text-cs-grey-800 mb-3 text-base font-semibold font-lotar leading-relaxed">
-                      Note                    </p>
+                     7.3   Note                    </p>
                     <ul className="mb-2 pl-3">
                       <li className="list-disc">Inform participants before starting a recording to ensure compliance with privacy guidelines.
                       </li>
@@ -596,7 +596,7 @@ const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
                   </div>
                   <div className="mt-[15px] ml-6" ref={updateProfileSection}>
                     <p className="text-cs-grey-800 ml-[5px] mb-4 text-base font-semibold font-lotar leading-relaxed">
-                      Updating Your Profile
+                     8.1    Updating Your Profile
                     </p>
                     <ul className="mb-2 pl-5">
                       <li className="mb-3 list-decimal">Go to your account by clicking on your profile picture or name in the top-right corner.
