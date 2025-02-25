@@ -348,7 +348,7 @@ const [showTerms,setShowTerms] = useState(false)
         pathname !== "/privacy-policy" &&
         pathname !== "/terms-of-service"
         &&
-         <button onMouseEnter={()=>setShowTerms(!showTerms)} onMouseLeave={()=>setShowTerms(!showTerms)}  className="w-fit fixed bottom-3 right-14 md:right-40 z-50 flex items-center gap-[6px] p-[10px]">
+         <button onClick={()=>setShowTerms(!showTerms)}   className="w-fit fixed bottom-3 right-14 md:right-40 z-50 flex items-center gap-[6px] p-[10px]">
              <InfoCircle
                       size="16"
                       color="#7133CF"
@@ -357,7 +357,7 @@ const [showTerms,setShowTerms] = useState(false)
                 <p className="text-cs-purple-500 text-[14px]  lg:text-base leading-[18px] font-medium border-b-[1px] border-dashed border-cs-purple-500">Policies</p>
             {
               showTerms &&
-              <div className=" bg-white  rounded-[10px] absolute  -top-32 right-0 text-left  z-50 flex flex-col w-max p-4 shadow-md">
+              <div onMouseLeave={()=>setShowTerms(!showTerms)} className=" bg-white  rounded-[10px] absolute  -top-32 right-0 text-left  z-50 flex flex-col w-max p-4 shadow-md">
               <Link href="/user-guide" className="mb-2 hover:text-cs-purple-500 hover:font-bold">
                   User Guide
                 </Link>
