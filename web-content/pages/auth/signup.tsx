@@ -33,6 +33,7 @@ export default function Signup() {
     "Last name": "",
     email: "",
     password: "",
+    isChecked:"",
   });
 
   const [validateSuccess, setValidateSuccess] = useState({
