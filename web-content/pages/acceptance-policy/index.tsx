@@ -49,7 +49,7 @@ const TermsofEngage = () => {
   return (
     <>
       <Head>
-        <title>CIL Acceptance policy       </title>
+        <title>CecureStream Acceptable Use policy       </title>
         <meta name="description" content="Web video conferencing tool" />
       </Head>
       {
@@ -62,7 +62,7 @@ const TermsofEngage = () => {
             <section className=" md:pb-[177px] px-2">
                             <div className="bg-[#FAFAFA] my-20">
 
-              <h1 className="text-center mb-6 font-bold text-xl lg:text-5xl text-[#080808]">Acceptance Use Policy</h1>
+              <h1 className="text-center mb-6 font-bold text-xl lg:text-5xl text-[#080808]">Acceptable Use Policy</h1>
               <p className=" text-xl text-center my-4 leading-[26px] text-cs-purple-500 px-2 ">
                 Last Updated January, 2025
               </p>

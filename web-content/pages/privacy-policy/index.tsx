@@ -58,7 +58,7 @@ const TermsofEngage = () => {
   return (
     <>
       <Head>
-        <title>CIL Privacy policy       </title>
+        <title>CecureStream Privacy policy       </title>
         <meta name="description" content="Web video conferencing tool" />
       </Head>
       {
