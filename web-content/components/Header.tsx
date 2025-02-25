@@ -366,7 +366,7 @@ const [showTerms,setShowTerms] = useState(false)
               </Link><Link href="/terms-of-service"  className="mb-2 hover:text-cs-purple-500 hover:font-bold">
                  Terms of Service
               </Link><Link href="/acceptance-policy" className="hover:text-cs-purple-500 hover:font-bold">
-                  Acceptance Policy
+                  Acceptable Use Policy
               </Link>
             </div>
         }
