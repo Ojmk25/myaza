@@ -14,6 +14,8 @@ const endMeetingPath = getApiPath("meeting", "end-call");
 const startRecordingPath = getApiPath("meeting", "start-recording");
 const stopRecordingPath = getApiPath("meeting", "stop-recording");
 const apiListUserMeetings = getApiPath("meeting", "list-meetings");
+const apiGetCalendarSettings = getApiPath("core", "get-user-settings");
+const apiUpdateCalendarSettings = getApiPath("core", "update-user-settings");
 
 export interface TranscriptionPayload {
   meeting_id: string;
@@ -187,6 +189,30 @@ export const listUserMeetings = async (data: any, token: string) => {
   // const token = localStorage.getItem("cecureStreamAcToken");
   try {
     return await http.apiCall.post(apiListUserMeetings, data, {
+      headers: {
+        Authorization: token,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
+
+export const getCalendarSettings = async (data: any, token: string) => {
+  try {
+    return await http.apiCall.post(apiGetCalendarSettings, data, {
+      headers: {
+        Authorization: token,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
+
+export const updateCalendarSettings = async (data: any, token: string) => {
+  try {
+    return await http.apiCall.post(apiUpdateCalendarSettings, data, {
       headers: {
         Authorization: token,
       },

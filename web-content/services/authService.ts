@@ -102,13 +102,15 @@ export const getCurrentClientData = () => {
   let first_name;
   let surname;
 
-  const authToken = localStorage.getItem("cecureStreamAuthToken");
+  const authToken =
+    typeof window !== "undefined" &&
+    localStorage.getItem("cecureStreamAuthToken");
 
   try {
     if (authToken) {
       const parsedAuthToken = JSON.parse(authToken);
       clientData = parsedAuthToken?.uData;
-      token = parsedAuthToken?.askBettyAcToken;
+      token = parsedAuthToken?.cecureStreamAcToken;
 
       if (clientData) {
         customer_id = clientData["cognito:customer_id"];

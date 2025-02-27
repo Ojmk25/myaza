@@ -11,7 +11,7 @@ import { SubmitButton } from '../auth/SubmitButton';
 
 const LoadingScreen = () => {
   return (
-    <div className="fixed inset-0 z-10 overflow-y-auto modal no-scrollbar">
+    <div className="fixed inset-0 z-50 overflow-y-auto modal no-scrollbar">
       <div className="flex items-center justify-center min-h-screen pt-4 pb-20 text-center">
         <div className="fixed inset-0 transition-opacity bg-[#ffffffa3]"></div>
         <span className="hidden sm:inline-block sm:align-middle sm:h-screen"></span>
