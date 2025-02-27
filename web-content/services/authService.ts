@@ -102,7 +102,7 @@ export const getCurrentClientData = () => {
   let first_name;
   let surname;
 
-  const authToken = sessionStorage.getItem("cecureStreamAuthToken");
+  const authToken = localStorage.getItem("cecureStreamAuthToken");
 
   try {
     if (authToken) {
