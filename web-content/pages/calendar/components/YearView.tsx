@@ -1,4 +1,4 @@
-import type { Event } from "../types/calendar"
+import type { Event } from "../../../types/calendar"
 import TimeSlotPreview from "./TimeSlotPreview"
 import { useState } from "react"
 

@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { X } from "lucide-react"
-import type { Event, User } from "../types/calendar"
+import type { Event, User } from "../../../types/calendar"
 import { getColorForUser } from "@/utils/colors"
 import { timeToUnixTimestamp } from "@/utils/meetingFunctions"
 import moment from "moment-timezone"
