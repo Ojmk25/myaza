@@ -1,6 +1,6 @@
 "use client";
 
-import type { Event } from "../../../types/calendar";
+import type { Event } from "../../types/calendar";
 import TimezoneSelect from "./TimezoneSelect";
 import TimeSlotPreview from "./TimeSlotPreview";
 import { useEffect, useState } from "react";

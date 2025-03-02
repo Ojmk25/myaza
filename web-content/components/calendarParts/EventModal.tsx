@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import type { Event } from "../../../types/event"
+import type { Event } from "../../types/event"
 
 interface EventModalProps {
   event: Event | null

@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { ChevronDown, Search, Plus, X } from "lucide-react";
-import type { Event, User } from "../../../types/calendar";
+import type { Event, User } from "../../types/calendar";
 import { useEffect, useState, useRef, SetStateAction, Dispatch } from "react";
 import { AddSquare, Calendar, Clock, Edit, Trash } from "iconsax-react";
 import { getColorForUser } from "@/utils/colors";

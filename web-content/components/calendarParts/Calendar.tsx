@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
-import type { Event, User } from "../../../types/calendar";
+import type { Event, User } from "../../types/calendar";
 import Sidebar from "./Sidebar";
 import WeekView from "./WeekView";
 import DayView from "./DayView";
