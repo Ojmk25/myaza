@@ -276,6 +276,7 @@ export default function Calendar() {
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
           events={events}
+          setEvents={setEvents}
           onEditEvent={(event) => {
             setSelectedEvent(event);
             setIsModalOpen(true);
@@ -376,7 +377,7 @@ export default function Calendar() {
                   <option value="day">Day</option>
                   <option value="week">Week</option>
                   <option value="month">Month</option>
-                  <option value="year">Year</option>
+                  {/* <option value="year">Year</option> */}
                 </select>
 
                 <button

@@ -4,15 +4,18 @@ import type React from "react";
 
 import { ChevronDown, Search, Plus, X } from "lucide-react";
 import type { Event, User } from "../types/calendar";
-import { useEffect, useState, useRef } from "react";
-import { Calendar, Clock, Edit, Trash } from "iconsax-react";
+import { useEffect, useState, useRef, SetStateAction, Dispatch } from "react";
+import { AddSquare, Calendar, Clock, Edit, Trash } from "iconsax-react";
 import { getColorForUser } from "@/utils/colors";
+import { listUserMeetings } from "@/services/meetingServices";
+import { getCurrentClientData } from "@/services/authService";
 
 interface SidebarProps {
   onCreateSession: () => void;
   isOpen: boolean;
   onClose: () => void;
   events: Event[];
+  setEvents: Dispatch<SetStateAction<Event[]>>;
   onEditEvent?: (event: Event) => void;
   onDeleteEvent?: (eventId: string) => void;
   onCreateMeeting: (attendees: User[]) => void;
@@ -70,10 +73,12 @@ export default function Sidebar({
   isOpen,
   onClose,
   events,
+  setEvents,
   onEditEvent,
   onDeleteEvent,
   onCreateMeeting,
 }: SidebarProps) {
+  const loggedInUser = getCurrentClientData();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAttendees, setSelectedAttendees] = useState<User[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
@@ -145,38 +150,72 @@ export default function Sidebar({
     return date.toDateString() === today.toDateString();
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onInputChangeFn = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
 
-  const handleInputKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const onInputKeyPressFn = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && searchTerm.trim() !== "") {
       e.preventDefault();
-      addAttendee(searchTerm.trim());
+      addAttendeeFn(searchTerm.trim());
       setSearchTerm("");
     }
   };
 
-  const addAttendee = (email: string) => {
+  const addAttendeeFn = (email: string) => {
     if (email && !selectedAttendees.some((a) => a.email === email)) {
       const newAttendee: User = {
         id: Date.now().toString(),
         email: email,
         name: email.split("@")[0],
+        color: `${getColorForUser(selectedAttendees.length).bg} ${
+          getColorForUser(selectedAttendees.length).border
+        }`,
       };
+
       setSelectedAttendees([...selectedAttendees, newAttendee]);
+      loadMeetingsFn(email, newAttendee.color as string);
     }
   };
 
-  const handleRemoveAttendee = (email: string) => {
+  const removeAttendeeFn = (email: string) => {
     setSelectedAttendees(selectedAttendees.filter((a) => a.email !== email));
+    setEvents(events.filter((itm) => itm.user_email !== email));
   };
 
-  const handleCreateMeeting = () => {
+  const createMeetingFn = () => {
     onCreateMeeting(selectedAttendees);
-    setSelectedAttendees([]);
+    // setSelectedAttendees([]);
   };
 
+  const loadMeetingsFn = async (email: string, color: string) => {
+    try {
+      const data = await listUserMeetings({ email: email }, loggedInUser.token);
+
+      if (data?.data.statusCode === 200) {
+        const meetings = data?.data.body.data.map((meeting: any) => {
+          return {
+            ...meeting,
+            // id: meeting.meeting_id,
+            // title: meeting.meeting_name,
+            start_time: new Date(meeting.start_time * 1000),
+            end_time: new Date(meeting.end_time * 1000),
+            cardColor: color,
+            user_email: email,
+          };
+        });
+
+        const newEvent = [...events, ...meetings];
+        console.log("newEvent", newEvent);
+
+        meetings.length > 0 && setEvents(newEvent);
+
+        console.log("new_____Attendee", events);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <>
       {isOpen && (
@@ -197,7 +236,7 @@ export default function Sidebar({
                 <h2 className="font-semibold">Upcoming sessions</h2>
                 <ChevronDown className="w-4 h-4" />
               </div>
-              {upcomingEvents.length > 0 ? (
+              {upcomingEvents.filter((itm) => !itm.user_email).length > 0 ? (
                 <div className="space-y-3">
                   {upcomingEvents.map((event) => (
                     <div
@@ -269,11 +308,10 @@ export default function Sidebar({
               <h2 className="font-semibold mb-4">Search people</h2>
               {selectedAttendees.length > 0 && (
                 <button
-                  onClick={handleCreateMeeting}
-                  className="w-full mb-4 py-2 px-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center"
+                  onClick={createMeetingFn}
+                  className="w-[102px] h-8 mb-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Meeting
+                  Create <AddSquare size="15" color="#FAF0FF" />
                 </button>
               )}
               <div className="relative">
@@ -282,8 +320,8 @@ export default function Sidebar({
                   type="text"
                   placeholder="Type email and press Enter"
                   value={searchTerm}
-                  onChange={handleInputChange}
-                  onKeyPress={handleInputKeyPress}
+                  onChange={onInputChangeFn}
+                  onKeyPress={onInputKeyPressFn}
                   className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:border-cs-purple-650"
                 />
               </div>
@@ -294,7 +332,7 @@ export default function Sidebar({
                       key={attendee.id}
                       className={`p-2 rounded-lg flex justify-between items-center ${
                         getColorForUser(index).bg
-                      }`}
+                      } ${getColorForUser(index).border}`}
                     >
                       <div>
                         {/* <p className="text-sm font-medium">{attendee.name}</p> */}
@@ -303,7 +341,7 @@ export default function Sidebar({
                         </p>
                       </div>
                       <button
-                        onClick={() => handleRemoveAttendee(attendee.email)}
+                        onClick={() => removeAttendeeFn(attendee.email)}
                         className="text-gray-500 hover:text-red-500"
                       >
                         <X size={16} />

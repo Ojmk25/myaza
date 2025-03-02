@@ -121,8 +121,12 @@ export default function DayView({
           {/* Events */}
           {getDayEvents().map((event) => (
             <div
-              key={event.id}
-              className="absolute bg-purple-100 border border-solid border-purple-300 rounded-lg p-2 overflow-hidden ml-2"
+              key={event.meeting_id}
+              className={`absolute border-l-4 border-solid rounded-lg p-2 overflow-hidden ml-2  ${
+                event.cardColor
+                  ? event.cardColor
+                  : "bg-purple-100 border-purple-300"
+              }`}
               style={{
                 top: `${
                   event.start_time.getHours() * 64 +

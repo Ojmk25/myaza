@@ -3,6 +3,7 @@ export interface User {
   email: string
   name: string
   avatar?: string
+  color?: string
 }
 
 export interface Event {
@@ -21,6 +22,8 @@ export interface Event {
   timezone: string
   duration: number
   attendees: User[]
+  cardColor?: string
+  user_email?:string
 }
 
 export interface TimeSlot {

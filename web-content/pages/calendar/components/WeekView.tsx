@@ -171,8 +171,12 @@ export default function WeekView({
         <div className="absolute inset-0 pointer-events-none">
           {events.map((event) => (
             <div
-              key={event.id}
-              className="absolute bg-purple-100 border-l-4 border-solid border-l-purple-400 border-purple-300 rounded-lg p-1 md:p-2 overflow-hidden"
+              key={event.meeting_id}
+              className={`absolute border-l-4 border-solid rounded-lg p-1 md:p-2 overflow-hidden ${
+                event.cardColor
+                  ? event.cardColor
+                  : "bg-purple-100 border-[#C99CFF]"
+              }`}
               style={{
                 left: `calc(${
                   ((event.start_time.getDay() + 6) % 7) * (100 / 7)
