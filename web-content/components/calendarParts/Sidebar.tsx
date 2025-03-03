@@ -80,6 +80,8 @@ export default function Sidebar({
 }: SidebarProps) {
   const loggedInUser = getCurrentClientData();
   const [searchTerm, setSearchTerm] = useState("");
+  const [collapsedUpcoming, setCollapsedUpcoming] = useState(true);
+  const [collapsedSearch, setCollapsedSearch] = useState(true);
   const [selectedAttendees, setSelectedAttendees] = useState<User[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
   const [countdownValues, setCountdownValues] = useState<{
@@ -231,124 +233,160 @@ export default function Sidebar({
       >
         <div className="flex flex-col h-full p-6">
           <div className="space-y-6 flex-1 overflow-auto">
-            <div>
+            <div className="border border-solid border-gray-200 rounded-xl p-4 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-semibold">Upcoming sessions</h2>
-                <ChevronDown className="w-4 h-4" />
+                <ChevronDown
+                  className={`w-4 h-4 cursor-pointer ${
+                    collapsedUpcoming ? "rotate-180" : ""
+                  }`}
+                  onClick={() => setCollapsedUpcoming(!collapsedUpcoming)}
+                />
               </div>
-              {upcomingEvents.filter((itm) => !itm.user_email).length > 0 ? (
-                <div className="space-y-3">
-                  {upcomingEvents.map((event) => (
-                    <div
-                      key={event.id}
-                      className="w-full flex items-start gap-1"
-                    >
-                      <div className="w-9 h-9 flex items-center justify-center rounded-full bg-[#EAD6FF]">
-                        <Calendar size="20" color="#7133CF" />
-                      </div>
+              {collapsedUpcoming && (
+                <>
+                  {upcomingEvents.filter((itm) => !itm.user_email).length >
+                  0 ? (
+                    <div className="space-y-3">
+                      {upcomingEvents.map((event) => (
+                        <div
+                          key={event.id}
+                          className="w-full flex items-start gap-1"
+                        >
+                          <div className="w-9 h-9 flex items-center justify-center rounded-full bg-[#EAD6FF]">
+                            <Calendar size="20" color="#7133CF" />
+                          </div>
 
-                      <div className="flex flex-col pr-3 pt-0 bg-gray-50 rounded-lg">
-                        <div className="font-semibold text-xs text-[#4C1E9F]">
-                          {event.title}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock size="16" color="#494949" />
-                          <span className="text-xs font-normal text-cs-err">
-                            {formatEventDate(event.start_time)} -{" "}
-                            {formatEventDate(event.end_time)}
-                          </span>
-                        </div>
-                        {isToday(event.start_time) && (
-                          <div className="text-xs text-cs-error-600 mt-1 font-medium">
-                            {countdownValues[event.id]}
+                          <div className="flex flex-col pr-3 pt-0 bg-gray-50 rounded-lg">
+                            <div className="font-semibold text-xs text-[#4C1E9F]">
+                              {event.title}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock size="16" color="#494949" />
+                              <span className="text-xs font-normal text-cs-err">
+                                {formatEventDate(event.start_time)} -{" "}
+                                {formatEventDate(event.end_time)}
+                              </span>
+                            </div>
+                            {isToday(event.start_time) && (
+                              <div className="text-xs text-cs-error-600 mt-1 font-medium">
+                                {countdownValues[event.id]}
+                              </div>
+                            )}
+                            <div className="flex flex-row items-center justify-between mt-2">
+                              <button
+                                onClick={() => {
+                                  if (typeof window !== "undefined") {
+                                    window.open(
+                                      `https://${event.meeting_link}`,
+                                      "_blank",
+                                      "noopener,noreferrer"
+                                    );
+                                  }
+                                }}
+                                className="flex items-center justify-center w-[69px] h-8 text-sm text-purple-500 font-bold border border-purple-500 rounded-md hover:bg-purple-50"
+                              >
+                                Join
+                              </button>
+                              <div
+                                style={{
+                                  border: "1px solid #CACACA",
+                                }}
+                                className="w-[72px] h-9 bg-white flex items-center justify-between border border-[#CACACA] rounded-lg"
+                              >
+                                <button
+                                  onClick={() => onEditEvent?.(event)}
+                                  className="w-1/2 h-full border-r flex items-center justify-center hover:bg-gray-100 hover:rounded-l-lg"
+                                >
+                                  <Edit size="16" color="#667085" />
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    onDeleteEvent?.(event.meeting_id)
+                                  }
+                                  className="w-1/2 h-full flex items-center justify-center hover:bg-gray-100 hover:rounded-l-lg"
+                                >
+                                  <Trash size="16" color="#667085" />
+                                </button>
+                              </div>
+                            </div>
                           </div>
-                        )}
-                        <div className="flex flex-row items-center justify-between mt-2">
-                          <button className="flex items-center justify-center w-[69px] h-8 text-sm text-purple-500 font-bold border border-purple-500 rounded-md hover:bg-purple-50">
-                            Join
-                          </button>
-                          <div
-                            style={{
-                              border: "1px solid #CACACA",
-                            }}
-                            className="w-[72px] h-9 bg-white flex items-center justify-between border border-[#CACACA] rounded-lg"
-                          >
-                            <button
-                              onClick={() => onEditEvent?.(event)}
-                              className="w-1/2 h-full border-r flex items-center justify-center hover:bg-gray-100 hover:rounded-l-lg"
-                            >
-                              <Edit size="16" color="#667085" />
-                            </button>
-                            <button
-                              onClick={() => onDeleteEvent?.(event.meeting_id)}
-                              className="w-1/2 h-full flex items-center justify-center hover:bg-gray-100 hover:rounded-l-lg"
-                            >
-                              <Trash size="16" color="#667085" />
-                            </button>
-                          </div>
                         </div>
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-4 text-sm text-gray-500">
-                  <p>No upcoming sessions</p>
-                  <button
-                    className="text-purple-600 hover:underline mt-1"
-                    onClick={onCreateSession}
-                  >
-                    Create session
-                  </button>
-                </div>
+                  ) : (
+                    <div className="text-center py-4 text-sm text-gray-500">
+                      <p>No upcoming sessions</p>
+                      <button
+                        className="text-purple-600 hover:underline mt-1"
+                        onClick={onCreateSession}
+                      >
+                        Create session
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
-            <div>
-              <h2 className="font-semibold mb-4">Search people</h2>
-              {selectedAttendees.length > 0 && (
-                <button
-                  onClick={createMeetingFn}
-                  className="w-[102px] h-8 mb-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
-                >
-                  Create <AddSquare size="15" color="#FAF0FF" />
-                </button>
-              )}
-              <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Type email and press Enter"
-                  value={searchTerm}
-                  onChange={onInputChangeFn}
-                  onKeyPress={onInputKeyPressFn}
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:border-cs-purple-650"
+            <div className="border border-solid border-gray-200 rounded-xl p-4 shadow-sm">
+              {/* <h2 className="font-semibold mb-4">Search people</h2> */}
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-semibold">Search people</h2>
+                <ChevronDown
+                  className={`w-4 h-4 cursor-pointer ${
+                    collapsedSearch ? "rotate-180" : ""
+                  }`}
+                  onClick={() => setCollapsedSearch(!collapsedSearch)}
                 />
               </div>
-              {selectedAttendees.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  {selectedAttendees.map((attendee, index) => (
-                    <div
-                      key={attendee.id}
-                      className={`p-2 rounded-lg flex justify-between items-center ${
-                        getColorForUser(index).bg
-                      } ${getColorForUser(index).border}`}
+              {collapsedSearch && (
+                <>
+                  {selectedAttendees.length > 0 && (
+                    <button
+                      onClick={createMeetingFn}
+                      className="w-[102px] h-8 mb-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
                     >
-                      <div>
-                        {/* <p className="text-sm font-medium">{attendee.name}</p> */}
-                        <p className="text-xs text-gray-600">
-                          {attendee.email}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => removeAttendeeFn(attendee.email)}
-                        className="text-gray-500 hover:text-red-500"
-                      >
-                        <X size={16} />
-                      </button>
+                      Create <AddSquare size="15" color="#FAF0FF" />
+                    </button>
+                  )}
+                  <div className="relative">
+                    <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Type email and press Enter"
+                      value={searchTerm}
+                      onChange={onInputChangeFn}
+                      onKeyPress={onInputKeyPressFn}
+                      className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:border-cs-purple-650"
+                    />
+                  </div>
+                  {selectedAttendees.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      {selectedAttendees.map((attendee, index) => (
+                        <div
+                          key={attendee.id}
+                          className={`p-2 rounded-lg flex justify-between items-center ${
+                            getColorForUser(index).bg
+                          } ${getColorForUser(index).border}`}
+                        >
+                          <div>
+                            {/* <p className="text-sm font-medium">{attendee.name}</p> */}
+                            <p className="text-xs text-gray-600">
+                              {attendee.email}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => removeAttendeeFn(attendee.email)}
+                            className="text-gray-500 hover:text-red-500"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
               )}
             </div>
           </div>

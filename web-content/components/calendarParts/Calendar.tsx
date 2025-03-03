@@ -210,7 +210,6 @@ export default function Calendar() {
 
   const loadMeetingsFn = async () => {
     setLoadMeetings(true);
-    // const token = localStorage.getItem("cecureStreamAcToken");
     try {
       const data = await listUserMeetings(
         { email: loggedInUser.clientData.email },
