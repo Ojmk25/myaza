@@ -164,8 +164,9 @@ export const getNameAbbreviation = () => {
   let initials;
 
   if (
-    localStorage.getItem("cecureStreamAuthToken") ||
-    sessionStorage.getItem("cecureStreamAuthToken")
+    typeof window !== "undefined" &&
+    (localStorage.getItem("cecureStreamAuthToken") ||
+      sessionStorage.getItem("cecureStreamAuthToken"))
   ) {
     try {
       const token =
@@ -195,8 +196,9 @@ export const getClientInfo = () => {
   let picture;
 
   if (
-    localStorage.getItem("cecureStreamAuthToken") ||
-    sessionStorage.getItem("cecureStreamAuthToken")
+    typeof window !== "undefined" &&
+    (localStorage.getItem("cecureStreamAuthToken") ||
+      sessionStorage.getItem("cecureStreamAuthToken"))
   ) {
     try {
       const token =
