@@ -21,7 +21,7 @@ export interface Event {
   recording: string
   timezone: string
   duration: number
-  attendees: User[]
+  attendees: User[] | string[]
   cardColor?: string
   user_email?:string
 }
