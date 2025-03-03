@@ -1,7 +1,13 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import DateTimeDisplay from "@/utils/getDate";
-import { Profile, LoginCurve, MessageQuestion, InfoCircle } from "iconsax-react";
+import {
+  Profile,
+  LoginCurve,
+  MessageQuestion,
+  InfoCircle,
+  Calendar,
+} from "iconsax-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import cecureStream from "@/public/assets/images/cecurestream.svg";
@@ -29,7 +35,7 @@ export default function Header() {
   const widgetRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const lastSegment = pathname.split("/").pop();
-const [showTerms,setShowTerms] = useState(false)
+  const [showTerms, setShowTerms] = useState(false);
 
   useEffect(() => {
     setLoggedIn(IsAuthenticated());
@@ -191,13 +197,19 @@ const [showTerms,setShowTerms] = useState(false)
     <>
       {loggedIn !== null && (
         <div className="flex justify-between items-center w-full  px-6 pb-6 shadow-1xl mb-6">
-          <Link href={"/"} className=" md:hidden">
-            <Image src={cecureStreamSmall} alt="logo" />
-          </Link>
-          <Link href={"/"} className="hidden md:block">
-            <Image src={cecureStream} alt="logo" />
-          </Link>
+          <div className="flex items-center gap-x-3">
+            <Link href={"/"} className=" md:hidden">
+              <Image src={cecureStreamSmall} alt="logo" />
+            </Link>
+            <Link href={"/"} className="hidden md:block">
+              <Image src={cecureStream} alt="logo" />
+            </Link>
 
+            <Link href={"/calendar"} className="flex items-center gap-2 ">
+              <Calendar size="16" color="#494949" />
+              <span className="hidden md:block text-base text-semibold text-gray-700 hover:text-gray-500">Calendar</span>
+            </Link>
+          </div>
           <div
             className={`${
               loggedIn ? "md:flex hidden" : "hidden"
@@ -341,46 +353,58 @@ const [showTerms,setShowTerms] = useState(false)
         </div>
       )}
       {showModal === "settings" && <Settings onClose={handleCloseModal} />}
-      
- {
-        pathname !== "/user-guide" &&
+
+      {pathname !== "/user-guide" &&
         pathname !== "/acceptance-policy" &&
         pathname !== "/privacy-policy" &&
-        pathname !== "/terms-of-service"
-        &&
-         <button onClick={()=>setShowTerms(!showTerms)}   className="w-fit fixed bottom-3 right-14 md:right-40 z-50 flex items-center gap-[6px] p-[10px]">
-             <InfoCircle
-                      size="16"
-                      color="#7133CF"
-                      className="mx-auto max-w-5"
-                    />
-                <p className="text-cs-purple-500 text-[14px]  lg:text-base leading-[18px] font-medium border-b-[1px] border-dashed border-cs-purple-500">Policies</p>
-            {
-              showTerms &&
-              <div onMouseLeave={()=>setShowTerms(!showTerms)} className=" bg-white  rounded-[10px] absolute  -top-32 right-0 text-left  z-50 flex flex-col w-max p-4 shadow-md">
-              <Link href="/user-guide" className="mb-2 hover:text-cs-purple-500 hover:font-bold">
+        pathname !== "/terms-of-service" && (
+          <button
+            onClick={() => setShowTerms(!showTerms)}
+            className="w-fit fixed bottom-3 right-14 md:right-40 z-50 flex items-center gap-[6px] p-[10px]"
+          >
+            <InfoCircle size="16" color="#7133CF" className="mx-auto max-w-5" />
+            <p className="text-cs-purple-500 text-[14px]  lg:text-base leading-[18px] font-medium border-b-[1px] border-dashed border-cs-purple-500">
+              Policies
+            </p>
+            {showTerms && (
+              <div
+                onMouseLeave={() => setShowTerms(!showTerms)}
+                className=" bg-white  rounded-[10px] absolute  -top-32 right-0 text-left  z-50 flex flex-col w-max p-4 shadow-md"
+              >
+                <Link
+                  href="/user-guide"
+                  className="mb-2 hover:text-cs-purple-500 hover:font-bold"
+                >
                   User Guide
                 </Link>
-                <Link href="/privacy-policy"  className="mb-2 hover:text-cs-purple-500 hover:font-bold">
-                 Privacy Policy
-              </Link><Link href="/terms-of-service"  className="mb-2 hover:text-cs-purple-500 hover:font-bold">
-                 Terms of Service
-              </Link><Link href="/acceptance-policy" className="hover:text-cs-purple-500 hover:font-bold">
+                <Link
+                  href="/privacy-policy"
+                  className="mb-2 hover:text-cs-purple-500 hover:font-bold"
+                >
+                  Privacy Policy
+                </Link>
+                <Link
+                  href="/terms-of-service"
+                  className="mb-2 hover:text-cs-purple-500 hover:font-bold"
+                >
+                  Terms of Service
+                </Link>
+                <Link
+                  href="/acceptance-policy"
+                  className="hover:text-cs-purple-500 hover:font-bold"
+                >
                   Acceptable Use Policy
-              </Link>
-            </div>
-        }
-           
-
+                </Link>
+              </div>
+            )}
           </button>
-      }
-        
-    <div
+        )}
+
+      <div
         className=" w-fit fixed bottom-5 right-4 z-50 text-white"
         ref={widgetRef}
       >
-        <div     
-className="bg-cs-purple-650 text-cs-grey-60-light p-[10px] rounded-lg font-semibold flex items-center md:gap-x-2 cursor-pointer">
+        <div className="bg-cs-purple-650 text-cs-grey-60-light p-[10px] rounded-lg font-semibold flex items-center md:gap-x-2 cursor-pointer">
           <MessageQuestion size="20" color="#FAF0FF" className="m-auto" />
           <p className="hidden md:block">Feedback?</p>
         </div>
