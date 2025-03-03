@@ -5,6 +5,7 @@ import { IsAuthenticated } from "./authService";
 
 const apiInstantMeeting = getApiPath("meeting", "instant-meeting");
 const apiScheduleMeeting = getApiPath("meeting", "schedule-meeting");
+const apiUpdateMeeting = getApiPath("meeting", "update-meeting");
 const apiJoinMeeting = getApiPath("meeting", "join-meeting");
 const apiStartTranscription = getApiPath("meeting", "start-transcription");
 const apiStopTranscription = getApiPath("meeting", "stop-transcription");
@@ -213,6 +214,18 @@ export const getCalendarSettings = async (data: any, token: string) => {
 export const updateCalendarSettings = async (data: any, token: string) => {
   try {
     return await http.apiCall.post(apiUpdateCalendarSettings, data, {
+      headers: {
+        Authorization: token,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
+
+export const updateMeeting = async (data: any, token: string) => {
+  try {
+    return await http.apiCall.post(apiUpdateMeeting, data, {
       headers: {
         Authorization: token,
       },
