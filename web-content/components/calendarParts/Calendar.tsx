@@ -115,10 +115,14 @@ export default function Calendar() {
   const [settings, setSettings] = useState(calendarSettings);
 
   useEffect(() => {
-    // API cal for fetching user meetings
-    loadMeetingsFn();
-    // API call for fetching calendar settings
-    fetchCalendarSettings();
+    if (!loggedInUser.token) {
+      navigate.push("/");
+    } else {
+      // API cal for fetching user meetings
+      loadMeetingsFn();
+      // API call for fetching calendar settings
+      fetchCalendarSettings();
+    }
   }, []);
 
   const handleTimeSlotClick = (start: Date) => {
@@ -248,17 +252,17 @@ export default function Calendar() {
   const fetchCalendarSettings = async () => {
     setLoadMeetings(true);
     // Fetch settings from your API
-    
+
     try {
       const data = await getCalendarSettings({}, loggedInUser.token);
       console.log("calendar settings", data?.data.body.data);
-      
+
       if (data?.data.statusCode === 200) {
         setSettings(data?.data.body.data);
       }
     } catch (error) {
       console.error(error);
-    }finally{
+    } finally {
       setLoadMeetings(false);
     }
   };
