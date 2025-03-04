@@ -49,13 +49,15 @@ export const setInstantMeeting = (meetingID: string, meetingData: any) => {
   sessionStorage.setItem(meetingID, JSON.stringify(meetingData));
 };
 
-export const createInstantMeeting = async (data: any) => {
+export const createInstantMeeting = async (data: any, feToken: string) => {
   const token = localStorage.getItem("cecureStreamAcToken");
   try {
-    if (token) {
+    // if (token) {
+    if (feToken) {
       return await http.apiCall.api.post(apiInstantMeeting, data, {
         headers: {
-          Authorization: token,
+         // Authorization: token,
+          Authorization: feToken,
         },
       });
     }

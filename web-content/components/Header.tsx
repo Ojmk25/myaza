@@ -22,6 +22,9 @@ import Settings from "@/components/modals/Settings";
 import WidgetButton from "./WidgetButton";
 import { usePathname } from "next/navigation";
 
+import { useAuth, useAuthActions } from "@frontegg/nextjs";
+import { getNameAbbreviationFromFrontegg } from "@/lib/utils";
+
 export default function Header() {
   const [loggedIn, setLoggedIn] = useState(false);
   const currentTimeRef = useRef<HTMLDivElement>(null);
@@ -37,10 +40,15 @@ export default function Header() {
   const lastSegment = pathname.split("/").pop();
   const [showTerms, setShowTerms] = useState(false);
 
+  // frontegg hooks
+   const { user, isAuthenticated: fronteggIsAuthenticated,  } = useAuth();
+   const {logout: fronteggLogout, } = useAuthActions();
+
   useEffect(() => {
-    setLoggedIn(IsAuthenticated());
+    // setLoggedIn(IsAuthenticated());
+    setLoggedIn(fronteggIsAuthenticated); //this line is in accordance with frontegg implementation
     getNameAbbreviation();
-  }, []);
+  }, [fronteggIsAuthenticated]);
 
   // useEffect(() => {
   //   // Function to update screenWidth state when the window is resized
@@ -183,10 +191,14 @@ export default function Header() {
   };
 
   const logOut = async () => {
-    logOutUser();
+    // logOutUser();
+    // setProfileModal(false);
+    // navigate.refresh();
+    // navigate.push("/");
+
+    // logout implementation with frontegg
+    fronteggLogout()
     setProfileModal(false);
-    navigate.refresh();
-    navigate.push("/");
   };
 
   const handleCloseModal = () => {
@@ -240,7 +252,8 @@ export default function Header() {
                   className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50"
                   onClick={() => setProfileModal(!profileModal)}
                 >
-                  {getNameAbbreviation()}
+                  {/* {getNameAbbreviation()}  */}
+                  {getNameAbbreviationFromFrontegg(user?.name)} 
                 </div>
               )}
               {profileModal && (
@@ -288,7 +301,8 @@ export default function Header() {
                 className=" bg-cs-grey-800 w-[38px] h-[38px] rounded-full flex justify-center items-center text-cs-grey-50 md:hidden cursor-pointer"
                 onClick={() => setProfileModal(!profileModal)}
               >
-                {getNameAbbreviation()}
+                {/* {getNameAbbreviation()}  */}
+                {getNameAbbreviationFromFrontegg(user?.name)}
               </div>
             )}
             {profileModal && (
@@ -320,15 +334,17 @@ export default function Header() {
           >
             <button
               className=" text-cs-grey-50 bg-cs-purple-650 rounded-md py-[14px] px-10 font-bold max-h-[52px] h-full"
-              onClick={() => navigate.push(`/auth/signup`)}
+              // onClick={() => navigate.push(`/auth/signup`)}
+              onClick={() => navigate.push("/account/sign-up")}
             >
               Sign up
             </button>
             <button
               className=" text-cs-purple-650 font-bold py-3 px-10 border border-cs-purple-650 rounded hover:text-white hover:bg-cs-purple-650 max-h-[52px]"
-              onClick={() =>
-                navigate.push(`/auth/login?prevpage=${lastSegment}`)
-              }
+              // onClick={() =>
+              //   navigate.push(`/auth/login?prevpage=${lastSegment}`)
+              // }
+              onClick={() => navigate.push("/account/login")}
             >
               Sign in
             </button>

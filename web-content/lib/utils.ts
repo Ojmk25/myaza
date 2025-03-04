@@ -13,3 +13,11 @@ export function formatDate(dateString: any): string {
   const year = date.getFullYear();
   return `${day}/${month}/${year}`;
 }
+
+export const getNameAbbreviationFromFrontegg = (name?: string): string => {
+  if (!name) return ""; // Handle undefined or empty string cases
+  return name
+    .split(" ")
+    .map((word: string) => word.charAt(0).toUpperCase())
+    .join("");
+};

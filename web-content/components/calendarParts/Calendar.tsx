@@ -21,7 +21,9 @@ import { extractAfterLastSlashOrFull } from "@/utils/Validators";
 import { useRouter } from "next/router";
 import { Add, Calendar as CalendarIcon } from "iconsax-react";
 import { getCurrentClientData } from "@/services/authService";
-import LoadingScreen from "@/components/modals/LoadingScreen";
+import LoadingScreen from "@/components/modals/LoadingScreen
+
+import { useAuth } from "@frontegg/nextjs";
 
 type CalendarView = "day" | "week" | "month" | "year";
 
@@ -114,6 +116,8 @@ export default function Calendar() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settings, setSettings] = useState(calendarSettings);
 
+const { user } = useAuth();
+
   useEffect(() => {
     if (!loggedInUser.token) {
       navigate.push("/");
@@ -195,7 +199,7 @@ export default function Calendar() {
   const startInstantMeetingFn = async () => {
     setLoading(true);
     try {
-      const data = await createInstantMeeting({});
+      const data = await createInstantMeeting({}, user?.accessToken as string);
 
       if (data?.data.body && data?.data.body.status === "Success") {
         const extractedLink = extractAfterLastSlashOrFull(

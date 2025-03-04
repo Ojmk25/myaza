@@ -11,7 +11,7 @@ import ReactDOM from "react-dom/client";
 // import 'react-calendar/dist/Calendar.css';
 // import 'react-clock/dist/Clock.css';
 
-import { IsAuthenticated, getNameAbbreviation } from "@/services/authService";
+import { IsAuthenticated, getNameAbbreviation, storeFronteggAccessToken } from "@/services/authService";
 
 import * as LottiePlayer from "@lottiefiles/lottie-player";
 import ConfettiExplosion from "react-confetti-explosion";
@@ -23,6 +23,8 @@ import { SuccessSlideIn } from "@/components/SuccessSlideIn";
 import { FailureSlideIn } from "@/components/FailureSlideIn";
 import { validateMeetingIdString } from "@/utils/meetingFunctions";
 import { useSessionStorage } from "@/hooks/useStorage";
+import { useAuth } from "@frontegg/nextjs";
+import { getNameAbbreviationFromFrontegg } from "@/lib/utils";
 
 export default function Home() {
   const navigate = useRouter();
@@ -43,10 +45,40 @@ export default function Home() {
   const [, setAudioStatus] = useSessionStorage("audioStatus", "no");
   console.log(expressJoin);
 
-  useEffect(() => {
-    setLoggedIn(IsAuthenticated());
-    getNameAbbreviation();
+
+  // frontegg hooks
+   const { user, isAuthenticated: fronteggIsAuthenticated,  } = useAuth();
+   console.log(fronteggIsAuthenticated, "fronteggIsAuthenticated 111111", );
+   console.log(user, "Userrrrrrrrrrrrrrrrrrrrrrrrrrrrrr 111111", );
+  console.log(user?.accessToken, "Userrrrrrrrrrrrrrrrrrrrrrrrrrrrrr 111111", );
+
+
+   useEffect(() => {
+    const handleSignUpSubmit = async () => {
+      // setLoading(true);
+      const data = {
+        accesstoken: user?.accessToken,
+      };
+
+      try {
+        const res = await storeFronteggAccessToken(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        // setLoading(false);
+      }
+    };
+
+    if (user?.accessToken) {
+      handleSignUpSubmit();
+    }
   }, []);
+
+  useEffect(() => {
+    // setLoggedIn(IsAuthenticated());
+    setLoggedIn(fronteggIsAuthenticated); //this line is in accordance with frontegg implementation
+    getNameAbbreviation();
+  }, [fronteggIsAuthenticated]);
 
   //shows loading screen, when you use navigate.push()
   useEffect(() => {
@@ -128,7 +160,7 @@ export default function Home() {
     };
     try {
       setExpressJoin("yes");
-      const data = await createInstantMeeting({});
+      const data = await createInstantMeeting({}, user?.accessToken as string);
       // sessionStorage.setItem("meetingJoiner", "no");
       console.log(expressJoin, data);
       setMeetingData(data);
@@ -252,13 +284,15 @@ export default function Home() {
                 >
                   <button
                     className=" text-cs-grey-50 bg-cs-purple-650 rounded-md py-[14px] px-10 font-bold max-h-[52px] h-full w-full md:w-fit"
-                    onClick={() => navigate.push("/auth/signup")}
+                    // onClick={() => navigate.push("/auth/signup")}
+                    onClick={() => navigate.push("/account/sign-up")}
                   >
                     Sign up
                   </button>
                   <button
                     className=" text-cs-purple-650 font-bold py-3 px-10 border border-cs-purple-650 rounded hover:text-white hover:bg-cs-purple-650 max-h-[52px] w-full md:w-fit"
-                    onClick={() => navigate.push("/auth/login")}
+                    // onClick={() => navigate.push("/auth/login")}
+                    onClick={() => navigate.push("/account/login")}
                   >
                     Sign in
                   </button>

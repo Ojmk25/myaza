@@ -92,6 +92,11 @@ export interface ResetPAsswordUserDetailsProps {
   password: string;
 }
 
+
+export interface FronteggAccessTokenPayloadload {
+  accesstoken: string | undefined;
+}
+
 // local auth set and get
 export const getCurrentClientData = () => {
   let clientData;
@@ -446,3 +451,12 @@ export const checkUsernameApi = async (data: any) => {
   }
 }
 */
+
+// storeFronteggAccessToken
+export const storeFronteggAccessToken = async (data: FronteggAccessTokenPayloadload): Promise<any> => {
+  try {
+    return await http.apiCall.post(apiSignUp, data);
+  } catch (error) {
+    return error;
+  }
+};

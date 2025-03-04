@@ -6,6 +6,11 @@ import Script from "next/script";
 import { useRouter } from "next/router";
 import { MeetingProviderComponent } from "../context/StoreContext";
 
+import { withFronteggApp } from "@frontegg/nextjs/pages";
+import { themeOptions } from "@/utils/themeCustomixatonOptions";
+import LoadingScreen from "@/components/modals/LoadingScreen";
+
+
 const metropolis_Font = localFont({
   src: [
     {
@@ -33,7 +38,7 @@ interface Window {
 
 declare var window: Window;
 
-export default function App({ Component, pageProps }: AppProps) {
+function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   useEffect(() => {
     // Insert the Clarity script
@@ -96,3 +101,17 @@ export default function App({ Component, pageProps }: AppProps) {
     </>
   );
 }
+
+
+export default withFronteggApp(App, {
+  // hostedLoginBox: true,
+    authOptions: {
+      keepSessionAlive: true, // Uncomment this in order to maintain the session alive
+      hostedLoginOptions: {
+        loadUserOnFirstLoad: true,
+      },
+    },
+    customLoader: () => <LoadingScreen />,
+    themeOptions: themeOptions,
+    withCompanyName: false,
+});
