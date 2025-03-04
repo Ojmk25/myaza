@@ -21,7 +21,7 @@ import { extractAfterLastSlashOrFull } from "@/utils/Validators";
 import { useRouter } from "next/router";
 import { Add, Calendar as CalendarIcon } from "iconsax-react";
 import { getCurrentClientData } from "@/services/authService";
-import LoadingScreen from "@/components/modals/LoadingScreen
+import LoadingScreen from "@/components/modals/LoadingScreen";
 
 import { useAuth } from "@frontegg/nextjs";
 
