@@ -14,6 +14,7 @@ import FloatingActionButton from "./FloatingActionButton";
 import SettingsModal from "./SettingsModal";
 import {
   createInstantMeeting,
+  deleteMeeting,
   getCalendarSettings,
   listUserMeetings,
 } from "@/services/meetingServices";
@@ -116,10 +117,11 @@ export default function Calendar() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settings, setSettings] = useState(calendarSettings);
 
-const { user } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
-    if (!loggedInUser.token) {
+    // if (!loggedInUser.token) {
+    if (!user?.accessToken ) {
       navigate.push("/");
     } else {
       // API cal for fetching user meetings
@@ -157,8 +159,24 @@ const { user } = useAuth();
     setInitialAttendees([]);
   };
 
-  const handleDeleteEvent = (eventId: string) => {
-    setEvents(events.filter((event) => event.id !== eventId));
+  const handleDeleteEvent = async (eventId: string) => {
+    try {
+      // const data = await deleteMeeting(
+      //   { meeting_id: eventId },
+      //   loggedInUser.token
+      // );
+      const data = await deleteMeeting(
+        { meeting_id: eventId },
+        user?.accessToken as string
+      );
+
+      if (data?.data.statusCode === 200) {
+        setEvents(events.filter((event) => event.id !== eventId));
+        // typeof window !== "undefined" && window.location.reload()
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const navigateCalendar = (direction: "prev" | "next") => {
@@ -219,9 +237,13 @@ const { user } = useAuth();
   const loadMeetingsFn = async () => {
     setLoadMeetings(true);
     try {
+      // const data = await listUserMeetings(
+      //   { email: loggedInUser.clientData.email },
+      //   loggedInUser.token
+      // );
       const data = await listUserMeetings(
-        { email: loggedInUser.clientData.email },
-        loggedInUser.token
+        { email: user?.email },
+        user?.accessToken as string
       );
 
       if (data?.data.statusCode === 200) {
@@ -258,7 +280,8 @@ const { user } = useAuth();
     // Fetch settings from your API
 
     try {
-      const data = await getCalendarSettings({}, loggedInUser.token);
+      // const data = await getCalendarSettings({}, loggedInUser.token);
+      const data = await getCalendarSettings({}, user?.accessToken as string);
       console.log("calendar settings", data?.data.body.data);
 
       if (data?.data.statusCode === 200) {

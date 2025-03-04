@@ -17,6 +17,7 @@ const stopRecordingPath = getApiPath("meeting", "stop-recording");
 const apiListUserMeetings = getApiPath("meeting", "list-meetings");
 const apiGetCalendarSettings = getApiPath("core", "get-user-settings");
 const apiUpdateCalendarSettings = getApiPath("core", "update-user-settings");
+const apiDeleteMeeting = getApiPath("meeting", "delete-meeting");
 
 export interface TranscriptionPayload {
   meeting_id: string;
@@ -228,6 +229,18 @@ export const updateCalendarSettings = async (data: any, token: string) => {
 export const updateMeeting = async (data: any, token: string) => {
   try {
     return await http.apiCall.post(apiUpdateMeeting, data, {
+      headers: {
+        Authorization: token,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
+
+export const deleteMeeting = async (data: any, token: string) => {
+  try {
+    return await http.apiCall.post(apiDeleteMeeting, data, {
       headers: {
         Authorization: token,
       },

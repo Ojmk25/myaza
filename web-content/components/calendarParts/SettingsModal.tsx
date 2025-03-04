@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { updateCalendarSettings } from "@/services/meetingServices"
 import { getCurrentClientData } from "@/services/authService"
 import LoadingScreen from "@/components/modals/LoadingScreen"
+import { useAuth } from "@frontegg/nextjs"
 
 interface SettingsModalProps {
   open: boolean
@@ -36,6 +37,7 @@ export default function SettingsModal({ open, onOpenChange, defaultSettings }: S
     videoEnabled: true,
     soundEnabled: true,
   })
+   const { user  } = useAuth();
 
   useEffect(() => {
     if (defaultSettings) {
@@ -46,7 +48,8 @@ export default function SettingsModal({ open, onOpenChange, defaultSettings }: S
   const handleSave = async () => {
     setLoading(true)
     try {
-      const data = await updateCalendarSettings(settings, loggedInUser.token)
+      // const data = await updateCalendarSettings(settings, loggedInUser.token)
+      const data = await updateCalendarSettings(settings, user?.accessToken as string)
       if (data?.data.statusCode === 200) {
         typeof window !== "undefined" && window.location.reload()
       }

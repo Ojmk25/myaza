@@ -9,6 +9,7 @@ import { AddSquare, Calendar, Clock, Edit, Trash } from "iconsax-react";
 import { getColorForUser } from "@/utils/colors";
 import { listUserMeetings } from "@/services/meetingServices";
 import { getCurrentClientData } from "@/services/authService";
+import { useAuth } from "@frontegg/nextjs";
 
 interface SidebarProps {
   onCreateSession: () => void;
@@ -87,6 +88,7 @@ export default function Sidebar({
   const [countdownValues, setCountdownValues] = useState<{
     [eventId: string]: string | null;
   }>({});
+   const { user  } = useAuth();
 
   useEffect(() => {
     const getUpcomingEvents = () => {
@@ -192,7 +194,8 @@ export default function Sidebar({
 
   const loadMeetingsFn = async (email: string, color: string) => {
     try {
-      const data = await listUserMeetings({ email: email }, loggedInUser.token);
+      // const data = await listUserMeetings({ email: email }, loggedInUser.token);
+      const data = await listUserMeetings({ email: email }, user?.accessToken as string);
 
       if (data?.data.statusCode === 200) {
         const meetings = data?.data.body.data.map((meeting: any) => {
@@ -218,6 +221,7 @@ export default function Sidebar({
       console.log(error);
     }
   };
+
   return (
     <>
       {isOpen && (

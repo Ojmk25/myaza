@@ -14,6 +14,7 @@ import {
 import LoadingScreen from "@/components/modals/LoadingScreen";
 import { formatDate } from "@/lib/utils";
 import { getCurrentClientData } from "@/services/authService";
+import { useAuth } from "@frontegg/nextjs";
 
 interface CreateEventModalProps {
   initialDate?: {
@@ -43,13 +44,15 @@ export default function CreateEventModal({
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const { user  } = useAuth();
+
   useEffect(() => {
     if (event) {
       setTitle(event.meeting_name);
       setDate(event.start_time.toISOString().split("T")[0]);
       setStartTime(formatTime(event.start_time));
       setEndTime(formatTime(event.end_time));
-      setAttendees(event.attendees.map((a) => ({id: Date.now().toString(), email:a, name: "" })) as User[]);
+      setAttendees(event.attendees.map((a) => ({id: Date.now().toString(), email:a.email, name: "" })) as User[]);
     } else if (initialDate) {
       setDate(initialDate.start.toISOString().split("T")[0]);
       setStartTime(formatTime(initialDate.start));
@@ -120,7 +123,8 @@ export default function CreateEventModal({
         timezone: timeZone,
         attendees: attendees.map((a) => a.email),
       };
-      const data = await updateMeeting(dt, loggedInUser?.token);
+      // const data = await updateMeeting(dt, loggedInUser?.token);
+      const data = await updateMeeting(dt,  user?.accessToken as string);
       console.log("check create res", data?.data.statusCode);
       if (data?.data.statusCode === 200) {
         typeof window !== "undefined" && window.location.reload()

@@ -13,6 +13,7 @@ import { listUserMeetings } from "@/services/meetingServices"
 import { getCurrentClientData } from "@/services/authService"
 import { Video } from "iconsax-react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@frontegg/nextjs"
 
 export default function MobileCalendar() {
   const loggedInUser = getCurrentClientData()
@@ -27,14 +28,17 @@ export default function MobileCalendar() {
   const navigateMonth = (direction: "prev" | "next") => {
     setCurrentDate(direction === "next" ? addMonths(currentDate, 1) : subMonths(currentDate, 1))
   }
+  const { user  } = useAuth();
 
   useEffect(() => {
-    if (!loggedInUser.token) {
+    // if (!loggedInUser.token) {
+    if (!user?.accessToken) {
       navigate.push("/")
     } else {
       loadMeetingsFn()
     }
-  }, [loggedInUser.token, navigate]) // Added dependencies
+  // }, [loggedInUser.token, navigate]) // Added dependencies
+  }, [user?.accessToken, navigate]) // Added dependencies
 
   const goToToday = () => {
     setCurrentDate(new Date())
@@ -66,7 +70,8 @@ export default function MobileCalendar() {
   const loadMeetingsFn = async () => {
     setLoading(true)
     try {
-      const data = await listUserMeetings({ email: loggedInUser.clientData.email }, loggedInUser.token)
+      // const data = await listUserMeetings({ email: loggedInUser.clientData.email }, loggedInUser.token)
+      const data = await listUserMeetings({ email: loggedInUser.clientData.email }, user?.accessToken as string)
 
       if (data?.data.statusCode === 200) {
         const meetings = data?.data.body.data.map((meeting: any) => {
