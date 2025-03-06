@@ -52,7 +52,7 @@ export default function CreateEventModal({
       setDate(event.start_time.toISOString().split("T")[0]);
       setStartTime(formatTime(event.start_time));
       setEndTime(formatTime(event.end_time));
-      setAttendees(event.attendees.map((a) => ({id: Date.now().toString(), email:a.email, name: "" })) as User[]);
+      setAttendees(event.attendees.map((a) => ({id: Date.now().toString(), email:a, name: "" })) as User[]);
     } else if (initialDate) {
       setDate(initialDate.start.toISOString().split("T")[0]);
       setStartTime(formatTime(initialDate.start));
