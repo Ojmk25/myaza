@@ -1,0 +1,45 @@
+// {
+//   "auth": {
+//     "testfindmeedd5f09b": {
+//       "customAuth": false,
+//       "dependsOn": [],
+//       "providerPlugin": "awscloudformation",
+//       "service": "Cognito",
+//       "serviceType": "imported"
+//     }
+//   },
+//   "parameters": {
+//     "AMPLIFY_auth_testfindmeedd5f09b_nativeClientId": {
+//       "usedBy": [
+//         {
+//           "category": "auth",
+//           "resourceName": "testfindmeedd5f09b"
+//         }
+//       ]
+//     },
+//     "AMPLIFY_auth_testfindmeedd5f09b_userPoolId": {
+//       "usedBy": [
+//         {
+//           "category": "auth",
+//           "resourceName": "testfindmeedd5f09b"
+//         }
+//       ]
+//     },
+//     "AMPLIFY_auth_testfindmeedd5f09b_userPoolName": {
+//       "usedBy": [
+//         {
+//           "category": "auth",
+//           "resourceName": "testfindmeedd5f09b"
+//         }
+//       ]
+//     },
+//     "AMPLIFY_auth_testfindmeedd5f09b_webClientId": {
+//       "usedBy": [
+//         {
+//           "category": "auth",
+//           "resourceName": "testfindmeedd5f09b"
+//         }
+//       ]
+//     }
+//   }
+// }

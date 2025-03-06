@@ -1,0 +1,25 @@
+// {
+//   "dev": {
+//     "awscloudformation": {
+//       "AuthRoleName": "amplify-testfindme-dev-84504-authRole",
+//       "UnauthRoleArn": "arn:aws:iam::489673021092:role/amplify-testfindme-dev-84504-unauthRole",
+//       "AuthRoleArn": "arn:aws:iam::489673021092:role/amplify-testfindme-dev-84504-authRole",
+//       "Region": "us-east-1",
+//       "DeploymentBucketName": "amplify-testfindme-dev-84504-deployment",
+//       "UnauthRoleName": "amplify-testfindme-dev-84504-unauthRole",
+//       "StackName": "amplify-testfindme-dev-84504",
+//       "StackId": "arn:aws:cloudformation:us-east-1:489673021092:stack/amplify-testfindme-dev-84504/f6dcace0-d47a-11ee-af16-12836b66d787",
+//       "AmplifyAppId": "d32kpwyhq8k6pm"
+//     },
+//     "categories": {
+//       "auth": {
+//         "testfindmeedd5f09b": {
+//           "userPoolId": "us-east-1_UgMHhEUnI",
+//           "userPoolName": "Findme-userpool",
+//           "webClientId": "1bgilld04aolmv61jc00h4mq9q",
+//           "nativeClientId": "1bgilld04aolmv61jc00h4mq9q"
+//         }
+//       }
+//     }
+//   }
+// }
