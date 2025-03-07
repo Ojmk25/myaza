@@ -12,10 +12,10 @@ phases:
   #     - chmod +x deploy.sh
   #     - bash ./deploy.sh $DEPLOY_ROLE $BUCKET_NAME 
       
-  build:
-  commands:
-    - chmod +x deploy.sh
-    - bash ./deploy.sh
+  # build:
+  # commands:
+  #   - chmod +x deploy.sh
+  #   - bash ./deploy.sh
 
  
   post_build: 
