@@ -25,6 +25,7 @@ import { validateMeetingIdString } from "@/utils/meetingFunctions";
 import { useSessionStorage } from "@/hooks/useStorage";
 import { useAuth } from "@frontegg/nextjs";
 import { getNameAbbreviationFromFrontegg } from "@/lib/utils";
+import UpcomingEventSelfComponent from "@/components/calendarParts/UpcomingEventSelfComponent";
 
 export default function Home() {
   const navigate = useRouter();
@@ -364,6 +365,7 @@ export default function Home() {
                     </p>
                   </div>
                 </div>
+                {loggedIn && <UpcomingEventSelfComponent />}
               </div>
               <div className="basis-full my-4 md:my-0 px-6 lg:px-0">
                 <Image
