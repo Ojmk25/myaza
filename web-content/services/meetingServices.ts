@@ -115,8 +115,8 @@ export const listAttendees = async (data: any) => {
 //   }
 // };
 
-export const createScheduleMeeting = async (data: any) => {
-  const token = localStorage.getItem("cecureStreamAcToken");
+export const createScheduleMeeting = async (data: any, token: string) => {
+  // const token = localStorage.getItem("cecureStreamAcToken");
   try {
     if (token) {
       return await http.apiCall.api.post(apiScheduleMeeting, data, {
