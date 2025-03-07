@@ -28,6 +28,8 @@ interface Settings {
 
 export default function SettingsModal({ open, onOpenChange, defaultSettings }: SettingsModalProps) {
   const loggedInUser = getCurrentClientData()
+  const { user  } = useAuth();
+  
   const [loading, setLoading] = useState(false)
   const [settings, setSettings] = useState<Settings>({
     language: "en-GB",
@@ -37,7 +39,6 @@ export default function SettingsModal({ open, onOpenChange, defaultSettings }: S
     videoEnabled: true,
     soundEnabled: true,
   })
-   const { user  } = useAuth();
 
   useEffect(() => {
     if (defaultSettings) {

@@ -80,6 +80,8 @@ export default function Sidebar({
   onCreateMeeting,
 }: SidebarProps) {
   const loggedInUser = getCurrentClientData();
+  const { user } = useAuth();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [collapsedUpcoming, setCollapsedUpcoming] = useState(true);
   const [collapsedSearch, setCollapsedSearch] = useState(true);
@@ -88,7 +90,6 @@ export default function Sidebar({
   const [countdownValues, setCountdownValues] = useState<{
     [eventId: string]: string | null;
   }>({});
-   const { user  } = useAuth();
 
   useEffect(() => {
     const getUpcomingEvents = () => {
@@ -195,7 +196,10 @@ export default function Sidebar({
   const loadMeetingsFn = async (email: string, color: string) => {
     try {
       // const data = await listUserMeetings({ email: email }, loggedInUser.token);
-      const data = await listUserMeetings({ email: email }, user?.accessToken as string);
+      const data = await listUserMeetings(
+        { email: email },
+        user?.accessToken as string
+      );
 
       if (data?.data.statusCode === 200) {
         const meetings = data?.data.body.data.map((meeting: any) => {

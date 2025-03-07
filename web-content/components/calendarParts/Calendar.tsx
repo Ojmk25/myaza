@@ -96,6 +96,8 @@ const calendarSettings = {
 export default function Calendar() {
   const loggedInUser = getCurrentClientData();
   const navigate = useRouter();
+  const { user } = useAuth();
+  
   const [loading, setLoading] = useState(false);
   const [loadMeetings, setLoadMeetings] = useState(false);
   const [currentDate, setCurrentDate] = useState(() => {
@@ -117,7 +119,6 @@ export default function Calendar() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settings, setSettings] = useState(calendarSettings);
 
-  const { user } = useAuth();
 
   useEffect(() => {
     // if (!loggedInUser.token) {
