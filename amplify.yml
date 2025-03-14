@@ -1,6 +1,6 @@
 version: 1
 applications:
-  - appRoot: web-content/
+  - appRoot: web-content
     frontend:
       buildPath: web-content # Run install and build from the web-content folder
       phases:
@@ -28,7 +28,7 @@ applications:
             - npm run build
             - echo "Success!"
       artifacts:
-        baseDirectory: build
+        baseDirectory: .next
         files:
           - "**/*"
       cache:
